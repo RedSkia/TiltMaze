@@ -12,7 +12,7 @@ public static class RunChecker
     const double StartTolerance = 0.1;                    // kuglen starter (og starter igen efter et hul) lige ved startcellens midte
     const double WallTolerance = 0.02;                    // luft til at tallene er afrundet til 32 bit
     const double GoalTolerance = MaxStep;                 // sidste måling er taget op til 1/30 s før kuglen nåede målet
-    const int MaxSamples = 30 * 60 * 30;                  // højst 30 minutter
+    public const int MaxSamples = 30 * 60 * 30;                  // højst 30 minutter
     const int MaxSamplesInHole = 9;                       // kuglen falder efter 0,2 s over et hul = 6 målinger (+ luft)
 
     // Giver null, hvis turen er i orden, ellers en kort grund (kun til log og test, aldrig til brugeren)

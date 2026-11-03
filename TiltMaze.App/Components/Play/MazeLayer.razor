@@ -1,0 +1,65 @@
+@* Den faste del af banen: gulv, start, huller, mål og vægge. Tegnes kun, når labyrinten skifter (se ShouldRender).
+   Mini = en enkel, lille kopi til minikortet *@
+
+@if (Mini)
+{
+    <rect class="mini-floor" x="0" y="0" width="@Maze.Width" height="@Maze.Height" rx="0.3" />
+    @foreach (var hole in Maze.Holes)
+    {
+        <circle class="mini-hole" cx="@N(hole.CenterX)" cy="@N(hole.CenterY)" r="@N(Math.Max(hole.Radius, 0.2))" />
+    }
+    <circle class="mini-goal" cx="@N(Maze.Goal.X + 0.5)" cy="@N(Maze.Goal.Y + 0.5)" r="0.38" />
+    <path class="mini-walls" d="@wallPath" />
+}
+else
+{
+    <defs>
+        <linearGradient id="floorFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#13203f" />
+            <stop offset="1" stop-color="#0a1229" />
+        </linearGradient>
+        <pattern id="tiles" width="1" height="1" patternUnits="userSpaceOnUse">
+            <rect width="1" height="1" fill="none" stroke="#2de2c8" stroke-opacity="0.07" stroke-width="0.02" />
+        </pattern>
+        <linearGradient id="wallTop" x1="0" y1="0" x2="@Maze.Width" y2="@Maze.Height" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#5cf2dc" />
+            <stop offset="1" stop-color="#38bdf8" />
+        </linearGradient>
+        <radialGradient id="holeFill">
+            <stop offset="0" stop-color="#000000" />
+            <stop offset="0.7" stop-color="#03050d" />
+            <stop offset="1" stop-color="#160c26" />
+        </radialGradient>
+        <radialGradient id="goalGlow">
+            <stop offset="0" stop-color="#ffc857" stop-opacity="0.6" />
+            <stop offset="1" stop-color="#ffc857" stop-opacity="0" />
+        </radialGradient>
+        <path id="wallShape" d="@wallPath" />
+    </defs>
+
+    <!-- Kant om banen, gulv og fliser -->
+    <rect class="frame" x="-0.15" y="-0.15" width="@N(Maze.Width + 0.3)" height="@N(Maze.Height + 0.3)" rx="0.3" />
+    <rect class="floor" x="0" y="0" width="@Maze.Width" height="@Maze.Height" rx="0.12" />
+    <rect class="tiles" x="0" y="0" width="@Maze.Width" height="@Maze.Height" />
+
+    <rect class="start" x="@N(Maze.Start.X + 0.1)" y="@N(Maze.Start.Y + 0.1)" width="0.8" height="0.8" rx="0.18" />
+
+    <!-- Huller: indre væg, mørk brønd forskudt lidt ned (giver dybde) og en rød kant, der viser fare -->
+    @foreach (var hole in Maze.Holes)
+    {
+        <circle class="hole-wall" cx="@N(hole.CenterX)" cy="@N(hole.CenterY)" r="@N(hole.Radius)" />
+        <circle class="hole" cx="@N(hole.CenterX + hole.Radius * 0.15)" cy="@N(hole.CenterY + hole.Radius * 0.2)" r="@N(hole.Radius * 0.75)" />
+        <circle class="hole-rim" cx="@N(hole.CenterX)" cy="@N(hole.CenterY)" r="@N(hole.Radius)" />
+    }
+
+    <!-- Mål: guld ring med glød, der pulserer -->
+    <circle class="goal-glow" cx="@N(Maze.Goal.X + 0.5)" cy="@N(Maze.Goal.Y + 0.5)" r="0.55" />
+    <circle class="goal-ring" cx="@N(Maze.Goal.X + 0.5)" cy="@N(Maze.Goal.Y + 0.5)" r="0.32" />
+    <circle class="goal-core" cx="@N(Maze.Goal.X + 0.5)" cy="@N(Maze.Goal.Y + 0.5)" r="0.16" />
+
+    <!-- Vægge: samme form tegnet fire gange: skygge, mørk side, lys top og en tynd glans-kant -->
+    <use href="#wallShape" class="wall-shadow" transform="translate(0.08 0.13)" />
+    <use href="#wallShape" class="wall-side" transform="translate(0.03 0.06)" />
+    <use href="#wallShape" class="wall-top" />
+    <use href="#wallShape" class="wall-shine" transform="translate(-0.012 -0.014)" />
+}

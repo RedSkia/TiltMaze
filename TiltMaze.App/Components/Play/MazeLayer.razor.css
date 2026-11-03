@@ -1,0 +1,117 @@
+/* Banen set oppefra med lidt højde (2,5D). Lyset kommer fra øverst til venstre, så skygger falder ned mod højre */
+
+.frame {
+    fill: #050814;
+    stroke: rgba(45, 226, 200, 0.35);
+    stroke-width: 0.04;
+}
+
+.floor {
+    fill: url(#floorFill);
+}
+
+.tiles {
+    fill: url(#tiles);
+}
+
+.start {
+    fill: rgba(45, 226, 200, 0.12);
+    stroke: rgba(45, 226, 200, 0.5);
+    stroke-width: 0.03;
+    stroke-dasharray: 0.12 0.08;
+}
+
+/* ---------- Huller ---------- */
+
+.hole-wall {
+    fill: #2a1f4f;
+}
+
+.hole {
+    fill: url(#holeFill);
+}
+
+.hole-rim {
+    fill: none;
+    stroke: #ff5d73;
+    stroke-opacity: 0.7;
+    stroke-width: 0.03;
+}
+
+/* ---------- Mål ---------- */
+
+.goal-glow {
+    fill: url(#goalGlow);
+    animation: goal-pulse 1.6s ease-in-out infinite;
+}
+
+.goal-ring {
+    fill: rgba(255, 200, 87, 0.14);
+    stroke: #ffc857;
+    stroke-width: 0.05;
+}
+
+.goal-core {
+    fill: #ffc857;
+}
+
+@keyframes goal-pulse {
+    50% { opacity: 0.4; }
+}
+
+/* ---------- Vægge: fire kopier af samme form ---------- */
+
+.wall-shadow, .wall-side, .wall-top, .wall-shine {
+    fill: none;
+    stroke-linecap: round;
+}
+
+.wall-shadow {
+    stroke: #000;
+    stroke-opacity: 0.45;
+    stroke-width: 0.16;
+}
+
+.wall-side {
+    stroke: #0b5f63;
+    stroke-width: 0.1;
+}
+
+.wall-top {
+    stroke: url(#wallTop);
+    stroke-width: 0.09;
+}
+
+.wall-shine {
+    stroke: #e0fffa;
+    stroke-opacity: 0.55;
+    stroke-width: 0.018;
+}
+
+/* ---------- Minikort ---------- */
+
+.mini-floor {
+    fill: rgba(10, 18, 41, 0.9);
+}
+
+.mini-walls {
+    fill: none;
+    stroke: #2de2c8;
+    stroke-width: 0.18;
+    stroke-linecap: round;
+}
+
+.mini-hole {
+    fill: #ff5d73;
+    fill-opacity: 0.75;
+}
+
+.mini-goal {
+    fill: #ffc857;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .goal-glow {
+        animation: none;
+    }
+}

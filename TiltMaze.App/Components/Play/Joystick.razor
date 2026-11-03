@@ -1,0 +1,10 @@
+@* Joystick på skærmen: træk knappen inde i ringen med fingeren eller musen. Den springer tilbage, når man slipper.
+   Kun til touch og mus; tastaturet har piletasterne, derfor aria-hidden *@
+<div class="joystick @(dragging ? "dragging" : "")" @ref="ring" aria-hidden="true"
+     style="width: @(Size)px; height: @(Size)px"
+     @onpointerdown="Down" @onpointerdown:preventDefault="true"
+     @onpointermove="Move" @onpointerup="Up" @onpointercancel="Up" @onlostpointercapture="Up"
+     @oncontextmenu:preventDefault="true">
+    <div class="ring-arrows"></div>
+    <div class="knob" style="transform: translate(@N(knobX)px, @N(knobY)px)"></div>
+</div>

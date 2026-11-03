@@ -156,6 +156,7 @@ button {
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
+    max-width: 100%;   /* aldrig bredere end sin plads; lang tekst brydes i stedet */
     min-height: 48px;
     padding: 0 var(--space-5);
     border: 1px solid var(--border);
@@ -163,6 +164,7 @@ button {
     background: var(--surface-2);
     color: var(--text);
     font-weight: 750;
+    text-align: center;
     text-decoration: none;
     cursor: pointer;
     user-select: none;
@@ -289,7 +291,7 @@ input::placeholder {
 /* Valg mellem to ting (fx Log ind / Opret konto): aktiv har accent */
 .segmented {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: var(--space-1);
     padding: var(--space-1);
     border-radius: var(--radius-m);
@@ -304,6 +306,8 @@ input::placeholder {
     background: transparent;
     color: var(--muted);
     font-weight: 700;
+    min-width: 0;
+    padding: 0 var(--space-2);
 }
 
 .segmented button.active {
@@ -382,11 +386,18 @@ input::placeholder {
     max-width: 1200px;
 }
 
+/* Titel til venstre, en knap (fx Refresh) til højre. Er der ikke plads, kommer knappen under titlen */
 .page-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-start;
     justify-content: space-between;
     gap: var(--space-3);
+}
+
+.page-head > div {
+    flex: 1 1 14rem;
+    min-width: 0;
 }
 
 .page-head .page-sub {

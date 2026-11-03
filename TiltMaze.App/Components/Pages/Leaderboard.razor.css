@@ -1,17 +1,35 @@
+/* Sværhedsgraderne står altid på én linje med fire lige brede knapper. Knapperne må krympe (min-width: 0),
+   så teksten aldrig skubber dem ind over hinanden på en smal telefon */
 .choices {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--space-2);
+}
+
+.choices .button {
+    min-width: 0;
+    padding: 0 var(--space-1);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+    .choices .button {
+        font-size: var(--font-s);
+    }
 }
 
 .seed-form {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-end;
     gap: var(--space-3);
 }
 
 .seed-form .field {
-    flex: 1;
+    flex: 1 1 12rem;
+    min-width: 0;
 }
 
 .board {
@@ -37,17 +55,22 @@
 }
 
 .rank {
+    flex: none;
     width: 2rem;
     color: var(--muted);
     font-weight: 700;
 }
 
+/* Langt navn: "..." i stedet for at skubbe tiden ud af linjen */
 .name {
     flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .time {
+    flex: none;
     font-variant-numeric: tabular-nums;
 }

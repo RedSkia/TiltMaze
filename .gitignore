@@ -484,8 +484,5 @@ $RECYCLE.BIN/
 *.db-shm
 *.db-wal
 
-# Docker
-.env
-
 # Data Protection-nøgler (lokal udvikling)
-Pulsify.Api/keys/
+TiltMaze.Api/keys/

@@ -4,7 +4,8 @@ namespace TiltMaze.Api.Tests;
 
 // En enkel computer-spiller, der spiller en labyrint på samme måde som Game.razor.cs
 // (billeder på 16 ms eller de tider, man giver, spøgelset optages pr. fysik-skridt hvert 1/30 s, hul = tilbage til start).
-// Den følger korteste vej mellem cellernes midter. Bruges til at lave rigtige ture til testene.
+// Den følger korteste vej uden om de store huller (den findes altid) og kører forbi de små huller langs siden af gangen.
+// Med avoidHoles = false kører den lige gennem midten af alle huller med fuld fart. Bruges til at lave rigtige ture til testene.
 public class Player
 {
     public bool Won;
@@ -12,9 +13,11 @@ public class Player
     public int Falls;
     public float[] Samples = [];
 
-    public static Player Play(Course course, double maxSeconds = 120, double speed = 2, double[]? frames = null)
+    const double Side = 0.25;   // så langt fra midten sigter vi forbi et lille hul (væggen stopper kuglen ved 0,2)
+
+    public static Player Play(Course course, double maxSeconds = 120, double speed = 2, double[]? frames = null, bool avoidHoles = true)
     {
-        var path = ShortestPath(course);
+        var path = ShortestPath(course, avoidHoles);
         var ball = new Ball(course.Segments, course.Start.X + 0.5, course.Start.Y + 0.5);
         var recording = new List<float>();
         var player = new Player();
@@ -27,18 +30,40 @@ public class Player
 
         while (time < maxSeconds && outcome != Outcome.Won)
         {
-            // Mod næste celles midte. Står der et hul på vejen, løber vi på det med fuld fart
+            // Mod næste celles midte, eller ved siden af midten, hvis der er et lille hul
             Cell target = path[next];
-            double dx = target.X + 0.5 - ball.X;
-            double dy = target.Y + 0.5 - ball.Y;
+            double tx = target.X + 0.5;
+            double ty = target.Y + 0.5;
+            bool hole = course.Holes.Any(h => h.Cell == target);
+            if (hole && avoidHoles)
+            {
+                // Ind-retning (fra forrige celle) og ud-retning (til næste celle). Lige gang: til siden. Sving: ind i det indre hjørne
+                Cell before = path[next - 1];
+                Cell after = next + 1 < path.Count ? path[next + 1] : target;
+                int inX = target.X - before.X, inY = target.Y - before.Y;
+                int outX = after.X - target.X, outY = after.Y - target.Y;
+                if (inX == outX && inY == outY)
+                {
+                    tx += -inY * Side;
+                    ty += inX * Side;
+                }
+                else
+                {
+                    tx += (outX - inX) * Side;
+                    ty += (outY - inY) * Side;
+                }
+            }
+
+            double dx = tx - ball.X;
+            double dy = ty - ball.Y;
             double distance = Math.Sqrt(dx * dx + dy * dy);
             if (distance < 0.2 && next < path.Count - 1)
             {
                 next++;
                 continue;
             }
-            bool hole = course.Holes.Any(h => h.Cell == target || (next + 1 < path.Count && h.Cell == path[next + 1]));
-            double wanted = hole ? 4.5 : speed;
+            bool fullSpeed = !avoidHoles && (hole || (next + 1 < path.Count && course.Holes.Any(h => h.Cell == path[next + 1])));
+            double wanted = fullSpeed ? Ball.MaxSpeed * 2 : speed;   // dobbelt maks-fart = fuldt vip mod hullet
             double ax = Math.Clamp((dx / distance * wanted - ball.VX) * 0.5, -1, 1);
             double ay = Math.Clamp((dy / distance * wanted - ball.VY) * 0.5, -1, 1);
 
@@ -71,8 +96,8 @@ public class Player
         return player;
     }
 
-    // Bredde-først fra start til mål gennem gange uden væg
-    static List<Cell> ShortestPath(Course course)
+    // Bredde-først fra start til mål gennem gange uden væg (og uden om store huller, hvis avoidHoles)
+    static List<Cell> ShortestPath(Course course, bool avoidHoles)
     {
         var from = new Dictionary<Cell, Cell>();
         var queue = new Queue<Cell>();
@@ -91,6 +116,7 @@ public class Player
             foreach (Cell n in neighbours)
             {
                 if (n.X < 0 || n.Y < 0 || n.X >= course.Width || n.Y >= course.Height || from.ContainsKey(n)) continue;
+                if (avoidHoles && course.Holes.Any(h => h.IsBig && h.Cell == n)) continue;
                 from[n] = cell;
                 queue.Enqueue(n);
             }

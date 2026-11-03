@@ -4,18 +4,46 @@ namespace TiltMaze.Api.Tests;
 
 public class RunCheckerTests
 {
-    // Easy-labyrinter hvor computer-spilleren klarer turen uden at falde
+    // Computer-spilleren kører uden om de store huller og forbi de små, på alle sværhedsgrader
     [Theory]
-    [InlineData(3, 2.0)]
-    [InlineData(3, 3.0)]
-    [InlineData(19, 2.0)]
-    [InlineData(25, 3.0)]
-    public void GenuineRun_IsAccepted(int seed, double speed)
+    [InlineData(Difficulty.Easy, 3, 2.0)]
+    [InlineData(Difficulty.Easy, 3, 3.0)]
+    [InlineData(Difficulty.Easy, 19, 2.0)]
+    [InlineData(Difficulty.Normal, 5, 2.0)]
+    [InlineData(Difficulty.Normal, 12, 3.0)]
+    [InlineData(Difficulty.Hard, 7, 3.0)]
+    [InlineData(Difficulty.Hard, 30, 2.0)]
+    [InlineData(Difficulty.Expert, 9, 2.0)]
+    [InlineData(Difficulty.Expert, 40, 3.0)]
+    public void GenuineRun_IsAccepted(Difficulty difficulty, int seed, double speed)
     {
-        var course = new Course(Difficulty.Easy, seed);
-        var player = Player.Play(course, 60, speed);
+        var course = new Course(difficulty, seed);
+        var player = Player.Play(course, 120, speed);
 
         Assert.True(player.Won);
+        Assert.Null(RunChecker.Check(course, player.TimeMs, player.Samples));
+    }
+
+    // Kører lige gennem hullerne med fuld fart: hoppet over et hul er en lovlig tur
+    [Theory]
+    [InlineData(20)]
+    [InlineData(64)]
+    public void RunThatJumpsOverHoles_IsAccepted(int seed)
+    {
+        var course = new Course(Difficulty.Easy, seed);
+        var player = Player.Play(course, 60, 3, null, avoidHoles: false);
+
+        Assert.True(player.Won);
+        Assert.Equal(0, player.Falls);
+        bool overHole = false;
+        for (int i = 0; i < player.Samples.Length; i += 2)
+            foreach (Hole hole in course.Holes)
+            {
+                double dx = player.Samples[i] - hole.CenterX, dy = player.Samples[i + 1] - hole.CenterY;
+                if (Math.Sqrt(dx * dx + dy * dy) < hole.FallRadius)
+                    overHole = true;
+            }
+        Assert.True(overHole);
         Assert.Null(RunChecker.Check(course, player.TimeMs, player.Samples));
     }
 
@@ -138,13 +166,13 @@ public class RunCheckerTests
         Assert.NotNull(RunChecker.Check(course, 0, [0f, 0f, 0f, 0f]));
     }
 
-    // Easy 1 falder i huller igen og igen. Faldene (hop tilbage til start) skal tælle som lovlige,
+    // Easy 1 lige gennem hullerne falder igen og igen. Faldene (hop tilbage til start) skal tælle som lovlige,
     // så det eneste der er galt ved denne tur er, at den ikke når målet
     [Fact]
     public void Falls_AreAccepted()
     {
         var course = new Course(Difficulty.Easy, 1);
-        var player = Player.Play(course, 10);
+        var player = Player.Play(course, 10, 2, null, avoidHoles: false);
 
         Assert.True(player.Falls > 0);
         int timeMs = (player.Samples.Length / 2 - 1) * 1000 / 30;
@@ -156,25 +184,35 @@ public class RunCheckerTests
     public void StayingInAHole_IsRejected()
     {
         var course = new Course(Difficulty.Easy, 1);
-        var player = Player.Play(course, 10);
+        var player = Player.Play(course, 10, 2, null, avoidHoles: false);
         var samples = player.Samples;
 
-        // Find en måling inde i et hul, og lad kuglen blive der resten af turen
-        int inHole = -1;
-        for (int i = 1; i < samples.Length / 2 && inHole < 0; i++)
+        // Find den første måling ved et hul, rul langsomt ind til midten, og lad kuglen blive der resten af turen
+        int near = -1;
+        Hole target = default;
+        for (int i = 1; i < samples.Length / 2 && near < 0; i++)
             foreach (Hole hole in course.Holes)
             {
                 double dx = samples[i * 2] - hole.CenterX, dy = samples[i * 2 + 1] - hole.CenterY;
-                if (Math.Sqrt(dx * dx + dy * dy) < hole.FallRadius - 0.1)
-                    inHole = i;
+                if (Math.Sqrt(dx * dx + dy * dy) < hole.Radius)
+                {
+                    near = i;
+                    target = hole;
+                }
             }
-        Assert.True(inHole > 0);
+        Assert.True(near > 0);
 
-        var ghost = samples.Take(inHole * 2).ToList();
+        var ghost = samples.Take(near * 2).ToList();
+        float x = samples[near * 2], y = samples[near * 2 + 1];
+        for (int i = 0; i <= 5; i++)
+        {
+            ghost.Add((float)(x + (target.CenterX - x) * i / 5));
+            ghost.Add((float)(y + (target.CenterY - y) * i / 5));
+        }
         for (int i = 0; i < 20; i++)
         {
-            ghost.Add(samples[inHole * 2]);
-            ghost.Add(samples[inHole * 2 + 1]);
+            ghost.Add((float)target.CenterX);
+            ghost.Add((float)target.CenterY);
         }
         int timeMs = (ghost.Count / 2 - 1) * 1000 / 30;
 

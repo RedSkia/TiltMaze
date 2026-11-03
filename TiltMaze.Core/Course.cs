@@ -3,10 +3,10 @@ namespace TiltMaze.Core;
 // Et linjestykke (en væg) i banens koordinater. 1 enhed = 1 celle.
 public record struct Segment(double X1, double Y1, double X2, double Y2);
 
-// Et hul i midten af en celle. Store huller (radius 0,45) fylder hele gangen, små er smalle nok til at rulle forbi.
+// Et hul i midten af en celle. Store huller (radius 0,46) fylder hele gangen, små er smalle nok til at rulle forbi.
 public record struct Hole(Cell Cell, double Radius)
 {
-    public const double BigRadius = 0.45;
+    public const double BigRadius = 0.46;
 
     public double CenterX => Cell.X + 0.5;
     public double CenterY => Cell.Y + 0.5;
@@ -22,9 +22,14 @@ public enum Outcome { None, Fell, Won }
 public class Course
 {
     // Over hullet går det godt, hvis kuglen er hurtig: den falder kun ved lav fart eller hvis den bliver over hullet for længe.
-    // Store huller kræver derfor næsten fuld fart og et lige tilløb på et par celler.
-    public const double JumpSpeed = Ball.MaxSpeed * 0.6;
-    public const double MaxTimeOverHole = 0.2;   // sekunder
+    // Store huller kræver derfor næsten fuld fart og et lige tilløb på et par celler (0,88 / 0,19 s = 93 % af maks-farten).
+    public const double JumpSpeed = Ball.MaxSpeed * 0.75;
+    public const double MaxTimeOverHole = 0.19;   // sekunder
+
+    // Tæt på et hul (hullets radius + PullMargin) trækkes kuglen svagt ind mod hullets midte. Trækket er svagere end
+    // vippet (14), så man altid kan styre væk, og svagere end vip minus friktion ved maks-fart (4), så et hop ikke bremses.
+    public const double PullMargin = 0.12;
+    public const double PullAccel = 3;   // celler pr. sekund i anden
 
     public Difficulty Difficulty { get; }
     public int Seed { get; }
@@ -64,7 +69,8 @@ public class Course
         return today.Year * 10000 + today.Month * 100 + today.Day;
     }
 
-    // Kaldes efter hvert fysik-skridt (Ball.Step). Falder kuglen i et hul, eller er den i mål?
+    // Kaldes efter hvert fysik-skridt (Ball.Step). Trækker kuglen mod et hul i nærheden. Falder den i hullet, eller er den i mål?
+    // Trækket ændrer kun farten. Næste skridt i Ball klipper den til maks-farten, så serverens tjek af skridtlængden passer stadig.
     public Outcome Check(Ball ball)
     {
         bool overHole = false;
@@ -72,7 +78,13 @@ public class Course
         {
             double dx = ball.X - hole.CenterX;
             double dy = ball.Y - hole.CenterY;
-            if (Math.Sqrt(dx * dx + dy * dy) < hole.FallRadius) overHole = true;
+            double distance = Math.Sqrt(dx * dx + dy * dy);
+            if (distance < hole.FallRadius) overHole = true;
+            if (distance > 0.001 && distance < hole.Radius + PullMargin)
+            {
+                ball.VX -= dx / distance * PullAccel * Ball.Step;
+                ball.VY -= dy / distance * PullAccel * Ball.Step;
+            }
         }
 
         if (overHole)
@@ -125,7 +137,7 @@ public class Course
 
     // Store huller først, kun på den korteste vej, og kun hvis målet stadig kan nås uden om alle store huller
     // (der er altid en vej uden store huller, også hvis man ikke kan springe). Små huller kan ligge hvor som helst
-    // (kuglen kan rulle forbi), bortset fra start og mål.
+    // (kuglen kan rulle forbi), bortset fra start og mål. Den første halvdel af de små ligger på vejen uden om de store huller.
     void PlaceHoles(DifficultySettings settings, Random random)
     {
         var used = new bool[Width, Height];
@@ -156,6 +168,8 @@ public class Course
         {
             var cell = new Cell(random.Next(Width), random.Next(Height));
             if (used[cell.X, cell.Y]) continue;
+            bool onRoute = small < settings.SmallHoles / 2 && tries < 200;   // finder vi ingen, må de ligge hvor som helst
+            if (onRoute && !IsOnShortestPath(cell, blocked)) continue;
 
             used[cell.X, cell.Y] = true;
             double radius = settings.SmallMin + random.NextDouble() * (settings.SmallMax - settings.SmallMin);

@@ -117,18 +117,55 @@ public class CourseTests
         Assert.Equal(Outcome.None, Roll(course, small, 0.8, 0, beside));
     }
 
-    // Ruller en kugle uden vægge mod et hul (fuld vip mod øst), fra "distance" før hullets midte, med startfart og
-    // afstand til siden fra midten. Giver første udfald.
-    static Outcome Roll(Course course, Hole hole, double distance, double startSpeed, double offset = 0)
+    // Ruller en kugle uden vægge mod et hul (vip mod øst, fuldt som standard), fra "distance" før hullets midte, med startfart og
+    // afstand til siden fra midten. Kun dette hul er med, og vi stopper et stykke efter det. Giver første udfald.
+    static Outcome Roll(Course course, Hole hole, double distance, double startSpeed, double offset = 0, double tilt = 1)
     {
+        var alone = new Course(course.Difficulty, course.Seed);
+        alone.Holes.Clear();
+        alone.Holes.Add(hole);
         var ball = new Ball(new List<Segment>(), hole.CenterX - distance, hole.CenterY + offset);
         ball.VX = startSpeed;
         Outcome result = Outcome.None;
-        ball.Update(1.0, 1, 0, () =>
+        ball.Update(2.0, tilt, 0, () =>
         {
-            result = course.Check(ball);
-            return result != Outcome.None;
+            result = alone.Check(ball);
+            return result != Outcome.None || ball.X > hole.CenterX + 0.7;
         });
         return result;
+    }
+
+    [Fact]
+    public void BallFallsWhenTooSlowOrTooLongOverAHole()
+    {
+        var course = new Course(Difficulty.Hard, 1);
+        Hole big = course.Holes.First(h => h.IsBig);
+        Hole small = course.Holes.First(h => !h.IsBig);
+
+        // Lidt under hop-farten over et lille hul: ned. Triller over et stort hul uden vip ved 85 % fart: for længe over det
+        Assert.Equal(Outcome.Fell, Roll(course, small, 0.4, Course.JumpSpeed * 0.9, 0, 0));
+        Assert.Equal(Outcome.Fell, Roll(course, big, 0.6, Ball.MaxSpeed * 0.85, 0, 0));
+        // Fuld fart over det lille hul, også uden vip
+        Assert.Equal(Outcome.None, Roll(course, small, 0.4, Ball.MaxSpeed, 0, 0));
+    }
+
+    [Fact]
+    public void BallIsPulledIntoAHoleWhenItLiesStillAtTheEdge()
+    {
+        var course = new Course(Difficulty.Normal, 1);
+        Hole small = course.Holes.First(h => !h.IsBig);
+        var alone = new Course(Difficulty.Normal, 1);
+        alone.Holes.Clear();
+        alone.Holes.Add(small);
+
+        // Stille lige uden for hullet, men inden for trækket, og uden vip: trækkes ned i hullet
+        var ball = new Ball(new List<Segment>(), small.CenterX + small.Radius + Course.PullMargin / 2, small.CenterY);
+        Outcome result = Outcome.None;
+        ball.Update(2.0, 0, 0, () =>
+        {
+            result = alone.Check(ball);
+            return result != Outcome.None;
+        });
+        Assert.Equal(Outcome.Fell, result);
     }
 }

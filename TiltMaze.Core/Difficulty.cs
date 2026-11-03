@@ -10,10 +10,10 @@ public record DifficultySettings(int Width, int Height, int Rooms, double Braid,
     {
         return difficulty switch
         {
-            Difficulty.Easy => new DifficultySettings(5, 7, 1, 0.7, 2, 1, 0.12, 0.14),
-            Difficulty.Normal => new DifficultySettings(7, 10, 2, 0.5, 4, 2, 0.12, 0.15),
-            Difficulty.Hard => new DifficultySettings(9, 13, 3, 0.5, 6, 4, 0.13, 0.16),
-            _ => new DifficultySettings(11, 16, 4, 0.5, 9, 6, 0.14, 0.17),
+            Difficulty.Easy => new DifficultySettings(5, 7, 1, 0.7, 2, 1, 0.13, 0.15),
+            Difficulty.Normal => new DifficultySettings(7, 10, 2, 0.5, 4, 2, 0.13, 0.16),
+            Difficulty.Hard => new DifficultySettings(9, 13, 3, 0.5, 8, 5, 0.14, 0.17),
+            _ => new DifficultySettings(11, 16, 4, 0.5, 12, 8, 0.15, 0.175),
         };
     }
 }

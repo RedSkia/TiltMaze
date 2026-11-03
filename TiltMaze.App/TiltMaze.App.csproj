@@ -44,10 +44,21 @@
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+        <PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\TiltMaze.Core\TiltMaze.Core.csproj" />
     </ItemGroup>
+
+    <!-- Under udvikling: start API'et i Docker før appen bygges, så backend altid kører -->
+    <Target Name="StartDockerApi" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug' And '$(TargetFramework)' != ''">
+        <Exec Command="docker compose up -d --build" WorkingDirectory="$(MSBuildThisFileDirectory).." ContinueOnError="true" StandardOutputImportance="low" />
+    </Target>
+
+    <!-- Android når PC'ens API på localhost via adb reverse (porten 7065) -->
+    <Target Name="ReverseApiPort" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug' And $(TargetFramework.Contains('-android'))">
+        <Exec Command="&quot;$([System.IO.Path]::Combine($(AndroidSdkDirectory), 'platform-tools', 'adb.exe'))&quot; reverse tcp:7065 tcp:7065" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true" StandardOutputImportance="low" />
+    </Target>
 
 </Project>

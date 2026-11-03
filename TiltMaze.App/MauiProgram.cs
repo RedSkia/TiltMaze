@@ -16,6 +16,10 @@ public static class MauiProgram
 			});
 
 		builder.Services.AddMauiBlazorWebView();
+		builder.Services.AddSingleton<GameDatabase>();
+		builder.Services.AddSingleton<Auth>();
+		builder.Services.AddSingleton<Api>();
+		builder.Services.AddSingleton<RunQueue>();
 		builder.Services.AddSingleton<Scores>();
 		builder.Services.AddSingleton<TiltSensor>();
 
@@ -24,6 +28,10 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 #endif
 
-		return builder.Build();
+		var app = builder.Build();
+
+		// Send rekorder, der ventede da appen sidst blev lukket
+		_ = app.Services.GetRequiredService<RunQueue>().Start();
+		return app;
 	}
 }

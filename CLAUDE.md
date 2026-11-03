@@ -52,3 +52,5 @@ Labyrintspil, .NET MAUI Blazor Hybrid (Android + Windows) + ASP.NET Core API (Do
 
 ## Git
 - `feature/*` → `develop` → `main`, lineær historik (`--ff-only`), ingen AI-omtale i commits, korte beskeder i bydeform.
+
+- Windows: WebView2-data ligger i `%LOCALAPPDATA%\TiltMaze\WebView2` (sat i `Platforms/Windows/App.xaml.cs`), fordi Windows Defender (kontrolleret mappeadgang) blokerer mappen ved siden af .exe, når projektet ligger på Skrivebordet.

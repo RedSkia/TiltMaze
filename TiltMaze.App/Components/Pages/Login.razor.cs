@@ -1,6 +1,6 @@
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using TiltMaze.App.Services;
+using TiltMaze.Core;
 
 namespace TiltMaze.App.Components.Pages;
 
@@ -43,7 +43,7 @@ public partial class Login
             error = "Enter a valid email.";
             return;
         }
-        if (creating && !Regex.IsMatch(nickname, "^[A-Za-z0-9_]{3,16}$"))
+        if (creating && !Nickname.IsValid(nickname))
         {
             error = "The nickname must be 3-16 letters, digits or underscores.";
             return;

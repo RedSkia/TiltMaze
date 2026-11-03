@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.DataProtection;
@@ -12,11 +11,9 @@ using Microsoft.EntityFrameworkCore;
 using TiltMaze.Api;
 using TiltMaze.Core;
 
-const int MaxGhostBytes = 30 * 60 * 30 * 8;   // 30 minutter x 30 målinger x 8 bytes (x og y)
+const int MaxGhostBytes = RunChecker.MaxSamples * 8;   // 8 bytes pr. måling (x og y)
 const int MaxRequestBytes = MaxGhostBytes * 4 / 3 + 1024;   // base64 er en tredjedel større end bytes
 const int TopGhosts = 10;                      // spøgelset kan hentes for de 10 bedste (og ens egne)
-
-var nicknameRegex = new Regex("^[A-Za-z0-9_]{3,16}$");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -122,7 +119,7 @@ app.MapPost("/api/account", async (CreateAccountRequest body, UserManager<AppUse
 {
     var email = (body.Email ?? "").Trim();
     var nickname = (body.Nickname ?? "").Trim();
-    if (!nicknameRegex.IsMatch(nickname))
+    if (!Nickname.IsValid(nickname))
         return Results.Problem(title: "The nickname must be 3-16 letters, digits or underscores", statusCode: 400);
     if (await NicknameTaken(userManager, nickname, null))
         return Results.Problem(title: "That nickname is already taken", statusCode: 400);
@@ -160,7 +157,7 @@ app.MapGet("/api/account", async (ClaimsPrincipal principal, UserManager<AppUser
 app.MapPut("/api/account/nickname", async (NicknameRequest body, ClaimsPrincipal principal, UserManager<AppUser> userManager) =>
 {
     var nickname = (body.Nickname ?? "").Trim();
-    if (!nicknameRegex.IsMatch(nickname))
+    if (!Nickname.IsValid(nickname))
         return Results.Problem(title: "The nickname must be 3-16 letters, digits or underscores", statusCode: 400);
 
     var user = await userManager.FindByIdAsync(UserId(principal));

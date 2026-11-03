@@ -10,6 +10,9 @@ public partial class Joystick
 {
     [Inject] private IJSRuntime js { get; set; } = null!;
 
+    // true mens en dialog er åben: så tager feltet ikke imod tryk
+    [Parameter] public bool Disabled { get; set; }
+
     private const int Size = 140;               // ringens størrelse i pixels
     private const double Reach = Size * 0.32;   // hvor langt knappen kan trækkes fra midten
     private const double DeadZone = 0.12;       // helt små udslag tæller ikke
@@ -18,38 +21,50 @@ public partial class Joystick
     public double X { get; private set; }
     public double Y { get; private set; }
 
-    private ElementReference ring;
-    private bool dragging;
-    private double knobX, knobY;   // knappens plads i pixels fra midten
+    private ElementReference zone;
+    private long? pointerId;            // den finger (eller mus), der styrer. null = ingen ring
+    private double centerX, centerY;    // ringens midte i pixels i feltet
+    private double knobX, knobY;        // knappens plads i pixels fra midten
 
+    // Kun den første finger styrer. En finger mere (fx på HUD'en eller ved et uheld) ignoreres
     private async Task Down(PointerEventArgs e)
     {
-        dragging = true;
+        if (pointerId != null)
+            return;
+        pointerId = e.PointerId;
+        centerX = e.OffsetX;
+        centerY = e.OffsetY;
         MoveKnob(e);
-        await js.InvokeVoidAsync("tiltMaze.capture", ring, e.PointerId);
+        await js.InvokeVoidAsync("tiltMaze.capture", zone, e.PointerId);
     }
 
     private void Move(PointerEventArgs e)
     {
-        if (dragging)
+        if (e.PointerId == pointerId)
             MoveKnob(e);
     }
 
-    // Slip: knappen springer tilbage til midten
-    private void Up()
+    private void Up(PointerEventArgs e)
     {
-        dragging = false;
+        if (e.PointerId == pointerId)
+            Release();
+    }
+
+    // Slip (eller pause): ringen forsvinder, og styringen er 0
+    public void Release()
+    {
+        pointerId = null;
         knobX = 0;
         knobY = 0;
         X = 0;
         Y = 0;
     }
 
-    // OffsetX/Y er fingerens plads i ringen (knappen selv tager ikke imod tryk, se CSS)
+    // OffsetX/Y er fingerens plads i feltet (feltet har pointer capture, og ringen tager ikke imod tryk, se CSS)
     private void MoveKnob(PointerEventArgs e)
     {
-        double dx = e.OffsetX - Size / 2.0;
-        double dy = e.OffsetY - Size / 2.0;
+        double dx = e.OffsetX - centerX;
+        double dy = e.OffsetY - centerY;
         double length = Math.Sqrt(dx * dx + dy * dy);
         if (length > Reach)
         {

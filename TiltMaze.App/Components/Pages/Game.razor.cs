@@ -47,7 +47,6 @@ public partial class Game : IDisposable
     private bool isDaily;
     private bool confirmLeave;         // "Leave run?" er åben
     private bool pausedBeforeLeave;    // var spillet på pause, før dialogen kom frem
-    private bool showJoystick;
     private bool needFocus;            // banen skal have tastatur-fokus efter næste tegning
     private bool focusDialog;          // dialogens første knap skal have fokus efter næste tegning
     private bool started;              // spil-løkken er sat i gang
@@ -117,11 +116,8 @@ public partial class Game : IDisposable
     protected override void OnInitialized()
     {
         hint = tilt.IsSupported
-            ? "Tilt your phone or drag the joystick to roll the ball. Roll fast to jump over holes."
-            : "Use the arrow keys, WASD or the joystick to roll the ball. Roll fast to jump over holes. P pauses.";
-
-        // Joysticken vises som standard på telefon og tablet. Kan slås til og fra i pausemenuen.
-        showJoystick = Preferences.Default.Get("joystick", DeviceInfo.Current.Idiom != DeviceIdiom.Desktop);
+            ? "Tilt your phone, or touch and drag anywhere on the board. Holes pull the ball in; roll fast to jump them."
+            : "Use the arrow keys, WASD, or drag anywhere on the board with the mouse. Holes pull the ball in; roll fast to jump them. P pauses.";
     }
 
     // Kører når siden åbnes og når adressen ændres (ny seed)
@@ -286,7 +282,11 @@ public partial class Game : IDisposable
                 double seconds = Math.Min(now - last, 0.05);   // aldrig mere end 50 ms ad gangen
                 last = now;
                 if (paused || finished)
+                {
+                    // En dialog er åben: slip joysticken, så kuglen ikke ruller af sig selv, når man fortsætter
+                    joystick?.Release();
                     continue;
+                }
 
                 Tick(seconds);
                 await InvokeAsync(StateHasChanged);
@@ -313,7 +313,7 @@ public partial class Game : IDisposable
         // Taster giver -1, 0 eller 1. Vip fra telefonen og joysticken lægges til.
         double ax = (right ? 1 : 0) - (left ? 1 : 0) + tilt.X;
         double ay = (down ? 1 : 0) - (up ? 1 : 0) + tilt.Y;
-        if (showJoystick && joystick != null)
+        if (joystick != null)
         {
             ax += joystick.X;
             ay += joystick.Y;
@@ -481,12 +481,6 @@ public partial class Game : IDisposable
     private void Leave()
     {
         navigation.NavigateTo("");
-    }
-
-    private void ToggleJoystick()
-    {
-        showJoystick = !showJoystick;
-        Preferences.Default.Set("joystick", showJoystick);
     }
 
     // Samme labyrint igen (samme seed)

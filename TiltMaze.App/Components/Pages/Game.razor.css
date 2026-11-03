@@ -225,7 +225,7 @@
     to { opacity: 0; }
 }
 
-/* ---------- Minikort og joystick ---------- */
+/* ---------- Minikort ---------- */
 
 .minimap {
     position: absolute;
@@ -254,12 +254,6 @@
 
 .mini-ball {
     fill: var(--ball);
-}
-
-.stick-area {
-    position: absolute;
-    left: var(--space-4);
-    bottom: var(--space-4);
 }
 
 /* ---------- Nedtælling 3-2-1-Go ---------- */
@@ -294,12 +288,6 @@
 }
 
 /* ---------- Dialoger: pause og bane klaret (Leave run? er ConfirmDialog) ---------- */
-
-.settings {
-    min-height: 0;
-    padding: var(--space-3) 0 0;
-    border-top: 1px solid var(--border);
-}
 
 .result-time {
     font-size: 3.25rem;

@@ -110,12 +110,8 @@
                 </svg>
             }
 
-            @if (showJoystick)
-            {
-                <div class="stick-area" inert="@modalOpen">
-                    <Joystick @ref="joystick" />
-                </div>
-            }
+            <!-- Flydende joystick over hele banen: ringen kommer frem, hvor man trykker -->
+            <Joystick @ref="joystick" Disabled="@modalOpen" />
 
             @if (CountText != null)
             {
@@ -144,15 +140,6 @@
                             <button type="button" class="button" @onclick="Retry">Retry</button>
                             <button type="button" class="button" @onclick="NewMaze">New maze</button>
                             <button type="button" class="button" @onclick="AskLeave">Menu</button>
-                        </div>
-                        <!-- Lille indstillingsmenu -->
-                        <div class="setting-row settings">
-                            <span class="setting-text">
-                                <span class="setting-title" id="joystick-label">Joystick</span>
-                                <span class="setting-desc">Drag a stick on the screen with touch or mouse</span>
-                            </span>
-                            <button type="button" class="switch" role="switch" aria-labelledby="joystick-label"
-                                    aria-checked="@(showJoystick ? "true" : "false")" @onclick="ToggleJoystick"></button>
                         </div>
                     </div>
                 </div>

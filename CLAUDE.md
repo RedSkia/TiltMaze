@@ -45,7 +45,7 @@ Labyrintspil, .NET MAUI Blazor Hybrid (Android + Windows) + ASP.NET Core API (Do
 - Fælles UI og tokens kommer fra `wwwroot/app.css`; sidens egen stil ligger i `.razor.css`.
 - Layout uden overlap (390, 900 og 1400 px): rækker af knapper bruger `flex-wrap` eller `minmax(0, 1fr)`, `.button` har `max-width: 100%`, `.page-head` brydes, lange navne får "...".
 - Mærke: kun RedSkia.Dev (About-kortet med RedSkia-rød `#ee3b33`, "by RedSkia.Dev" på startsiden). Intet personnavn i appen.
-- Android-tilladelser: `VIBRATE`, `INTERNET` og `USE_BIOMETRIC`.
+- Android-tilladelser: `INTERNET`, `ACCESS_NETWORK_STATE` (appen ser, om der er net, før køen sendes), `VIBRATE` og `USE_BIOMETRIC`.
 - Indrykning: 4 mellemrum overalt (ingen tabulatorer).
 
 ## Kommandoer

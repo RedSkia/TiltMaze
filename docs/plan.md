@@ -65,7 +65,7 @@ sekundet) skal holdes enkel, så Blazor kan nå at tegne den.
      biometri sendes. Slettes kontoen, slettes tider og spøgelser med.
   3. *Kommunikation og hemmeligheder:* kun HTTPS (HSTS), ingen CORS, ingen nøgler i koden (token-nøgler i Docker-volumen),
      og fejlbeskeder viser ingen tekniske detaljer.
-  4. *Tilladelser:* kun `INTERNET`, `VIBRATE` og `USE_BIOMETRIC`. Accelerometeret kræver ingen tilladelse.
+  4. *Tilladelser:* kun `INTERNET`, `ACCESS_NETWORK_STATE` (se om der er net), `VIBRATE` og `USE_BIOMETRIC`. Accelerometeret kræver ingen tilladelse.
 - **Offline og datalagring:** Labyrinter laves i appen, så alt kan spilles uden net. Tider og spøgelser ligger i SQLite,
   og nye resultater venter i en kø, til der er forbindelse. Serveren gemmer konti, resultater og spøgelser.
 - **Brugervenlighed:** Store knapper, tydelig pause og nedtælling før start, kalibrering og klare fejlbeskeder. En

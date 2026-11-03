@@ -3,7 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:TiltMaze.App"
              xmlns:components="clr-namespace:TiltMaze.App.Components"
-             x:Class="TiltMaze.App.MainPage">
+             x:Class="TiltMaze.App.MainPage"
+             SafeAreaEdges="All"
+             BackgroundColor="#070B18">
 
     <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
         <BlazorWebView.RootComponents>

@@ -1,4 +1,6 @@
 <Solution>
+  <Project Path="TiltMaze.Api.Tests/TiltMaze.Api.Tests.csproj" />
+  <Project Path="TiltMaze.Api/TiltMaze.Api.csproj" />
   <Project Path="TiltMaze.App/TiltMaze.App.csproj" />
   <Project Path="TiltMaze.Core/TiltMaze.Core.csproj" />
   <Project Path="TiltMaze.Tests/TiltMaze.Tests.csproj" />

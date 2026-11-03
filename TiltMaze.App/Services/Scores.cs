@@ -6,9 +6,6 @@ namespace TiltMaze.App.Services;
 // Nye rekorder lægges også i køen, som RunQueue sender til serveren, når der er forbindelse.
 public class Scores
 {
-    // Spøgelsets målinger: kuglens x og y hvert 1/30 sekund, som en række af tal (x0, y0, x1, y1, ...)
-    public const double GhostRate = Ghost.Rate;
-
     private readonly GameDatabase database;
     private readonly RunQueue queue;
 
@@ -31,18 +28,6 @@ public class Scores
         return database.BestOf(difficulty);
     }
 
-    // Gemmer tiden, hvis den er bedre end den gamle. Giver true, hvis det er en ny rekord på labyrinten.
-    // Ved en ny rekord kaldes SaveGhost bagefter med turen.
-    public bool Save(Difficulty difficulty, int seed, double seconds)
-    {
-        double? old = Best(difficulty, seed);
-        if (old != null && old <= seconds)
-            return false;
-
-        database.SaveBest(difficulty, seed, seconds);
-        return true;
-    }
-
     public float[]? LoadGhost(Difficulty difficulty, int seed)
     {
         byte[]? bytes = database.GetBest(difficulty, seed)?.Ghost;
@@ -51,22 +36,16 @@ public class Scores
         return Ghost.FromBytes(bytes);
     }
 
-    // Gemmer spøgelset til den nye rekord og sender rekorden til serveren (nu eller senere)
-    public void SaveGhost(Difficulty difficulty, int seed, float[] samples)
+    // Gemmer tiden og turen (spøgelset), hvis tiden er bedre end den gamle, og sætter rekorden i kø til serveren.
+    // Giver true, hvis det er en ny rekord på labyrinten.
+    public bool Save(Difficulty difficulty, int seed, double seconds, float[] samples)
     {
-        BestRun? best = database.GetBest(difficulty, seed);
-        if (best == null)
-            return;
+        double? old = Best(difficulty, seed);
+        if (old != null && old <= seconds)
+            return false;
 
-        byte[] bytes = Ghost.ToBytes(samples);
-        database.SaveGhost(difficulty, seed, bytes);
-        database.AddPending(new PendingRun
-        {
-            Difficulty = difficulty,
-            Seed = seed,
-            TimeMs = (int)Math.Round(best.Seconds * 1000),
-            Ghost = bytes
-        });
+        database.SaveBest(difficulty, seed, seconds, Ghost.ToBytes(samples));
         _ = queue.SendPending();
+        return true;
     }
 }

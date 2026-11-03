@@ -57,34 +57,25 @@ public class GameDatabase
         return times.Min(b => b.Seconds);
     }
 
-    // Ny bedste tid. Spøgelset til den gamle tid passer ikke mere og fjernes
-    public void SaveBest(Difficulty difficulty, int seed, double seconds)
+    // Ny bedste tid med turen, og rekorden sættes i kø til serveren. Det sker i én transaktion.
+    // Kun den nyeste rekord pr. labyrint skal sendes.
+    public void SaveBest(Difficulty difficulty, int seed, double seconds, byte[] ghost)
     {
-        var best = GetBest(difficulty, seed);
-        if (best == null)
+        db.RunInTransaction(() =>
         {
-            db.Insert(new BestRun { Difficulty = difficulty, Seed = seed, Seconds = seconds });
-            return;
-        }
-        best.Seconds = seconds;
-        best.Ghost = null;
-        db.Update(best);
-    }
+            var best = GetBest(difficulty, seed);
+            if (best == null)
+                db.Insert(new BestRun { Difficulty = difficulty, Seed = seed, Seconds = seconds, Ghost = ghost });
+            else
+            {
+                best.Seconds = seconds;
+                best.Ghost = ghost;
+                db.Update(best);
+            }
 
-    public void SaveGhost(Difficulty difficulty, int seed, byte[] ghost)
-    {
-        var best = GetBest(difficulty, seed);
-        if (best == null)
-            return;
-        best.Ghost = ghost;
-        db.Update(best);
-    }
-
-    // Kun den nyeste rekord pr. labyrint skal sendes
-    public void AddPending(PendingRun run)
-    {
-        db.Execute("DELETE FROM PendingRun WHERE Difficulty = ? AND Seed = ?", (int)run.Difficulty, run.Seed);
-        db.Insert(run);
+            db.Execute("DELETE FROM PendingRun WHERE Difficulty = ? AND Seed = ?", (int)difficulty, seed);
+            db.Insert(new PendingRun { Difficulty = difficulty, Seed = seed, TimeMs = (int)Math.Round(seconds * 1000), Ghost = ghost });
+        });
     }
 
     public List<PendingRun> GetPending()

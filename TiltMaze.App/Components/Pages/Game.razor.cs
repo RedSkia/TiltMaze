@@ -344,9 +344,7 @@ public partial class Game : IDisposable
         finished = true;
         focusDialog = true;
         oldBest = best;
-        newBest = scores.Save(maze.Difficulty, maze.Seed, time);
-        if (newBest)
-            scores.SaveGhost(maze.Difficulty, maze.Seed, recording.ToArray());
+        newBest = scores.Save(maze.Difficulty, maze.Seed, time, recording.ToArray());
         best = scores.Best(maze.Difficulty, maze.Seed);
         if (Vibration.Default.IsSupported)
             Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(40));

@@ -8,7 +8,7 @@ public enum Wall { None = 0, North = 1, East = 2, South = 4, West = 8, All = 15 
 public record struct Cell(int X, int Y);
 
 // Labyrint-matematik uden grafik: DFS-labyrint + små rum + "braiding" (løkker) og bredde-først afstande.
-// Ported fra HorrorGame (uden Unity). Samme seed giver altid samme labyrint.
+// Samme seed giver altid samme labyrint.
 public static class MazeGenerator
 {
     // De 4 retninger i rækkefølgen Nord, Øst, Syd, Vest. Retning d + 2 er altid modsat side.

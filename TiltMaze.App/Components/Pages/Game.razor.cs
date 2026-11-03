@@ -15,6 +15,8 @@ public partial class Game : IDisposable
     [Parameter] public int? Seed { get; set; }
 
     [Inject] private Scores scores { get; set; } = null!;
+    [Inject] private Api api { get; set; } = null!;
+    [Inject] private Auth auth { get; set; } = null!;
     [Inject] private TiltSensor tilt { get; set; } = null!;
     [Inject] private NavigationManager navigation { get; set; } = null!;
     [Inject] private IJSRuntime js { get; set; } = null!;
@@ -65,6 +67,19 @@ public partial class Game : IDisposable
     private double ghostX, ghostY;
     private double? delta;            // forskel til spøgelset ved sidste nye celle (minus = foran)
     private int lastCellX, lastCellY;
+
+    // Andres spøgelser (top 3 fra serveren): hentes i baggrunden ved start, og springes over uden net eller login
+    private class Rival
+    {
+        public string Name = "";
+        public Ghost Ghost = null!;
+        public string Color = "";
+        public bool Show;
+        public double X, Y;
+    }
+
+    private readonly List<Rival> rivals = new();
+    private static readonly string[] rivalColors = ["#b794f6", "#f4a3c4", "#8fb4ff"];
 
     // Taster der holdes nede
     private bool left, right, up, down;
@@ -146,6 +161,8 @@ public partial class Game : IDisposable
         float[]? samples = scores.LoadGhost(difficulty, seed);
         ghost = samples == null ? null : new Ghost(samples, Ghost.Rate, maze.Width, maze.Height);
         recording.Clear();
+        rivals.Clear();
+        _ = LoadRivals(difficulty, seed);
         showGhost = false;
         delta = null;
         lastCellX = maze.Start.X;
@@ -160,6 +177,32 @@ public partial class Game : IDisposable
         finished = false;
         newBest = false;
         confirmLeave = false;
+    }
+
+    private async Task LoadRivals(Difficulty difficulty, int seed)
+    {
+        try
+        {
+            await auth.Load();
+            if (!auth.IsLoggedIn || Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
+                return;
+
+            var races = await api.GetTopGhosts(difficulty, seed);
+            if (disposed || maze.Difficulty != difficulty || maze.Seed != seed)
+                return;   // spillet er gået videre til en anden labyrint
+
+            rivals.Clear();
+            foreach (var race in races)
+            {
+                var rivalGhost = new Ghost(race.Samples, Ghost.Rate, maze.Width, maze.Height);
+                rivals.Add(new Rival { Name = race.Nickname, Ghost = rivalGhost, Color = rivalColors[rivals.Count % rivalColors.Length] });
+            }
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception)
+        {
+            // Fx et ødelagt svar. Så kører man bare uden andres spøgelser
+        }
     }
 
     // Tal til SVG skal have punktum, uanset sprog på computeren
@@ -313,6 +356,8 @@ public partial class Game : IDisposable
     private void MoveGhost()
     {
         showGhost = ghost != null && ghost.TryGetPosition(time, out ghostX, out ghostY);
+        foreach (var rival in rivals)
+            rival.Show = rival.Ghost.TryGetPosition(time, out rival.X, out rival.Y);
     }
 
     // Mellemtid: når kuglen kommer ind i en ny celle, sammenlignes tiden med, hvornår spøgelset var der

@@ -1,0 +1,19 @@
+.rival {
+    fill: var(--rival);
+    fill-opacity: 0.18;
+    stroke: var(--rival);
+    stroke-opacity: 0.6;
+    stroke-width: 0.025;
+}
+
+.rival-name {
+    fill: var(--rival);
+    fill-opacity: 0.85;
+    stroke: rgba(5, 8, 20, 0.8);
+    stroke-width: 0.04px;
+    paint-order: stroke;
+    font-size: 0.2px;
+    font-weight: 700;
+    text-anchor: middle;
+    pointer-events: none;
+}

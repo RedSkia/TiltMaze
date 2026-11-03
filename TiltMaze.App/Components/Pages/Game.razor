@@ -77,6 +77,13 @@
                     {
                         <circle class="ghost" cx="@N(ghostX)" cy="@N(ghostY)" r="@N(Ball.Radius)" />
                     }
+                    @foreach (var rival in rivals)
+                    {
+                        @if (rival.Show)
+                        {
+                            <RivalGhost Name="@rival.Name" Color="@rival.Color" X="@rival.X" Y="@rival.Y" />
+                        }
+                    }
                     <circle class="ball-glow" cx="@N(ball.X)" cy="@N(ball.Y)" r="@N(Ball.Radius * 2)" />
                     <ellipse class="ball-shadow" cx="@N(ball.X + 0.06)" cy="@N(ball.Y + 0.09)" rx="@N(Ball.Radius)" ry="@N(Ball.Radius * 0.85)" />
                     <circle class="ball" cx="@N(ball.X)" cy="@N(ball.Y)" r="@N(Ball.Radius)" />

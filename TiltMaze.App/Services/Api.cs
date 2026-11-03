@@ -74,7 +74,8 @@ public class Api
         return await response.Content.ReadFromJsonAsync<List<LeaderboardRow>>();
     }
 
-    // De 3 bedste spøgelser på labyrinten, til at ræse mod. Tom liste uden net eller login
+    // De 3 bedste spøgelser på labyrinten, til at ræse mod. Ens egen tur springes over (den
+    // har man lokalt). Tom liste uden net eller login
     public async Task<List<GhostRace>> GetTopGhosts(Difficulty difficulty, int seed)
     {
         var races = new List<GhostRace>();
@@ -84,6 +85,9 @@ public class Api
 
         foreach (var row in rows)
         {
+            if (row.IsMe)
+                continue;
+
             using var response = await Send(() => new HttpRequestMessage(HttpMethod.Get, "/api/runs/" + row.RunId + "/ghost"));
             if (response == null || !response.IsSuccessStatusCode)
                 continue;

@@ -4,108 +4,187 @@
 @if (maze != null)
 {
     <div class="game">
-        <div class="hud">
-            <div class="stat mode-stat">
-                <span class="stat-label">@(isDaily ? "Daily" : "Random")</span>
-                <span class="stat-value">@maze.Difficulty</span>
+        <!-- HUD: tid (stor), forskel til spøgelset, pause og menu. På landskab/computer et sidepanel -->
+        <header class="hud" inert="@modalOpen">
+            <button type="button" class="icon-button hud-pause" aria-label="Pause" @onclick="TogglePause">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14" /></svg>
+            </button>
+            <div class="clock">
+                <span class="clock-time"><span class="sr-only">Time </span>@Format.Time(time)</span>
+                @if (delta != null)
+                {
+                    <span class="delta @(delta < 0 ? "ahead" : "behind")">@Format.Delta(delta.Value) <small>ghost</small></span>
+                }
             </div>
-            <div class="stat">
-                <span class="stat-label">Time</span>
-                <span class="stat-value">@Format.Time(time)</span>
-            </div>
-            <div class="stat">
-                <span class="stat-label">Best</span>
-                <span class="stat-value">@(best == null ? "-" : Format.Time(best.Value))</span>
-            </div>
-            <div class="stat">
-                <span class="stat-label">Falls</span>
-                <span class="stat-value">@falls</span>
-            </div>
-            <div class="hud-buttons">
-                <button type="button" class="button" @onclick="TogglePause">@(paused ? "Resume" : "Pause")</button>
-                <a class="button" href="">Menu</a>
-            </div>
-            <p class="seed muted">Seed @maze.Seed</p>
+            <button type="button" class="icon-button hud-menu" aria-label="Menu" @onclick="AskLeave">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+            </button>
+
+            <dl class="stats">
+                <div class="mode">
+                    <dt class="sr-only">Maze</dt>
+                    <dd>@(isDaily ? "Daily" : "Random") · @maze.Difficulty</dd>
+                </div>
+                <div>
+                    <dt>Best</dt>
+                    <dd>@(best == null ? "-" : Format.Time(best.Value))</dd>
+                </div>
+                <div>
+                    <dt>Falls</dt>
+                    <dd>@falls</dd>
+                </div>
+                <div class="seed">
+                    <dt>Seed</dt>
+                    <dd>@maze.Seed</dd>
+                </div>
+            </dl>
             <p class="hint muted">@hint</p>
-        </div>
+            <div class="side-buttons">
+                <button type="button" class="button" @onclick="TogglePause">Pause</button>
+                <button type="button" class="button" @onclick="Retry">Retry</button>
+                <button type="button" class="button" @onclick="AskLeave">Menu</button>
+            </div>
+        </header>
 
         <div class="board-area">
-            <!-- Fokuseret felt: tastaturet virker kun, når det har fokus. Piletaster og mellemrum blokeres kun mens man spiller. -->
-            <div class="board" tabindex="0" @ref="board" @onkeydown="KeyDown" @onkeyup="KeyUp" @onfocusout="ClearKeys"
+            <!-- Fokuseret felt: tastaturet virker kun, når det har fokus. Piletaster og mellemrum blokeres kun mens man spiller -->
+            <div class="board @ShakeClass" tabindex="0" @ref="board" inert="@modalOpen"
+                 @onkeydown="KeyDown" @onkeyup="KeyUp" @onfocusout="ClearKeys"
                  @onkeydown:preventDefault="playing" @onkeyup:preventDefault="playing">
-                <svg viewBox="-0.15 -0.15 @N(maze.Width + 0.3) @N(maze.Height + 0.3)" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Maze">
+                <svg viewBox="@ViewBox" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Maze">
                     <defs>
-                        <linearGradient id="floorFill" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0" stop-color="#1d1a30" />
-                            <stop offset="1" stop-color="#141226" />
-                        </linearGradient>
-                        <pattern id="tiles" width="1" height="1" patternUnits="userSpaceOnUse">
-                            <rect width="1" height="1" fill="none" stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.02" />
-                        </pattern>
-                        <linearGradient id="wallTop" x1="0" y1="0" x2="@maze.Width" y2="@maze.Height" gradientUnits="userSpaceOnUse">
-                            <stop offset="0" stop-color="#a78bfa" />
-                            <stop offset="1" stop-color="#f472b6" />
-                        </linearGradient>
-                        <radialGradient id="holeFill" cx="50%" cy="50%" r="50%">
-                            <stop offset="0" stop-color="#000" />
-                            <stop offset="0.7" stop-color="#05040a" />
-                            <stop offset="1" stop-color="#2e2650" />
+                        <radialGradient id="ballFill" cx="35%" cy="30%" r="75%">
+                            <stop offset="0" stop-color="#fff4e6" />
+                            <stop offset="0.35" stop-color="#ffa45c" />
+                            <stop offset="0.75" stop-color="#ff7a29" />
+                            <stop offset="1" stop-color="#b8400c" />
                         </radialGradient>
-                        <radialGradient id="ballFill" cx="35%" cy="35%" r="70%">
-                            <stop offset="0" stop-color="#f4f2fa" />
-                            <stop offset="1" stop-color="#b49cff" />
+                        <radialGradient id="ballGlow">
+                            <stop offset="0" stop-color="#ff8a3d" stop-opacity="0.45" />
+                            <stop offset="1" stop-color="#ff8a3d" stop-opacity="0" />
                         </radialGradient>
-                        <path id="wallShape" d="@wallPath" fill="none" />
                     </defs>
-                    <rect class="floor" x="0" y="0" width="@maze.Width" height="@maze.Height" rx="0.1" />
-                    <rect class="tiles" x="0" y="0" width="@maze.Width" height="@maze.Height" />
-                    <rect class="start" x="@maze.Start.X" y="@maze.Start.Y" width="1" height="1" />
-                    @foreach (var hole in maze.Holes)
+
+                    <!-- Den faste bane tegnes kun, når labyrinten skifter -->
+                    <MazeLayer Maze="maze" />
+
+                    @if (falls > 0)
                     {
-                        <circle class="hole" cx="@N(hole.CenterX)" cy="@N(hole.CenterY)" r="@N(hole.Radius)" />
-                        <circle class="hole-rim" cx="@N(hole.CenterX + 0.01)" cy="@N(hole.CenterY + 0.015)" r="@N(hole.Radius * 0.75)" />
+                        <!-- Ny @key ved hvert fald, så ringen starter sin animation forfra -->
+                        <circle @key="falls" class="spawn" cx="@N(maze.Start.X + 0.5)" cy="@N(maze.Start.Y + 0.5)" r="0.4" />
                     }
-                    <circle class="goal" cx="@N(maze.Goal.X + 0.5)" cy="@N(maze.Goal.Y + 0.5)" r="0.3" />
-                    <circle class="goal-core" cx="@N(maze.Goal.X + 0.5)" cy="@N(maze.Goal.Y + 0.5)" r="0.15" />
-                    <use href="#wallShape" class="wall-shadow" transform="translate(0.1 0.14)" />
-                    <use href="#wallShape" class="wall-side" transform="translate(0.04 0.06)" />
-                    <use href="#wallShape" class="wall-top" />
                     @if (showGhost)
                     {
                         <circle class="ghost" cx="@N(ghostX)" cy="@N(ghostY)" r="@N(Ball.Radius)" />
                     }
-                    <circle class="ball-shadow" cx="@N(ball.X + 0.05)" cy="@N(ball.Y + 0.07)" r="@N(Ball.Radius)" />
+                    <circle class="ball-glow" cx="@N(ball.X)" cy="@N(ball.Y)" r="@N(Ball.Radius * 2)" />
+                    <ellipse class="ball-shadow" cx="@N(ball.X + 0.06)" cy="@N(ball.Y + 0.09)" rx="@N(Ball.Radius)" ry="@N(Ball.Radius * 0.85)" />
                     <circle class="ball" cx="@N(ball.X)" cy="@N(ball.Y)" r="@N(Ball.Radius)" />
-                    <circle class="ball-shine" cx="@N(ball.X - 0.08)" cy="@N(ball.Y - 0.09)" r="0.07" />
+                    <circle class="ball-shine" cx="@N(ball.X - 0.09)" cy="@N(ball.Y - 0.1)" r="0.06" />
                 </svg>
             </div>
 
-            @if (paused && !finished)
+            @if (falls > 0)
             {
-                <div class="overlay">
-                    <div class="card dialog">
-                        <h2>Paused</h2>
-                        <button type="button" class="button primary" @onclick="TogglePause">Resume</button>
-                        <button type="button" class="button" @onclick="Retry">Retry</button>
-                        <button type="button" class="button" @onclick="NewMaze">New maze</button>
-                        <a class="button" href="">Menu</a>
+                <div @key="falls" class="fall-flash"></div>
+            }
+
+            @if (follow)
+            {
+                <!-- Minikort: hele banen i lille, med kuglen og det udsnit, kameraet viser -->
+                <svg class="minimap" viewBox="-0.3 -0.3 @N(maze.Width + 0.6) @N(maze.Height + 0.6)" aria-hidden="true">
+                    <MazeLayer Maze="maze" Mini="true" />
+                    <rect class="mini-view" x="@N(camera.Left)" y="@N(camera.Top)" width="@N(camera.ViewWidth)" height="@N(camera.ViewHeight)" rx="0.3" />
+                    @if (showGhost)
+                    {
+                        <circle class="mini-ghost" cx="@N(ghostX)" cy="@N(ghostY)" r="0.35" />
+                    }
+                    <circle class="mini-ball" cx="@N(ball.X)" cy="@N(ball.Y)" r="0.45" />
+                </svg>
+            }
+
+            @if (showJoystick)
+            {
+                <div class="stick-area" inert="@modalOpen">
+                    <Joystick @ref="joystick" />
+                </div>
+            }
+
+            @if (CountText != null)
+            {
+                <div class="countdown">
+                    <!-- Ny @key for hvert tal, så det "popper" frem igen -->
+                    <span @key="CountText" class="count @(CountText == "Go!" ? "go" : "")">@CountText</span>
+                </div>
+            }
+
+            @if (confirmLeave)
+            {
+                <div class="overlay" @onkeydown="OverlayKey">
+                    <div class="card dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+                        <h2 id="dialog-title">Leave run?</h2>
+                        <p class="muted">The time on this run will be lost.</p>
+                        <div class="dialog-buttons">
+                            <button type="button" class="button primary big" @ref="dialogButton" @onclick="KeepPlaying">Keep playing</button>
+                            <button type="button" class="button danger" @onclick="Leave">Leave</button>
+                        </div>
                     </div>
                 </div>
             }
-            @if (finished)
+            else if (paused && !finished)
             {
+                <div class="overlay" @onkeydown="OverlayKey">
+                    <div class="card dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+                        <h2 id="dialog-title">Paused</h2>
+                        <p class="muted">@maze.Difficulty · Seed @maze.Seed</p>
+                        <div class="dialog-buttons">
+                            <button type="button" class="button primary big" @ref="dialogButton" @onclick="TogglePause">
+                                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z" /></svg>
+                                <span>Resume</span>
+                            </button>
+                            <button type="button" class="button" @onclick="Retry">Retry</button>
+                            <button type="button" class="button" @onclick="NewMaze">New maze</button>
+                            <button type="button" class="button" @onclick="AskLeave">Menu</button>
+                        </div>
+                        <!-- Lille indstillingsmenu -->
+                        <div class="setting-row settings">
+                            <span class="setting-text">
+                                <span class="setting-title" id="joystick-label">Joystick</span>
+                                <span class="setting-desc">Drag a stick on the screen with touch or mouse</span>
+                            </span>
+                            <button type="button" class="switch" role="switch" aria-labelledby="joystick-label"
+                                    aria-checked="@(showJoystick ? "true" : "false")" @onclick="ToggleJoystick"></button>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (finished)
+            {
+                <div class="confetti" aria-hidden="true">
+                    @foreach (var piece in confetti)
+                    {
+                        <i style="@piece"></i>
+                    }
+                </div>
                 <div class="overlay">
-                    <div class="card dialog">
-                        <h2>Maze complete</h2>
+                    <div class="card dialog finish" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+                        <h2 id="dialog-title">Maze complete!</h2>
                         <p class="result-time">@Format.Time(time)</p>
                         @if (newBest)
                         {
-                            <p class="record">New best time!</p>
+                            <p><span class="badge gold record">New best time!</span></p>
                         }
+                        <p class="muted">
+                            @if (oldBest != null)
+                            {
+                                <span>@Format.Delta(time - oldBest.Value) s vs your best · </span>
+                            }
+                            <span>@falls @(falls == 1 ? "fall" : "falls")</span>
+                        </p>
                         <div class="dialog-buttons">
-                            <button type="button" class="button primary" @onclick="NewMaze">New maze</button>
+                            <button type="button" class="button primary big" @ref="dialogButton" @onclick="NewMaze">New maze</button>
                             <button type="button" class="button" @onclick="Retry">Retry</button>
-                            <a class="button" href="">Menu</a>
+                            <button type="button" class="button" @onclick="Leave">Menu</button>
                         </div>
                     </div>
                 </div>

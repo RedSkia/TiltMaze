@@ -1,4 +1,5 @@
-/* Spil-siden. Telefon i højformat: tal øverst og banen under. Landskab og computer: banen i midten og et sidepanel */
+/* Spil-siden. Telefon i højformat: HUD øverst og banen under (kameraet følger kuglen, minikort i hjørnet).
+   Landskab og computer: hele banen og et sidepanel */
 
 .game {
     height: 100%;
@@ -8,55 +9,108 @@
     gap: var(--space-3);
 }
 
-/* ---------- Tal og knapper ---------- */
+/* ---------- HUD ---------- */
 
 .hud {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--space-2);
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+        "pause clock menu"
+        "stats stats stats";
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
 }
 
-.stat {
+.hud-pause {
+    grid-area: pause;
+}
+
+.hud-menu {
+    grid-area: menu;
+}
+
+/* Tiden er det vigtigste tal, så den er stor og lyser svagt */
+.clock {
+    grid-area: clock;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: var(--space-2);
-    border-radius: var(--radius-m);
-    background: var(--surface);
-    border: 1px solid var(--border);
+    line-height: 1;
 }
 
-.stat-label {
-    color: var(--muted);
+.clock-time {
+    font-size: clamp(2rem, 9vw, 2.75rem);
+    font-weight: 850;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 18px rgba(45, 226, 200, 0.35);
+}
+
+/* Forskel til spøgelset: grøn og minus = foran, rød og plus = bagud */
+.delta {
+    margin-top: 6px;
+    padding: 2px 10px;
+    border-radius: 999px;
     font-size: var(--font-s);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-}
-
-.stat-value {
-    font-size: var(--font-l);
     font-weight: 800;
     font-variant-numeric: tabular-nums;
 }
 
-.hud-buttons {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+.delta small {
+    font-weight: 600;
+    opacity: 0.8;
+}
+
+.delta.ahead {
+    color: var(--ok);
+    background: rgba(74, 222, 128, 0.12);
+}
+
+.delta.behind {
+    color: var(--danger);
+    background: rgba(255, 93, 115, 0.12);
+}
+
+/* Små "chips" med sværhedsgrad, bedste tid og fald */
+.stats {
+    grid-area: stats;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: var(--space-2);
+    margin: 0;
 }
 
-.hint {
-    display: none;
+.stats div {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
     font-size: var(--font-s);
 }
 
-/* Seed i lille skrift, så en labyrint kan spilles igen eller deles */
-.seed {
-    grid-column: 1 / -1;
-    font-size: var(--font-s);
+.stats dt {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.stats dd {
+    margin: 0;
+    font-weight: 800;
     font-variant-numeric: tabular-nums;
+}
+
+/* Telefon i højformat: seed står i pausemenuen i stedet, og knapperne er ikoner */
+.stats .seed,
+.hint,
+.side-buttons {
+    display: none;
 }
 
 /* ---------- Banen ---------- */
@@ -72,8 +126,9 @@
     position: relative;
     flex: 1;
     min-width: 0;
-    border-radius: var(--radius-m);
+    border-radius: var(--radius-l);
     outline: none;
+    overflow: hidden;
 }
 
 .board svg {
@@ -82,70 +137,20 @@
     display: block;
 }
 
-/* Banen set oppefra med lidt højde: gulv med fliser, vægge med top og side, skygger og huller med dybde */
-.floor {
-    fill: url(#floorFill);
+/* Synlig ramme, når banen har tastatur-fokus */
+.board:focus-visible {
+    outline: 3px solid var(--accent-light);
+    outline-offset: 2px;
 }
 
-.tiles {
-    fill: url(#tiles);
-}
-
-.start {
-    fill: rgba(124, 58, 237, 0.18);
-}
-
-/* Væggene er tre kopier af samme form: skygge, mørk side (forskudt ned og til højre) og lys top */
-.wall-shadow {
-    fill: none;
-    stroke: #000;
-    stroke-opacity: 0.35;
-    stroke-width: 0.1;
-    stroke-linecap: round;
-}
-
-.wall-side {
-    fill: none;
-    stroke: #4c1d95;
-    stroke-width: 0.08;
-    stroke-linecap: round;
-}
-
-.wall-top {
-    fill: none;
-    stroke: url(#wallTop);
-    stroke-width: 0.08;
-    stroke-linecap: round;
-}
-
-.hole {
-    fill: url(#holeFill);
-    stroke: var(--danger);
-    stroke-opacity: 0.5;
-    stroke-width: 0.03;
-}
-
-/* Indre kant, lidt forskudt, så hullet ser dybt ud */
-.hole-rim {
-    fill: none;
-    stroke: #000;
-    stroke-opacity: 0.8;
-    stroke-width: 0.04;
-}
-
-.goal {
-    fill: rgba(74, 222, 128, 0.2);
-    stroke: var(--ok);
-    stroke-width: 0.05;
-}
-
-.goal-core {
-    fill: rgba(74, 222, 128, 0.35);
+/* Kuglen: orange glød, skygge, glans */
+.ball-glow {
+    fill: url(#ballGlow);
 }
 
 .ball-shadow {
     fill: #000;
-    fill-opacity: 0.4;
+    fill-opacity: 0.45;
 }
 
 .ball {
@@ -154,33 +159,151 @@
 
 .ball-shine {
     fill: #fff;
-    fill-opacity: 0.75;
+    fill-opacity: 0.85;
 }
 
 /* Spøgelset: dit bedste løb på denne labyrint */
 .ghost {
-    fill: #c9b2ff;
-    fill-opacity: 0.35;
-    stroke: #c9b2ff;
-    stroke-opacity: 0.6;
-    stroke-width: 0.02;
+    fill: rgba(138, 245, 230, 0.16);
+    stroke: #8af5e6;
+    stroke-opacity: 0.75;
+    stroke-width: 0.025;
+    stroke-dasharray: 0.07 0.05;
 }
 
-/* Synlig ramme, når banen har tastatur-fokus */
-.board:focus-visible {
-    outline: 3px solid var(--accent-light);
-    outline-offset: 2px;
+/* ---------- Fald: ring ved start, rystelse og rødt blink ---------- */
+
+.spawn {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 0.05;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: spawn 650ms ease-out;
 }
 
-/* ---------- Pause og bane klaret ---------- */
+@keyframes spawn {
+    from { opacity: 1; transform: scale(0.4); }
+    to { opacity: 0; transform: scale(1.7); }
+}
+
+.board.shake-a {
+    animation: shake-a 380ms ease;
+}
+
+.board.shake-b {
+    animation: shake-b 380ms ease;
+}
+
+@keyframes shake-a {
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(7px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(3px); }
+}
+
+@keyframes shake-b {
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(7px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(3px); }
+}
+
+.fall-flash {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-l);
+    pointer-events: none;
+    background: radial-gradient(circle, transparent 35%, rgba(255, 93, 115, 0.55));
+    opacity: 0;
+    animation: flash 500ms ease-out;
+}
+
+@keyframes flash {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* ---------- Minikort og joystick ---------- */
+
+.minimap {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    width: clamp(70px, 24%, 120px);
+    height: auto;
+    border-radius: var(--radius-s);
+    background: rgba(7, 11, 24, 0.75);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    pointer-events: none;
+}
+
+.mini-view {
+    fill: rgba(234, 241, 255, 0.07);
+    stroke: #eaf1ff;
+    stroke-opacity: 0.7;
+    stroke-width: 0.12;
+}
+
+.mini-ghost {
+    fill: #8af5e6;
+    fill-opacity: 0.6;
+}
+
+.mini-ball {
+    fill: var(--ball);
+}
+
+.stick-area {
+    position: absolute;
+    left: var(--space-4);
+    bottom: var(--space-4);
+}
+
+/* ---------- Nedtælling 3-2-1-Go ---------- */
+
+.countdown {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+}
+
+.count {
+    font-size: clamp(4.5rem, 24vw, 8rem);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    text-shadow: 0 0 30px rgba(45, 226, 200, 0.8), 0 6px 0 rgba(0, 0, 0, 0.45);
+    animation: count-pop 700ms ease-out forwards;
+}
+
+.count.go {
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(45, 226, 200, 0.9), 0 6px 0 rgba(0, 0, 0, 0.45);
+}
+
+@keyframes count-pop {
+    0% { opacity: 0; transform: scale(1.8); }
+    20% { opacity: 1; transform: scale(1); }
+    80% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.85); }
+}
+
+/* ---------- Dialoger: pause, "Leave run?" og bane klaret ---------- */
 
 .overlay {
     position: absolute;
     inset: 0;
     display: grid;
     place-items: center;
-    border-radius: var(--radius-m);
-    background: rgba(13, 11, 20, 0.8);
+    padding: var(--space-3);
+    border-radius: var(--radius-l);
+    background: rgba(5, 8, 20, 0.72);
+    animation: fade-in 160ms ease-out;
 }
 
 .dialog {
@@ -188,25 +311,98 @@
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-3);
-    min-width: min(280px, 90%);
+    width: min(360px, 100%);
+    max-height: 100%;
+    overflow-y: auto;
     text-align: center;
+    border-color: rgba(45, 226, 200, 0.35);
+    animation: pop-in 240ms cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.dialog h2 {
+    font-size: var(--font-xl);
 }
 
 .dialog-buttons {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--space-3);
+}
+
+.settings {
+    min-height: 0;
+    padding: var(--space-3) 0 0;
+    border-top: 1px solid var(--border);
 }
 
 .result-time {
-    font-size: var(--font-xl);
-    font-weight: 800;
+    font-size: 3.25rem;
+    font-weight: 900;
+    line-height: 1;
     font-variant-numeric: tabular-nums;
+    color: var(--gold);
+    text-shadow: 0 0 28px rgba(255, 200, 87, 0.5);
+}
+
+.finish {
+    border-color: rgba(255, 200, 87, 0.5);
+    box-shadow: var(--shadow-card), 0 0 40px rgba(255, 200, 87, 0.2);
 }
 
 .record {
-    color: var(--ok);
-    font-weight: 700;
+    font-size: var(--font-m);
+    animation: glow 1.4s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+}
+
+@keyframes pop-in {
+    from { opacity: 0; transform: scale(0.9) translateY(12px); }
+}
+
+@keyframes glow {
+    50% { box-shadow: 0 0 18px rgba(255, 200, 87, 0.6); }
+}
+
+/* Konfetti: falder ned over skærmen, når banen er klaret. Farven skifter mellem de fire spilfarver */
+.confetti {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.confetti i {
+    position: absolute;
+    top: -8%;
+    left: var(--x);
+    width: 8px;
+    height: 14px;
+    border-radius: 2px;
+    background: var(--accent);
+    opacity: 0;
+    animation: confetti-fall 1.9s ease-in var(--delay) forwards;
+}
+
+.confetti i:nth-child(4n + 2) {
+    background: var(--ball);
+}
+
+.confetti i:nth-child(4n + 3) {
+    background: var(--gold);
+}
+
+.confetti i:nth-child(4n + 4) {
+    background: var(--accent-2);
+}
+
+@keyframes confetti-fall {
+    0% { opacity: 1; top: -8%; transform: rotate(0deg); }
+    85% { opacity: 1; }
+    100% { opacity: 0; top: 105%; transform: rotate(var(--turn)); }
 }
 
 /* ---------- Landskab og computer: sidepanel ---------- */
@@ -217,33 +413,110 @@
     }
 
     .hud {
-        width: 240px;
+        width: 250px;
         flex: none;
-        align-content: start;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
+        padding: var(--space-4);
+        border-radius: var(--radius-l);
+        background: linear-gradient(180deg, var(--surface-2), var(--surface));
+        border: 1px solid var(--border);
+        overflow-y: auto;
     }
 
-    .mode-stat {
-        grid-column: 1 / -1;
+    .hud-pause, .hud-menu {
+        display: none;
     }
 
-    .hud-buttons {
-        grid-template-columns: 1fr;
+    .clock {
+        align-items: flex-start;
+        padding-bottom: var(--space-3);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .clock-time {
+        font-size: 3rem;
+    }
+
+    .stats {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .stats div {
+        justify-content: space-between;
+        border-radius: var(--radius-m);
+        padding: 8px 12px;
+    }
+
+    .stats .seed {
+        display: flex;
     }
 
     .hint {
         display: block;
-        grid-column: 1 / -1;
+        font-size: var(--font-s);
+    }
+
+    .side-buttons {
+        display: grid;
+        gap: var(--space-3);
+        margin-top: auto;
     }
 }
 
-/* Telefon på langs: smallere panel */
+/* Telefon på langs: smallere og tættere panel */
 @media (orientation: landscape) and (max-height: 499px) {
     .hud {
-        width: 180px;
+        width: 190px;
+        padding: var(--space-3);
+        gap: var(--space-2);
     }
 
+    .clock {
+        padding-bottom: var(--space-2);
+    }
+
+    .clock-time {
+        font-size: 2rem;
+    }
+
+    .stats div {
+        padding: 4px 10px;
+    }
+
+    .stats .seed,
     .hint {
         display: none;
+    }
+
+    .side-buttons {
+        gap: var(--space-2);
+    }
+
+    .side-buttons .button {
+        min-height: 40px;
+    }
+}
+
+/* ---------- Mindre bevægelse: ingen rystelse, konfetti eller "pop" ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .board.shake-a, .board.shake-b, .spawn, .overlay, .dialog, .record {
+        animation: none;
+    }
+
+    .count {
+        animation: none;
+    }
+
+    .confetti {
+        display: none;
+    }
+
+    .fall-flash {
+        animation-duration: 300ms;
     }
 }

@@ -36,8 +36,6 @@
         <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#070B18" BaseSize="128,128" />
 
         <MauiImage Include="Resources\Images\*" />
-        <MauiFont Include="Resources\Fonts\*" />
-        <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
 
     <ItemGroup>

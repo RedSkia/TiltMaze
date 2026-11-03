@@ -27,7 +27,6 @@
 
     /* Status: farve OG tekst/ikon, så farven ikke står alene */
     --ok: #4ade80;
-    --warn: #fbbf24;
     --danger: #ff5d73;
 
     /* Afstande */
@@ -48,7 +47,6 @@
     --font-m: 1rem;
     --font-l: 1.25rem;
     --font-xl: 1.75rem;
-    --font-xxl: 2.5rem;
 
     /* Skygger: kort, neon-glød og knappens "kant" (giver knapperne højde, som en arkadeknap) */
     --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -439,17 +437,6 @@ input::placeholder {
     border-top: 1px solid var(--border);
 }
 
-.setting-icon {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-s);
-    background: var(--surface-3);
-    color: var(--accent);
-}
-
 .setting-text {
     flex: 1;
     min-width: 0;
@@ -513,21 +500,7 @@ button.setting-row {
     transform: translateX(20px);
 }
 
-/* Rund cirkel med første bogstav i navnet */
-.avatar {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--gradient);
-    color: var(--accent-ink);
-    font-weight: 800;
-    text-transform: uppercase;
-}
-
-/* Tom tilstand / "kommer snart": ikon i cirkel, overskrift og forklaring */
+/* Tom tilstand: kort tekst midt på siden */
 .empty-state {
     display: flex;
     flex-direction: column;
@@ -537,29 +510,7 @@ button.setting-row {
     text-align: center;
 }
 
-.empty-icon {
-    display: grid;
-    place-items: center;
-    width: 88px;
-    height: 88px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, var(--surface-3), var(--surface));
-    border: 1px solid var(--border);
-    color: var(--accent);
-    box-shadow: var(--shadow-glow);
-    margin-bottom: var(--space-2);
-}
-
-.empty-icon .icon {
-    width: 40px;
-    height: 40px;
-}
-
-.empty-state .button {
-    margin-top: var(--space-3);
-}
-
-/* Lille mærkat, fx "Coming soon" eller "New best!" */
+/* Lille mærkat, fx "New best!" */
 .badge {
     display: inline-flex;
     align-items: center;
@@ -575,18 +526,6 @@ button.setting-row {
 .badge.gold {
     background: rgba(255, 200, 87, 0.15);
     color: var(--gold);
-}
-
-/* Tilbage-link øverst på undersider */
-.back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    align-self: flex-start;
-    min-height: var(--touch);
-    padding-right: var(--space-3);
-    font-weight: 600;
-    text-decoration: none;
 }
 
 /* ---------- Fejlboks fra Blazor ---------- */
@@ -655,13 +594,6 @@ input[type=text]:focus-visible, input[type=search]:focus-visible, input[type=ema
 
     .spinner {
         animation-duration: 2.4s; /* snurrer langsomt, så man stadig ser, at der arbejdes */
-    }
-}
-
-/* Tablet og desktop: tilbage-linket er overflødigt, når menuen altid er synlig */
-@media (min-width: 768px) and (min-height: 500px) {
-    .back-link {
-        display: none;
     }
 }
 

@@ -3,6 +3,7 @@
 Labyrintspil: styr en kugle ved at vippe telefonen (Android), med joysticken på skærmen eller med piletaster/WASD (Windows). Undgå hullerne og nå målet så hurtigt som muligt. Rul hurtigt, så kan kuglen hoppe over hullerne.
 
 Skoleprojekt i App-programmering 2026 (.NET MAUI Blazor Hybrid). Senere: broer med touch, API med highscores og login (Leaderboard og Account).
+Skoleprojekt i App-programmering 2026 (.NET MAUI Blazor Hybrid). Med API, konti og top-lister (Docker). Senere: broer med touch.
 
 - Plan og kravspec: `docs/plan.md`, wireframes: `docs/wireframes.html`, PDF: `docs/TiltMaze-kravspec.pdf`
 - Opbygning: `DESIGN.md`
@@ -14,7 +15,7 @@ Krav: .NET 10 SDK og MAUI-workload (`dotnet workload install maui`). Android kr�
 ```
 dotnet run --project TiltMaze.App -f net10.0-windows10.0.19041.0     # Windows
 dotnet build TiltMaze.App -t:Run -f net10.0-android                    # Android (telefon eller emulator)
-dotnet test                                                            # tests af labyrint og fysik
+dotnet test                                                            # tests af labyrint, fysik og API
 ```
 
 ## Spillet
@@ -39,3 +40,23 @@ Spillet pauser, når appen skjules, og fortsætter først, når du trykker Resum
 Leaderboard og Account er "Coming soon", indtil API'et er klar.
 
 Design: "Neon Arcade" (natblå, turkis, orange kugle, guld mål). Lavet af RedSkia.Dev.
+## Online: konto, top-liste og spøgelser
+
+Spillet virker helt uden net. Med en konto (e-mail, kodeord og kaldenavn) sendes dine rekorder til serveren, der viser en top 10 pr. labyrint (`/leaderboard`: vælg sværhedsgrad og dagens labyrint eller en seed). Serveren afspiller hver tur mod samme labyrint og fysik og afviser snyd ("Run could not be verified"). Rekorder sat uden net eller login venter i en kø og sendes automatisk senere. Kaldenavn, log ud og slet konto ligger under `/account`.
+
+### Kør API'et lokalt
+
+Krav: Docker og et udviklingscertifikat til HTTPS.
+
+1. Lav certifikatet (vælg et kodeord): `dotnet dev-certs https -ep "$env:USERPROFILE\.aspnet\https\tiltmaze.pfx" -p <kodeord> --trust`
+2. Kopiér `.env.example` til `.env` og skriv kodeordet: `CERT_PASSWORD=<kodeord>`. `.env` ligger ikke i git. Ligger `.pfx`-filen et andet sted, sæt `CERT_DIR=<mappen>` i `.env`.
+3. Start: `docker compose up -d --build` (API på `https://localhost:7065`, data i volumen `tiltmaze-data`).
+4. Stop: `docker compose down` (data bliver). Test uden Docker: `dotnet test`.
+
+Android-telefonen når API'et via `adb reverse tcp:7065 tcp:7065`, som et Debug-build sætter op (det starter også `docker compose up`). Ændr `ApiSettings.BaseUrl`, når API'et kører på en rigtig server.
+
+### Drift
+
+- Databasen (`tiltmaze.db`) og nøglerne til login-tokens (`keys`) ligger i volumen `tiltmaze-data`. Backup: kopiér volumen.
+- Rate limits: 20 tider i minuttet pr. bruger, 60 opslag i minuttet, 20 logins i minuttet pr. IP.
+- Slet en bruger: `DELETE /api/account` (fra appen) fjerner konto, tider og spøgelser.

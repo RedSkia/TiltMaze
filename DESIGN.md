@@ -29,19 +29,19 @@ Et mørkt arkadespil: natblå baggrund med et svagt blåt lys fra toppen, turkis
 │  Blazor-sider (UI i HTML/CSS + SVG)    │
 │        │                               │
 │        ▼                               │
-│  Services (Scores, TiltSensor)         │
+│  Services (Scores, Api, TiltSensor)    │
 │        │                               │
 │        ▼                               │
 │  TiltMaze.Core (labyrint + fysik)      │
-│  Preferences: bedste tider; spøgelser  │
+│  SQLite: bedste tider, spøgelser, kø   │
 └────────────────────────────────────────┘
 ```
 
-Server (API med highscores pr. sværhedsgrad og seed, konti og login) kommer senere.
+Serveren (`TiltMaze.Api`, Docker) har konti, top-lister og spøgelser og tjekker hver tid mod den samme labyrint og fysik (anti-snyd). Appen sender tider, når der er net (`RunQueue`).
 
 ## Hvordan appen er native
 
-Blazor Hybrid: MAUI starter en almindelig Android- eller Windows-app med én skærm, `MainPage.xaml`, der indeholder en `BlazorWebView`. Den viser vores `.razor`-sider. Koden kører som almindelig .NET inde i appen og kan derfor kalde accelerometer, vibration og Preferences direkte.
+Blazor Hybrid: MAUI starter en almindelig Android- eller Windows-app med én skærm, `MainPage.xaml`, der indeholder en `BlazorWebView`. Den viser vores `.razor`-sider. Koden kører som almindelig .NET inde i appen og kan derfor kalde accelerometer, vibration og SecureStorage direkte.
 
 ```
 Android: MainApplication.cs ─┐
@@ -57,7 +57,7 @@ Components/Pages   Start, Game, About, ...        Components/Layout   MainLayout
 Components/Play    MazeLayer, Joystick            wwwroot/js/game.js  størrelse og pointer capture
         │  @inject
         ▼
-Services           Scores (bedste tid, spøgelser), TiltSensor (accelerometer)
+Services           Scores (bedste tid, spøgelser), Api, Auth, RunQueue, TiltSensor
         │
         ▼
 TiltMaze.Core      MazeGenerator, Course, Ball, Camera, Ghost   (ingen MAUI, testes med xUnit)
@@ -77,5 +77,9 @@ TiltMaze.Core      MazeGenerator, Course, Ball, Camera, Ghost   (ingen MAUI, tes
 - **Spøgelse:** under et løb gemmes kuglens x og y hvert 1/30 sekund i en liste af tal. Ved ny rekord på labyrinten gemmes listen i en lille fil. Næste gang på samme labyrint tegnes en halvgennemsigtig kugle, der afspiller løbet i takt med uret. Formatet er en simpel `float[]`, så det senere kan sendes til en server. `Ghost` (Core) afspiller løbet og husker, hvornår spøgelset første gang var i hver celle. Når kuglen kommer ind i en ny celle, vises forskellen under tiden (grøn minus = foran, rød plus = bagud).
 - **Bedste tid:** pr. (sværhedsgrad, seed) og pr. sværhedsgrad i Preferences. Dagens bedste tid er bare tiden for dagens seed.
 - **Styring:** tastatur (WASD, piletaster), accelerometer (`TiltSensor`, tager højde for skærmens rotation) og joystick på skærmen (`Joystick`: pointer events, så både finger og mus virker; knappen springer tilbage ved slip). De tre lægges sammen og klippes til -1..1.
+- **Løkke:** `PeriodicTimer` (16 ms) i `Game.razor.cs` flytter kuglen og kalder `StateHasChanged`.
+- **Spøgelse:** under et løb gemmes kuglens x og y hvert 1/30 sekund i en liste af tal. Ved ny rekord på labyrinten gemmes listen i SQLite og sendes til serveren. Næste gang på samme labyrint tegnes en halvgennemsigtig kugle, der afspiller løbet i takt med uret. Formatet er en simpel `float[]` (som bytes/base64 på nettet), så serveren kan afspille og tjekke det.
+- **Bedste tid:** pr. (sværhedsgrad, seed) og pr. sværhedsgrad i SQLite (`GameDatabase`). Dagens bedste tid er bare tiden for dagens seed.
+- **Styring:** tastatur (WASD, piletaster) og accelerometer (`TiltSensor`, tager højde for skærmens rotation).
 - **Pause:** knap, `P`/`Esc`, og automatisk når vinduet skjules (`Window.Stopped`, sensoren slukkes). Spillet fortsætter først, når man trykker Resume.
 - **Forlad løbet:** Menu midt i et løb åbner dialogen "Leave run?" (Keep playing / Leave). Før start og efter mål går Menu direkte.

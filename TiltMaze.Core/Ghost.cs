@@ -1,11 +1,14 @@
 namespace TiltMaze.Core;
 
-// Et optaget løb (spøgelset): kuglens x og y med fast takt, gemt som tal x0, y0, x1, y1, ...
+// Et optaget løb (spøgelset): kuglens x og y hvert 1/30 sekund, gemt som tal x0, y0, x1, y1, ...
 // Kan sige, hvor spøgelset er på et tidspunkt, og hvornår det første gang kom ind i en celle (til mellemtider).
+// Til gemning og netværk bliver tallene til bytes (32 bit, lille endian) og evt. base64-tekst.
 public class Ghost
 {
+    public const double Rate = 30;   // målinger pr. sekund
+
     readonly float[] samples;
-    readonly double rate;          // målinger pr. sekund
+    readonly double rate;
     readonly double[,] firstVisit; // tid for første besøg i hver celle, -1 = aldrig
 
     public Ghost(float[] samples, double rate, int width, int height)
@@ -55,5 +58,19 @@ public class Ghost
         if (time < 0)
             return null;
         return time;
+    }
+
+    public static byte[] ToBytes(float[] samples)
+    {
+        var bytes = new byte[samples.Length * sizeof(float)];
+        Buffer.BlockCopy(samples, 0, bytes, 0, bytes.Length);
+        return bytes;
+    }
+
+    public static float[] FromBytes(byte[] bytes)
+    {
+        var samples = new float[bytes.Length / sizeof(float)];
+        Buffer.BlockCopy(bytes, 0, samples, 0, samples.Length * sizeof(float));
+        return samples;
     }
 }

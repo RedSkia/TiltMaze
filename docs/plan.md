@@ -22,7 +22,7 @@ som vises som "spøgelseskugler".
 | Framework | .NET MAUI med Blazor Hybrid |
 | Sprog | C#, Razor/HTML/CSS (banen tegnes som SVG) |
 | Platforme | Android (primær) og Windows. iOS fravalgt: kræver Mac |
-| Native funktionalitet | Accelerometer, touch (joystick), vibration ved fald, SecureStorage. Windows: tastatur og mus |
+| Native funktionalitet | Accelerometer, touch (joystick), vibration ved fald, SecureStorage, fingeraftryk/Windows Hello. Windows: tastatur og mus |
 | Lokal datalagring | SQLite (`sqlite-net-pcl`): bedste tider, spøgelser og kø af resultater |
 | API/backend | Eget ASP.NET Core Web API: konti, top-lister og spøgelser pr. sværhedsgrad og seed |
 | Cloud-lagring | Egen server (API + database i Docker) |
@@ -40,7 +40,7 @@ sekundet) skal holdes enkel, så Blazor kan nå at tegne den.
 | Must | Fysik: kuglen ruller, rammer vægge og falder i huller (tilbage til start). Med nok fart ruller den hen over hullet |
 | Must | Labyrinter laves procedurelt ud fra sværhedsgrad og seed (DFS + sløjfer). Dagens labyrint har datoen som seed |
 | Must | Bedste tider og spøgelser gemmes lokalt i SQLite, så alt kan spilles offline |
-| Must | Konto og login (e-mail + kodeord). Resultater sendes til serveren, når der er net (kø) |
+| Must | Konto og login (brugernavn + kodeord, ingen e-mail; brugernavnet er unikt og står på top-listen). Resultater sendes til serveren, når der er net (kø) |
 | Must | Top-liste pr. labyrint (liste, der opdateres) |
 | Must | Pause, når appen skjules. Dialogboks "Forlad løbet?" ved Menu midt i et spil |
 | Should | Ræs mod spøgelser: egen bedste tur og top 3 fra serveren vises som gennemsigtige kugler |
@@ -48,7 +48,7 @@ sekundet) skal holdes enkel, så Blazor kan nå at tegne den.
 | Should | Kamera, der følger kuglen på små skærme, med minikort |
 | Should | Vibration ved fald og kalibrering af "flad" telefon |
 | Could | Indtast et seed for at dele en labyrint med en ven |
-| Could | Fingeraftryk som hurtigt login |
+| Could | Fingeraftryk/Windows Hello låser det gemte login op (biometri) |
 | Won't | Multiplayer i realtid, 3D-grafik, køb i appen, iOS |
 
 ## 4. Ikke-funktionelle krav
@@ -58,11 +58,14 @@ sekundet) skal holdes enkel, så Blazor kan nå at tegne den.
   større skærme. Testes på telefon, tablet-emulator og Windows-vindue i flere størrelser.
 - **Sikkerhed:**
   1. *Snyd med highscores:* serveren genberegner turen ud fra spøgelset (samme fysikkode) og afviser tider, der ikke
-     passer. Resultater kræver login og er begrænset med rate limit.
-  2. *Konti:* kodeord gemmes som hash (ASP.NET Core Identity). Tokens ligger i `SecureStorage`. Top-listen viser kun et
-     kaldenavn, aldrig e-mail.
-  3. *Kommunikation og hemmeligheder:* altid HTTPS, ingen nøgler i koden, og fejlbeskeder viser ingen tekniske detaljer.
-  4. *Tilladelser:* kun `INTERNET` og `VIBRATE`. Accelerometeret kræver ingen tilladelse.
+     passer (også størrelse, sværhedsgrad og seed). Resultater kræver login og er begrænset med rate limit.
+  2. *Konti:* brugernavn + kodeord, ingen e-mail. Kodeord gemmes som hash (ASP.NET Core Identity), mindst 8 tegn, og
+     5 forkerte forsøg låser kontoen i 5 minutter. Login og navne-tjek har rate limit pr. IP, og et forkert login giver
+     altid samme svar. Refresh-token ligger kun i `SecureStorage`. Fingeraftryk låser kun login op på telefonen; ingen
+     biometri sendes. Slettes kontoen, slettes tider og spøgelser med.
+  3. *Kommunikation og hemmeligheder:* kun HTTPS (HSTS), ingen CORS, ingen nøgler i koden (token-nøgler i Docker-volumen),
+     og fejlbeskeder viser ingen tekniske detaljer.
+  4. *Tilladelser:* kun `INTERNET`, `VIBRATE` og `USE_BIOMETRIC`. Accelerometeret kræver ingen tilladelse.
 - **Offline og datalagring:** Labyrinter laves i appen, så alt kan spilles uden net. Tider og spøgelser ligger i SQLite,
   og nye resultater venter i en kø, til der er forbindelse. Serveren gemmer konti, resultater og spøgelser.
 - **Brugervenlighed:** Store knapper, tydelig pause og nedtælling før start, kalibrering og klare fejlbeskeder. En

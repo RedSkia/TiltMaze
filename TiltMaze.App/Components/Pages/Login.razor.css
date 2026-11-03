@@ -12,3 +12,19 @@
     font-weight: 400;
     font-size: var(--font-s);
 }
+
+/* Er brugernavnet ledigt? Farve og tekst, så farven ikke står alene */
+.availability {
+    font-size: var(--font-s);
+    font-weight: 700;
+    color: var(--muted);
+}
+
+.availability.available {
+    color: var(--ok);
+}
+
+.availability.taken,
+.availability.invalid {
+    color: var(--danger);
+}

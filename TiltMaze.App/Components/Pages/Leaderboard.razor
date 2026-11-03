@@ -68,7 +68,7 @@
                 {
                     <li class="@(row.IsMe ? "me" : "")">
                         <span class="rank">@row.Rank</span>
-                        <span class="name">@row.Nickname@(row.IsMe ? " (you)" : "")</span>
+                        <span class="name">@row.Username@(row.IsMe ? " (you)" : "")</span>
                         <span class="time">@Format.Time(row.TimeMs / 1000.0)</span>
                     </li>
                 }

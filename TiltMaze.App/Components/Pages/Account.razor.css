@@ -5,12 +5,29 @@
     gap: var(--space-3);
 }
 
+.card.rows {
+    align-items: stretch;
+}
+
 .card p {
     margin: 0;
 }
 
-.nickname-form {
+/* Langt navn uden mellemrum må gerne brydes, så kortet ikke bliver bredere end skærmen */
+.username {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.username-form {
     align-items: stretch;
+}
+
+/* Knapper ved siden af hinanden; på smal skærm under hinanden */
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
 }
 
 .hint {

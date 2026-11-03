@@ -8,40 +8,71 @@ public partial class Account
 {
     [Inject] private Auth auth { get; set; } = null!;
     [Inject] private Api api { get; set; } = null!;
+    [Inject] private Biometrics biometrics { get; set; } = null!;
+    [Inject] private RunQueue queue { get; set; } = null!;
     [Inject] private NavigationManager navigation { get; set; } = null!;
 
-    private string nickname = "";
+    private string username = "";
     private string error = "";
     private string message = "";
     private bool busy;
-    private bool confirmDelete;   // dialogen "Delete account?" er åben
+    private bool biometricAvailable;   // kontakten vises kun, hvis enheden har fingeraftryk / Windows Hello
+    private bool confirmDelete;        // dialogen "Delete account?" er åben
 
     protected override async Task OnInitializedAsync()
     {
         await auth.Load();
-        nickname = auth.Nickname;
+        username = auth.Username;
+        biometricAvailable = await biometrics.IsAvailable();
     }
 
-    private async Task SaveNickname()
+    private async Task SaveUsername()
     {
         error = "";
         message = "";
-        nickname = nickname.Trim();
-        if (!Nickname.IsValid(nickname))
+        username = username.Trim();
+        if (!Nickname.IsValid(username))
         {
-            error = "The nickname must be 3-16 letters, digits or underscores.";
+            error = "The username must be 3-16 letters, digits or underscores.";
             return;
         }
 
         busy = true;
-        error = await api.SetNickname(nickname);
+        error = await api.SetUsername(username);
         busy = false;
 
         if (error == "")
         {
-            await auth.SetNickname(nickname);
-            message = "Nickname saved.";
+            await auth.SetUsername(username);
+            message = "Username saved.";
         }
+    }
+
+    // Login er låst: fingeraftrykket låser det op igen
+    private async Task Unlock()
+    {
+        error = "";
+        if (!await biometrics.Ask("Unlock your TiltMaze account"))
+        {
+            error = "The fingerprint was not accepted. Use your password instead.";
+            return;
+        }
+        auth.Unlock();
+        username = auth.Username;
+        _ = queue.SendPending();
+    }
+
+    private async Task ToggleBiometrics()
+    {
+        error = "";
+
+        // Slås det til, tjekker vi først, at fingeraftrykket virker
+        if (!biometrics.Enabled && !await biometrics.Ask("Confirm to turn on quick unlock"))
+        {
+            error = "The fingerprint was not accepted.";
+            return;
+        }
+        biometrics.Enabled = !biometrics.Enabled;
     }
 
     private void Logout()
@@ -67,6 +98,9 @@ public partial class Account
 
         if (error == "")
         {
+            // Valget om fingeraftryk hører til kontoen, så det ryddes også
+            biometrics.Enabled = false;
+            biometrics.Asked = false;
             auth.Logout();
             navigation.NavigateTo("login");
         }

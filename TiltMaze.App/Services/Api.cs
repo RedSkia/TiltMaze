@@ -5,12 +5,12 @@ using TiltMaze.Core;
 
 namespace TiltMaze.App.Services;
 
-// En linje på top-listen (aldrig e-mail)
+// En linje på top-listen
 public class LeaderboardRow
 {
     public int Rank { get; set; }
     public int RunId { get; set; }
-    public string Nickname { get; set; } = "";
+    public string Username { get; set; } = "";
     public int TimeMs { get; set; }
     public bool IsMe { get; set; }
 }
@@ -18,7 +18,7 @@ public class LeaderboardRow
 // En andens bedste tur, som spøgelse man kan ræse mod
 public class GhostRace
 {
-    public string Nickname { get; set; } = "";
+    public string Username { get; set; } = "";
     public int TimeMs { get; set; }
     public float[] Samples { get; set; } = [];
 }
@@ -26,7 +26,7 @@ public class GhostRace
 // Svar fra GET /api/runs/{id}/ghost
 public class GhostDto
 {
-    public string Nickname { get; set; } = "";
+    public string Username { get; set; } = "";
     public int TimeMs { get; set; }
     public string Ghost { get; set; } = "";
 }
@@ -94,17 +94,17 @@ public class Api
             var ghost = await response.Content.ReadFromJsonAsync<GhostDto>();
             if (ghost == null)
                 continue;
-            races.Add(new GhostRace { Nickname = ghost.Nickname, TimeMs = ghost.TimeMs, Samples = Ghost.FromBytes(Convert.FromBase64String(ghost.Ghost)) });
+            races.Add(new GhostRace { Username = ghost.Username, TimeMs = ghost.TimeMs, Samples = Ghost.FromBytes(Convert.FromBase64String(ghost.Ghost)) });
         }
         return races;
     }
 
-    // Ændrer kaldenavnet. Giver en fejlbesked, eller "" hvis det lykkedes
-    public async Task<string> SetNickname(string nickname)
+    // Ændrer brugernavnet (også navnet på top-listen). Giver en fejlbesked, eller "" hvis det lykkedes
+    public async Task<string> SetUsername(string username)
     {
-        using var response = await Send(() => new HttpRequestMessage(HttpMethod.Put, "/api/account/nickname")
+        using var response = await Send(() => new HttpRequestMessage(HttpMethod.Put, "/api/account/username")
         {
-            Content = JsonContent.Create(new { nickname })
+            Content = JsonContent.Create(new { username })
         });
         return await ErrorOf(response);
     }

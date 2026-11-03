@@ -4,11 +4,21 @@
     <div class="page-head">
         <div>
             <h1>Account</h1>
-            <p class="page-sub">Your login and nickname.</p>
+            <p class="page-sub">Your username and login.</p>
         </div>
     </div>
 
-    @if (!auth.IsLoggedIn)
+    @if (auth.IsLocked)
+    {
+        <section class="card">
+            <p>Your account is locked on this device. Unlock it with your fingerprint or Windows Hello, or sign in with your password.</p>
+            <div class="actions">
+                <button type="button" class="button primary" @onclick="Unlock" disabled="@busy">Unlock</button>
+                <a class="button" href="login">Use password</a>
+            </div>
+        </section>
+    }
+    else if (!auth.IsLoggedIn)
     {
         <section class="card">
             <p>You are not signed in. Your times are saved on this device, and an account lets you share them on the leaderboard.</p>
@@ -19,21 +29,38 @@
     {
         <section class="card" aria-label="Your profile">
             <span class="section-label">Signed in as</span>
-            <strong>@auth.Email</strong>
-            <p class="muted">Nickname: @(auth.Nickname == "" ? "-" : auth.Nickname)</p>
+            <strong class="username">@auth.Username</strong>
+            <p class="muted">Your username is shown on the leaderboard.</p>
         </section>
 
-        <section aria-labelledby="nickname-title">
-            <h2 class="section-label" id="nickname-title">Nickname</h2>
-            <form class="card nickname-form" @onsubmit="SaveNickname">
+        <section aria-labelledby="username-title">
+            <h2 class="section-label" id="username-title">Username</h2>
+            <form class="card username-form" @onsubmit="SaveUsername">
                 <label class="field">
-                    <span>New nickname</span>
-                    <input type="text" @bind="nickname" maxlength="16" disabled="@busy" />
-                    <span class="hint muted">3-16 letters, digits or underscores. Shown on the leaderboard.</span>
+                    <span>New username</span>
+                    <input type="text" autocomplete="username" autocapitalize="none" spellcheck="false" @bind="username" maxlength="16" disabled="@busy" />
+                    <span class="hint muted">3-16 letters, digits or underscores. You sign in with the new name.</span>
                 </label>
-                <button type="submit" class="button primary" disabled="@busy">Save nickname</button>
+                <button type="submit" class="button primary" disabled="@busy">Save username</button>
             </form>
         </section>
+
+        @if (biometricAvailable || biometrics.Enabled)
+        {
+            <section aria-labelledby="security">
+                <h2 class="section-label" id="security">Security</h2>
+                <div class="card rows">
+                    <div class="setting-row">
+                        <div class="setting-text">
+                            <span class="setting-title" id="biometric-title">Unlock with fingerprint or Windows Hello</span>
+                            <span class="setting-desc">The app asks when it opens. Your biometric data never leaves the device.</span>
+                        </div>
+                        <button type="button" class="switch" role="switch" aria-checked="@(biometrics.Enabled ? "true" : "false")"
+                                aria-labelledby="biometric-title" @onclick="ToggleBiometrics" disabled="@busy"></button>
+                    </div>
+                </div>
+            </section>
+        }
 
         <section aria-labelledby="session">
             <h2 class="section-label" id="session">Session</h2>

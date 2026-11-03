@@ -11,6 +11,9 @@
     <NavMenu />
 
     <main>
-        @Body
+        @if (ready)
+        {
+            @Body
+        }
     </main>
 </div>

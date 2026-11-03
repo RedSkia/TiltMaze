@@ -195,7 +195,7 @@ public partial class Game : IDisposable
             foreach (var race in races)
             {
                 var rivalGhost = new Ghost(race.Samples, Ghost.Rate, maze.Width, maze.Height);
-                rivals.Add(new Rival { Name = race.Nickname, Ghost = rivalGhost, Color = rivalColors[rivals.Count % rivalColors.Length] });
+                rivals.Add(new Rival { Name = race.Username, Ghost = rivalGhost, Color = rivalColors[rivals.Count % rivalColors.Length] });
             }
             await InvokeAsync(StateHasChanged);
         }

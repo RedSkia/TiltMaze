@@ -15,17 +15,18 @@
 
     <form class="login-form" @onsubmit="Submit">
         <label class="field">
-            <span>Email</span>
-            <input type="email" autocomplete="email" @bind="email" maxlength="100" disabled="@busy" />
-        </label>
-        @if (creating)
-        {
-            <label class="field">
-                <span>Nickname</span>
-                <input type="text" autocomplete="nickname" @bind="nickname" maxlength="16" disabled="@busy" />
+            <span>Username</span>
+            <input type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="16" disabled="@busy"
+                   @bind="username" @bind:event="oninput" @bind:after="UsernameChanged" />
+            @if (creating)
+            {
                 <span class="hint muted">3-16 letters, digits or underscores. Shown on the leaderboard.</span>
-            </label>
-        }
+                @if (availability != "")
+                {
+                    <span class="availability @availability" role="status">@AvailabilityText</span>
+                }
+            }
+        </label>
         <label class="field">
             <span>Password</span>
             <input type="password" autocomplete="@(creating ? "new-password" : "current-password")" @bind="password" maxlength="100" disabled="@busy" />
@@ -34,7 +35,7 @@
                 <span class="hint muted">At least 8 characters</span>
             }
         </label>
-        <button type="submit" class="button primary" disabled="@busy">@(creating ? "Create account" : "Sign in")</button>
+        <button type="submit" class="button primary" disabled="@(busy || (creating && availability == "taken"))">@(creating ? "Create account" : "Sign in")</button>
     </form>
 
     @if (busy)

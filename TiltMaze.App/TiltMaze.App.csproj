@@ -43,6 +43,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
         <PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
+        <PackageReference Include="Oscore.Maui.Biometric" Version="2.5.1" />
     </ItemGroup>
 
     <ItemGroup>

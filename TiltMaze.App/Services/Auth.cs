@@ -13,18 +13,10 @@ public class TokenDto
     public string RefreshToken { get; set; } = "";
 }
 
-// Svar fra GET /api/account
-public class AccountDto
-{
-    public string Email { get; set; } = "";
-    public string? Nickname { get; set; }
-}
-
 // Fejlsvar fra serveren: enten en titel eller en liste af valideringsfejl
 public class ProblemDto
 {
     public string? Title { get; set; }
-    public string? Detail { get; set; }
     public Dictionary<string, string[]>? Errors { get; set; }
 }
 
@@ -35,25 +27,38 @@ public class AuthResult
 }
 
 // Login, konto og tokens. Adgangstokenet ligger kun i hukommelsen.
-// Refresh-token, udløbstid, e-mail og kaldenavn ligger i SecureStorage, så man forbliver logget ind.
+// Refresh-token, udløbstid og brugernavn ligger kun i SecureStorage på enheden, så man forbliver logget ind.
+// Er fingeraftryk slået til (Biometrics), starter appen låst, til fingeraftrykket eller kodeordet låser login op.
 public class Auth
 {
     private const int RefreshDays = 14; // samme som RefreshTokenExpiration på serveren
 
     private readonly HttpClient http = ApiSettings.CreateHttpClient();
     private readonly SemaphoreSlim refreshLock = new(1);
+    private readonly Biometrics biometrics;
     private Task? loading;
 
     private string? accessToken;
     private DateTime accessExpires;
     private string? refreshToken;
     private DateTime refreshExpires;
+    private bool locked; // der er et gemt login, men fingeraftryk skal låse det op
 
-    public string Email { get; private set; } = "";
-    public string Nickname { get; private set; } = "";
+    public Auth(Biometrics biometrics)
+    {
+        this.biometrics = biometrics;
+    }
 
-    // Logget ind = vi har et refresh-token, der ikke er udløbet. Kræver ikke net
-    public bool IsLoggedIn => refreshToken != null && refreshExpires > DateTime.UtcNow;
+    // Brugernavnet er også navnet på top-listen
+    public string Username { get; private set; } = "";
+
+    // Logget ind = vi har et refresh-token, der ikke er udløbet, og det er ikke låst. Kræver ikke net
+    public bool IsLoggedIn => !locked && HasSavedLogin;
+
+    // Låst = login findes på enheden, men kræver fingeraftryk (eller kodeord), før det bruges
+    public bool IsLocked => locked && HasSavedLogin;
+
+    private bool HasSavedLogin => refreshToken != null && refreshExpires > DateTime.UtcNow;
 
     // Læser det gemte login. Kan kaldes flere gange
     public Task Load()
@@ -68,10 +73,12 @@ public class Auth
         {
             refreshToken = await SecureStorage.Default.GetAsync("refreshToken");
             var expires = await SecureStorage.Default.GetAsync("refreshExpires");
-            Email = await SecureStorage.Default.GetAsync("email") ?? "";
-            Nickname = await SecureStorage.Default.GetAsync("nickname") ?? "";
+            Username = await SecureStorage.Default.GetAsync("username") ?? "";
             if (!DateTime.TryParse(expires, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out refreshExpires))
                 refreshToken = null;
+
+            // Er fingeraftryk slået til, starter appen låst
+            locked = biometrics.Enabled;
         }
         catch (Exception)
         {
@@ -80,21 +87,27 @@ public class Auth
         }
     }
 
-    // Opretter kontoen og logger ind med det samme
-    public async Task<AuthResult> Register(string email, string password, string nickname)
+    // Kaldes, når fingeraftrykket er godkendt. Nu må det gemte login bruges
+    public void Unlock()
     {
-        using var response = await Send(() => http.PostAsJsonAsync("/api/account", new { email, password, nickname }));
+        locked = false;
+    }
+
+    // Opretter kontoen og logger ind med det samme
+    public async Task<AuthResult> Register(string username, string password)
+    {
+        using var response = await Send(() => http.PostAsJsonAsync("/api/account", new { username, password }));
         if (response == null)
             return NoConnection();
         if (!response.IsSuccessStatusCode)
             return new AuthResult { Error = await ReadError(response) };
 
-        return await Login(email, password);
+        return await Login(username, password);
     }
 
-    public async Task<AuthResult> Login(string email, string password)
+    public async Task<AuthResult> Login(string username, string password)
     {
-        using var response = await Send(() => http.PostAsJsonAsync("/api/auth/login", new { email, password }));
+        using var response = await Send(() => http.PostAsJsonAsync("/api/auth/login", new { username, password }));
         if (response == null)
             return NoConnection();
         if (!response.IsSuccessStatusCode)
@@ -104,14 +117,15 @@ public class Auth
         if (tokens == null)
             return new AuthResult { Error = "The server sent an invalid response." };
 
-        Email = email.Trim().ToLowerInvariant();
+        locked = false; // kodeordet er lige skrevet, så det nye login er låst op
         await SaveTokens(tokens);
-        await LoadNickname();
+        await SetUsername(username.Trim());
+        await LoadUsername();
         return new AuthResult { Ok = true };
     }
 
-    // Kaldenavnet hentes fra serveren efter login
-    private async Task LoadNickname()
+    // Brugernavnet, som det er stavet på serveren (man kan logge ind med "marcus" på kontoen "Marcus")
+    private async Task LoadUsername()
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "/api/account");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -119,22 +133,32 @@ public class Auth
         if (response == null || !response.IsSuccessStatusCode)
             return;
 
-        var account = await response.Content.ReadFromJsonAsync<AccountDto>();
-        if (account != null)
-            await SetNickname(account.Nickname ?? "");
+        var account = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+        if (account != null && account.TryGetValue("username", out var name))
+            await SetUsername(name);
     }
 
-    // Gemmer kaldenavnet lokalt (kaldes efter login og når det er ændret på serveren)
-    public async Task SetNickname(string nickname)
+    // Er brugernavnet ledigt? null, hvis serveren ikke kunne spørges
+    public async Task<bool?> IsAvailable(string username)
     {
-        Nickname = nickname;
+        using var response = await Send(() => http.GetAsync("/api/account/available?username=" + Uri.EscapeDataString(username)));
+        if (response == null || !response.IsSuccessStatusCode)
+            return null;
+        var answer = await response.Content.ReadFromJsonAsync<Dictionary<string, bool>>();
+        return answer != null && answer.TryGetValue("available", out bool available) ? available : null;
+    }
+
+    // Gemmer brugernavnet lokalt (efter login og når det er ændret på serveren)
+    public async Task SetUsername(string username)
+    {
+        Username = username;
         try
         {
-            await SecureStorage.Default.SetAsync("nickname", nickname);
+            await SecureStorage.Default.SetAsync("username", username);
         }
         catch (Exception)
         {
-            // Kaldenavnet hentes igen ved næste login
+            // Navnet gemmes igen ved næste login
         }
     }
 
@@ -142,14 +166,13 @@ public class Auth
     {
         accessToken = null;
         refreshToken = null;
-        Email = "";
-        Nickname = "";
+        locked = false;
+        Username = "";
         try
         {
             SecureStorage.Default.Remove("refreshToken");
             SecureStorage.Default.Remove("refreshExpires");
-            SecureStorage.Default.Remove("email");
-            SecureStorage.Default.Remove("nickname");
+            SecureStorage.Default.Remove("username");
         }
         catch (Exception)
         {
@@ -158,13 +181,13 @@ public class Auth
     }
 
     // Giver et gyldigt adgangstoken og fornyer det med refresh-token, når det er udløbet.
-    // Returnerer null uden net, eller hvis man skal logge ind igen
+    // Returnerer null uden net, mens login er låst, eller hvis man skal logge ind igen
     public async Task<string?> GetAccessToken(bool forceRefresh = false)
     {
-        if (!forceRefresh && HasFreshAccessToken())
-            return accessToken;
         if (!IsLoggedIn)
             return null;
+        if (!forceRefresh && HasFreshAccessToken())
+            return accessToken;
 
         // Låsen sikrer, at to kald samtidig ikke fornyer to gange
         await refreshLock.WaitAsync();
@@ -217,7 +240,6 @@ public class Auth
         {
             await SecureStorage.Default.SetAsync("refreshToken", refreshToken);
             await SecureStorage.Default.SetAsync("refreshExpires", refreshExpires.ToString("O", CultureInfo.InvariantCulture));
-            await SecureStorage.Default.SetAsync("email", Email);
         }
         catch (Exception)
         {
@@ -253,6 +275,10 @@ public class Auth
         if (response.StatusCode == HttpStatusCode.TooManyRequests)
             return "Too many attempts. Try again in a moment.";
 
+        // Serveren siger det samme ved ukendt navn, forkert kodeord og låst konto
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+            return "Wrong username or password. After 5 wrong tries, wait 5 minutes.";
+
         ProblemDto? problem = null;
         try
         {
@@ -263,19 +289,12 @@ public class Auth
             // Svaret var ikke JSON. Vi bruger standardbeskeden nedenfor
         }
 
-        if (response.StatusCode == HttpStatusCode.Unauthorized)
-        {
-            if (problem?.Detail == "LockedOut")
-                return "The account is locked for a few minutes after too many attempts.";
-            return "Wrong email or password.";
-        }
-
         // Valideringsfejl (fx for kort kodeord): vis alle beskeder efter hinanden
         if (problem?.Errors != null && problem.Errors.Count > 0)
             return string.Join(". ", problem.Errors.Values.SelectMany(messages => messages));
 
-        // Serverens egne tekster, fx "That nickname is already taken"
-        if (response.StatusCode == HttpStatusCode.BadRequest && !string.IsNullOrWhiteSpace(problem?.Title))
+        // Serverens egne tekster, fx "That username is taken"
+        if ((response.StatusCode == HttpStatusCode.BadRequest || response.StatusCode == HttpStatusCode.Conflict) && !string.IsNullOrWhiteSpace(problem?.Title))
             return problem.Title;
 
         return "Something went wrong on the server. Try again later.";

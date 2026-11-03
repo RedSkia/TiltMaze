@@ -33,7 +33,8 @@ public partial class Game : IDisposable
     private Course maze = null!;   // null indtil siden har fået en gyldig sværhedsgrad og seed
     private Ball ball = null!;
     private Camera camera = null!;
-    private double time;
+    private double time;      // fysik-tid: antal fysik-skridt x Ball.Step
+    private int steps;        // antal fysik-skridt i løbet (også efter et fald)
     private double countdown;
     private double? best;
     private double? oldBest;     // bedste tid før dette løb, til "vs your best"
@@ -143,7 +144,7 @@ public partial class Game : IDisposable
 
         best = scores.Best(difficulty, seed);
         float[]? samples = scores.LoadGhost(difficulty, seed);
-        ghost = samples == null ? null : new Ghost(samples, Scores.GhostRate, maze.Width, maze.Height);
+        ghost = samples == null ? null : new Ghost(samples, Ghost.Rate, maze.Width, maze.Height);
         recording.Clear();
         showGhost = false;
         delta = null;
@@ -152,6 +153,7 @@ public partial class Game : IDisposable
 
         isDaily = seed == Course.DailySeed();
         time = 0;
+        steps = 0;
         countdown = Beat * 3;
         falls = 0;
         paused = false;
@@ -278,8 +280,6 @@ public partial class Game : IDisposable
 
         outcome = Outcome.None;
         ball.Update(seconds, ax, ay, CheckOutcome);
-        time += seconds;
-        Record();
         MoveGhost();
         UpdateDelta();
 
@@ -289,16 +289,21 @@ public partial class Game : IDisposable
             Finish();
     }
 
+    // Kaldes efter hvert fysik-skridt. Tiden og optagelsen følger fysikken og ikke billederne,
+    // så langsomme billeder ikke giver dobbelte målinger.
     private bool CheckOutcome()
     {
+        steps++;
+        time = steps * Ball.Step;
+        Record();
         outcome = maze.Check(ball);
         return outcome != Outcome.None;
     }
 
-    // Gemmer kuglens plads hvert 1/30 sekund
+    // Gemmer kuglens plads, hver gang fysik-tiden passerer et nyt 1/30 sekund
     private void Record()
     {
-        while (recording.Count < ((int)(time * Scores.GhostRate) + 1) * 2)
+        while (recording.Count < ((int)(time * Ghost.Rate + 0.0001) + 1) * 2)
         {
             recording.Add((float)ball.X);
             recording.Add((float)ball.Y);

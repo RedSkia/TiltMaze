@@ -3,7 +3,7 @@ using TiltMaze.Core;
 namespace TiltMaze.Api.Tests;
 
 // En enkel computer-spiller, der spiller en labyrint på samme måde som Game.razor.cs
-// (billeder på 16 ms, spøgelset optages hvert 1/30 s, hul = tilbage til start).
+// (billeder på 16 ms eller de tider, man giver, spøgelset optages pr. fysik-skridt hvert 1/30 s, hul = tilbage til start).
 // Den følger korteste vej mellem cellernes midter. Bruges til at lave rigtige ture til testene.
 public class Player
 {
@@ -12,13 +12,16 @@ public class Player
     public int Falls;
     public float[] Samples = [];
 
-    public static Player Play(Course course, double maxSeconds = 120, double speed = 2)
+    public static Player Play(Course course, double maxSeconds = 120, double speed = 2, double[]? frames = null)
     {
         var path = ShortestPath(course);
         var ball = new Ball(course.Segments, course.Start.X + 0.5, course.Start.Y + 0.5);
         var recording = new List<float>();
         var player = new Player();
-        double time = 0;
+        frames ??= [0.016];
+        double time = 0;   // fysik-tid: antal skridt x Ball.Step
+        int steps = 0;
+        int frame = 0;
         int next = 1;   // næste celle på vejen
         var outcome = Outcome.None;
 
@@ -39,20 +42,20 @@ public class Player
             double ax = Math.Clamp((dx / distance * wanted - ball.VX) * 0.5, -1, 1);
             double ay = Math.Clamp((dy / distance * wanted - ball.VY) * 0.5, -1, 1);
 
+            // Som Game.CheckOutcome(): tid og optagelse følger fysik-skridtene, ikke billederne
             outcome = Outcome.None;
-            ball.Update(0.016, ax, ay, () =>
+            ball.Update(frames[frame++ % frames.Length], ax, ay, () =>
             {
+                steps++;
+                time = steps * Ball.Step;
+                while (recording.Count < ((int)(time * Ghost.Rate + 0.0001) + 1) * 2)
+                {
+                    recording.Add((float)ball.X);
+                    recording.Add((float)ball.Y);
+                }
                 outcome = course.Check(ball);
                 return outcome != Outcome.None;
             });
-            time += 0.016;
-
-            // Som Game.Record()
-            while (recording.Count < ((int)(time * Ghost.Rate) + 1) * 2)
-            {
-                recording.Add((float)ball.X);
-                recording.Add((float)ball.Y);
-            }
 
             if (outcome == Outcome.Fell)
             {

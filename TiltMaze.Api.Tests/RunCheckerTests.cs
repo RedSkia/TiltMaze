@@ -19,6 +19,19 @@ public class RunCheckerTests
         Assert.Null(RunChecker.Check(course, player.TimeMs, player.Samples));
     }
 
+    // Skiftevis hurtige (10 ms) og langsomme (70 ms) billeder: optagelsen følger fysikken, så turen er stadig i orden
+    [Theory]
+    [InlineData(3)]
+    [InlineData(19)]
+    public void IrregularFrameTimes_AreAccepted(int seed)
+    {
+        var course = new Course(Difficulty.Easy, seed);
+        var player = Player.Play(course, 60, 2, [0.010, 0.070]);
+
+        Assert.True(player.Won);
+        Assert.Null(RunChecker.Check(course, player.TimeMs, player.Samples));
+    }
+
     [Fact]
     public void Teleport_IsRejected()
     {

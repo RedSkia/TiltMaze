@@ -1,0 +1,217 @@
+/* Menu: bundmenu med to punkter på smal skærm, sidemenu med "Play" på bredere */
+
+.nav-menu {
+    grid-area: nav;
+    display: flex;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Mærke, "Play" og konto findes kun i sidemenuen */
+.nav-menu .brand, .play-button, .account {
+    display: none;
+}
+
+.bottom {
+    display: contents;
+}
+
+::deep .nav-link {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 64px;
+    color: var(--muted);
+    font-size: var(--font-s);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color var(--ease);
+}
+
+/* Aktiv: lys farve + gradient-streg, så den ses uden farve alene */
+::deep .nav-link.active {
+    color: var(--text);
+}
+
+::deep .nav-link.active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 40px;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--gradient);
+}
+
+::deep .nav-link.active .icon {
+    color: var(--accent-light);
+}
+
+.account-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.account-name {
+    font-weight: 700;
+}
+
+.account-sub {
+    color: var(--muted);
+    font-size: var(--font-s);
+}
+
+@media (hover: hover) {
+    ::deep .nav-link:hover {
+        color: var(--text);
+    }
+}
+
+/* Tablet og desktop: sidemenu */
+@media (min-width: 768px) and (min-height: 500px) {
+    .nav-menu {
+        flex-direction: column;
+        gap: var(--space-1);
+        padding: var(--space-5) var(--space-3);
+        border-top: none;
+        border-right: 1px solid var(--border);
+    }
+
+    .nav-menu .brand {
+        display: flex;
+        padding: 0 var(--space-3) var(--space-5);
+    }
+
+    .play-button {
+        display: inline-flex;
+        margin-bottom: var(--space-3);
+    }
+
+    .bottom {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+        margin-top: auto;
+    }
+
+    ::deep .nav-link {
+        flex: none;
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: var(--space-3);
+        min-height: 48px;
+        padding: 0 var(--space-3);
+        border-radius: var(--radius-m);
+        font-size: var(--font-m);
+    }
+
+    /* Aktiv i sidemenuen: tonet baggrund og streg i venstre side */
+    ::deep .nav-link.active {
+        background: var(--surface-2);
+    }
+
+    ::deep .nav-link.active::before {
+        top: 12px;
+        bottom: 12px;
+        left: 0;
+        width: 4px;
+        height: auto;
+        border-radius: 0 4px 4px 0;
+    }
+
+    /* Konto-chip: avatar + tekst */
+    .account {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        min-height: 56px;
+        padding: 0 var(--space-3);
+    }
+
+    .account .avatar {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* Tablet (under 1100 px): smal menu-skinne med ikon over tekst */
+@media (min-width: 768px) and (max-width: 1099px) and (min-height: 500px) {
+    .nav-menu {
+        align-items: stretch;
+        padding: var(--space-5) var(--space-2);
+    }
+
+    .nav-menu .brand {
+        justify-content: center;
+        padding: 0 0 var(--space-5);
+    }
+
+    .nav-menu .wordmark, .account-text {
+        display: none;
+    }
+
+    .account {
+        justify-content: center;
+        padding: 0;
+    }
+
+    .play-button {
+        min-height: 48px;
+        padding: 0;
+        border-radius: 50%;
+        width: 48px;
+        align-self: center;
+    }
+
+    .play-button span {
+        display: none;
+    }
+
+    ::deep .nav-link {
+        flex-direction: column;
+        justify-content: center;
+        gap: 2px;
+        min-height: 64px;
+        padding: 0;
+        font-size: var(--font-s);
+    }
+}
+
+/* Telefon på langs: smal menu-skinne med ikoner */
+@media (max-height: 499px) and (min-width: 600px) {
+    .nav-menu {
+        flex-direction: column;
+        justify-content: center;
+        border-top: none;
+        border-right: 1px solid var(--border);
+        padding-left: env(safe-area-inset-left);
+        width: calc(84px + env(safe-area-inset-left));
+    }
+
+    ::deep .nav-link {
+        flex: none;
+        width: 100%;
+        min-height: 72px;
+    }
+
+    ::deep .nav-link.active::before {
+        top: 14px;
+        bottom: 14px;
+        left: env(safe-area-inset-left);
+        width: 4px;
+        height: auto;
+        border-radius: 0 4px 4px 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::deep .nav-link {
+        transition: none;
+    }
+}

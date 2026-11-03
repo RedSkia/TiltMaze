@@ -1,0 +1,96 @@
+@page "/play/{Level:int}"
+@implements IDisposable
+
+<div class="game">
+
+    <div class="hud">
+        <div class="stat level-stat">
+            <span class="stat-label">Level</span>
+            <span class="stat-value">@Level</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Time</span>
+            <span class="stat-value">@Scores.FormatTime(time)</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Best</span>
+            <span class="stat-value">@(best == null ? "-" : Scores.FormatTime(best.Value))</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Falls</span>
+            <span class="stat-value">@falls</span>
+        </div>
+        <div class="hud-buttons">
+            <button type="button" class="button" @onclick="TogglePause">@(paused ? "Resume" : "Pause")</button>
+            <a class="button" href="">Menu</a>
+        </div>
+        <p class="hint muted">@hint</p>
+    </div>
+
+    <div class="board-area">
+        <!-- Fokuseret felt: tastaturet virker kun, når det har fokus -->
+        <div class="board" tabindex="0" @ref="board" @onkeydown="KeyDown" @onkeyup="KeyUp" @onkeydown:preventDefault="true" @onkeyup:preventDefault="true">
+
+            <svg viewBox="-0.15 -0.15 @N(maze.Width + 0.3) @N(maze.Height + 0.3)" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Maze">
+                <defs>
+                    <radialGradient id="ballFill" cx="35%" cy="35%" r="70%">
+                        <stop offset="0" stop-color="#f4f2fa" />
+                        <stop offset="1" stop-color="#c9b2ff" />
+                    </radialGradient>
+                    <linearGradient id="wallFill" x1="0" y1="0" x2="@maze.Width" y2="@maze.Height" gradientUnits="userSpaceOnUse">
+                        <stop offset="0" stop-color="#8b5cf6" />
+                        <stop offset="1" stop-color="#ec4899" />
+                    </linearGradient>
+                </defs>
+
+                <rect class="floor" x="0" y="0" width="@maze.Width" height="@maze.Height" rx="0.1" />
+                <rect class="start" x="@maze.Start.X" y="@maze.Start.Y" width="1" height="1" />
+
+                @foreach (var hole in maze.Holes)
+                {
+                    <circle class="hole" cx="@N(hole.X + 0.5)" cy="@N(hole.Y + 0.5)" r="0.3" />
+                }
+
+                <circle class="goal" cx="@N(maze.Goal.X + 0.5)" cy="@N(maze.Goal.Y + 0.5)" r="0.3" />
+
+                <path class="walls" d="@wallPath" />
+
+                <circle class="ball" cx="@N(ball.X)" cy="@N(ball.Y)" r="@N(Ball.Radius)" />
+            </svg>
+
+            @if (paused && !finished)
+            {
+                <div class="overlay">
+                    <div class="card dialog">
+                        <h2>Paused</h2>
+                        <button type="button" class="button primary" @onclick="TogglePause">Resume</button>
+                        <a class="button" href="">Menu</a>
+                    </div>
+                </div>
+            }
+
+            @if (finished)
+            {
+                <div class="overlay">
+                    <div class="card dialog">
+                        <h2>Level complete</h2>
+                        <p class="result-time">@Scores.FormatTime(time)</p>
+                        @if (newBest)
+                        {
+                            <p class="record">New best time!</p>
+                        }
+                        <div class="dialog-buttons">
+                            @if (Level < Scores.LevelCount)
+                            {
+                                <button type="button" class="button primary" @onclick="NextLevel">Next level</button>
+                            }
+                            <button type="button" class="button" @onclick="Retry">Retry</button>
+                            <a class="button" href="">Menu</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+</div>

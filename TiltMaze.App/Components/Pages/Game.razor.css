@@ -1,0 +1,188 @@
+/* Spil-siden. Telefon i højformat: tal øverst og banen under. Landskab og computer: banen i midten og et sidepanel */
+
+.game {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: max(var(--space-3), env(safe-area-inset-top)) max(var(--space-3), env(safe-area-inset-right)) max(var(--space-3), env(safe-area-inset-bottom)) max(var(--space-3), env(safe-area-inset-left));
+    gap: var(--space-3);
+}
+
+/* ---------- Tal og knapper ---------- */
+
+.hud {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-2);
+    border-radius: var(--radius-m);
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.stat-label {
+    color: var(--muted);
+    font-size: var(--font-s);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.stat-value {
+    font-size: var(--font-l);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.hud-buttons {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+}
+
+.hint {
+    display: none;
+    font-size: var(--font-s);
+}
+
+/* ---------- Banen ---------- */
+
+.board-area {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+}
+
+.board {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    border-radius: var(--radius-m);
+    outline: none;
+}
+
+.board svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.floor {
+    fill: var(--surface);
+}
+
+.start {
+    fill: rgba(124, 58, 237, 0.18);
+}
+
+.walls {
+    fill: none;
+    stroke: url(#wallFill);
+    stroke-width: 0.08;
+    stroke-linecap: round;
+}
+
+.hole {
+    fill: #000;
+    stroke: var(--danger);
+    stroke-width: 0.04;
+}
+
+.goal {
+    fill: rgba(74, 222, 128, 0.25);
+    stroke: var(--ok);
+    stroke-width: 0.05;
+}
+
+.ball {
+    fill: url(#ballFill);
+}
+
+/* Synlig ramme, når banen har tastatur-fokus */
+.board:focus-visible {
+    outline: 3px solid var(--accent-light);
+    outline-offset: 2px;
+}
+
+/* ---------- Pause og bane klaret ---------- */
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-m);
+    background: rgba(13, 11, 20, 0.8);
+}
+
+.dialog {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    min-width: min(280px, 90%);
+    text-align: center;
+}
+
+.dialog-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.result-time {
+    font-size: var(--font-xl);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.record {
+    color: var(--ok);
+    font-weight: 700;
+}
+
+/* ---------- Landskab og computer: sidepanel ---------- */
+
+@media (orientation: landscape) {
+    .game {
+        flex-direction: row-reverse;
+    }
+
+    .hud {
+        width: 240px;
+        flex: none;
+        align-content: start;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .level-stat {
+        grid-column: 1 / -1;
+    }
+
+    .hud-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    .hint {
+        display: block;
+        grid-column: 1 / -1;
+    }
+}
+
+/* Telefon på langs: smallere panel */
+@media (orientation: landscape) and (max-height: 499px) {
+    .hud {
+        width: 180px;
+    }
+
+    .hint {
+        display: none;
+    }
+}

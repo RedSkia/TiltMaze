@@ -1,0 +1,637 @@
+/* TiltMaze - mørkt design (samme som Pulsify). Mobil først. Her ligger kun tokens, grundstil og fælles klasser; resten ligger i .razor.css ved hver komponent */
+
+/* ---------- Design-tokens ---------- */
+
+:root {
+    /* Farver: mørk baggrund, to overflader og tekst. Alle tekstfarver består WCAG AA (4,5:1) */
+    --bg: #0d0b14;
+    --surface: #17141f;
+    --surface-2: #211c2e;
+    --border: #322b45;
+    --text: #f4f2fa;
+    --muted: #aaa4bf;
+
+    /* Én accent-gradient (violet til pink) bruges til logo, knapper, aktiv menu, progress og visualizer */
+    --accent-a: #7c3aed;
+    --accent-b: #db2777;
+    --accent-light: #c9b2ff;
+    --gradient: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+
+    /* Status: farve OG ikon, så farven ikke står alene */
+    --ok: #4ade80;
+    --warn: #fbbf24;
+    --danger: #fb7185;
+
+    /* Afstande */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+
+    /* Runding */
+    --radius-s: 10px;
+    --radius-m: 16px;
+    --radius-l: 24px;
+
+    /* Skriftstørrelser */
+    --font-s: 0.85rem;
+    --font-m: 1rem;
+    --font-l: 1.25rem;
+    --font-xl: 1.75rem;
+
+    /* Skygger */
+    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.35);
+    --shadow-glow: 0 8px 28px rgba(219, 39, 119, 0.35);
+
+    /* Mindste trykflade og animation */
+    --touch: 44px;
+    --ease: 160ms ease;
+}
+
+/* ---------- Grundstil ---------- */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    --maui-status-bar-safe-area-background: #0d0b14;
+}
+
+#app {
+    height: 100%;
+}
+
+h1 {
+    font-size: var(--font-xl);
+    line-height: 1.2;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+h1:focus {
+    outline: none; /* Blazor flytter fokus til h1 ved sidevalg */
+}
+
+h2 {
+    font-size: var(--font-l);
+    margin: 0;
+}
+
+p {
+    margin: 0;
+}
+
+a {
+    color: var(--accent-light);
+}
+
+.icon {
+    width: 22px;
+    height: 22px;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+/* Synlig fokus for tastatur */
+:focus-visible {
+    outline: 3px solid var(--accent-light);
+    outline-offset: 2px;
+}
+
+/* ---------- Knapper og felter ---------- */
+
+button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: 48px;
+    padding: 0 var(--space-5);
+    border: none;
+    border-radius: var(--radius-m);
+    background: var(--surface-2);
+    color: var(--text);
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform var(--ease), filter var(--ease);
+}
+
+.button.primary {
+    background: var(--gradient);
+    color: #fff;
+    box-shadow: var(--shadow-glow);
+}
+
+.button:active {
+    transform: scale(0.98);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+input[type=text], input[type=search], input[type=email], input[type=password] {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    transition: border-color var(--ease);
+}
+
+input::placeholder {
+    color: var(--muted);
+}
+
+/* Slider: fyldt del via --fill (sættes i markup), tommel med lys kant */
+input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: var(--touch);
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent-a), var(--accent-b)) 0 / var(--fill, 0%) 100% no-repeat, var(--border);
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    margin-top: -8px;
+    border: 3px solid var(--accent-light);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+
+/* ---------- Felter og spinner (bruges af flere sider) ---------- */
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    font-weight: 600;
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius-m);
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.spinner {
+    width: 36px;
+    height: 36px;
+    flex: none;
+    border: 4px solid var(--border);
+    border-top-color: var(--accent-b);
+    border-right-color: var(--accent-a);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spinner {
+        animation-duration: 2.4s; /* snurrer langsomt, så man stadig ser, at der arbejdes */
+    }
+}
+
+/* Valg mellem to ting (fx Log ind / Opret konto): aktiv har gradient */
+.segmented {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    border-radius: var(--radius-m);
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.segmented button {
+    min-height: var(--touch);
+    border: none;
+    border-radius: var(--radius-s);
+    background: transparent;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.segmented button.active {
+    background: var(--gradient);
+    color: #fff;
+}
+
+/* ---------- Beskeder ---------- */
+
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-m);
+    border: 1px solid;
+    font-size: 0.95rem;
+}
+
+.alert .icon {
+    margin-top: 1px;
+}
+
+.alert.error {
+    color: #fecdd3;
+    background: rgba(251, 113, 133, 0.12);
+    border-color: rgba(251, 113, 133, 0.5);
+}
+
+.alert.notice {
+    color: #fde68a;
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.4);
+}
+
+/* Første indlæsning, før Blazor er klar */
+.boot {
+    height: 100%;
+    display: grid;
+    place-items: center;
+}
+
+/* ---------- Mærke ---------- */
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.wordmark {
+    font-size: var(--font-l);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* ---------- Sideramme (ens på alle sider) ----------
+   Alle sider er en centreret kolonne med samme sidehoved (.page-head: titel + .page-sub) og samme afstand (space-5)
+   mellem blokkene. .page-narrow (højst 720 px) bruges af konto, om, afspiller og login.
+   .page-wide (højst 1200 px) bruges af Musik, hvor liste og afspiller står side om side på bred skærm */
+
+.page-narrow, .page-wide {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.page-wide {
+    max-width: 1200px;
+}
+
+/* Sidehoved: titel, kort forklaring (.page-sub) og evt. en knap til højre */
+.page-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.page-head .page-sub {
+    margin-top: var(--space-1);
+    color: var(--muted);
+}
+
+/* Kort: den fælles boks til indhold */
+.card {
+    padding: var(--space-4);
+    border-radius: var(--radius-m);
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+/* Lille overskrift over en gruppe (fx "Sikkerhed" på kontosiden) */
+.section-label {
+    display: block;
+    margin: 0 0 var(--space-2) var(--space-1);
+    color: var(--muted);
+    font-size: var(--font-s);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* Rækker i et kort: ikon, tekst og en kontakt eller knap til højre */
+.card.rows {
+    padding: 0;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    width: 100%;
+    min-height: 64px;
+    padding: var(--space-4);
+    border: none;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    font: inherit;
+}
+
+.setting-row + .setting-row {
+    border-top: 1px solid var(--border);
+}
+
+.setting-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-s);
+    background: var(--surface-2);
+    color: var(--accent-light);
+}
+
+.setting-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.setting-title {
+    font-weight: 700;
+}
+
+.setting-desc {
+    color: var(--muted);
+    font-size: var(--font-s);
+}
+
+/* Hel række som knap (fx "Log ud"): pil til højre og tonet baggrund ved hover */
+button.setting-row {
+    cursor: pointer;
+    border-radius: var(--radius-m);
+    transition: background var(--ease);
+}
+
+button.setting-row .chevron {
+    color: var(--muted);
+}
+
+/* Til/fra-kontakt. Trykfladen er 44 px, selvom kontakten tegnes mindre */
+.switch {
+    position: relative;
+    flex: none;
+    width: 52px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: var(--border);
+    transition: background var(--ease);
+}
+
+.switch::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+}
+
+.switch::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    transition: transform var(--ease);
+}
+
+.switch[aria-checked="true"] {
+    background: var(--gradient);
+}
+
+.switch[aria-checked="true"]::after {
+    transform: translateX(20px);
+}
+
+/* Rund cirkel med første bogstav i e-mailen */
+.avatar {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gradient);
+    color: #fff;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.button.danger {
+    background: var(--danger);
+    color: #1a0b10;
+    box-shadow: none;
+}
+
+/* Lille "pladecover" med node-ikon foran en sang */
+.cover {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-s);
+    background: var(--gradient);
+    color: #fff;
+}
+
+/* Rund ikon-knap (menu, afspil/pause i mini-afspilleren) */
+.icon-button {
+    display: grid;
+    place-items: center;
+    width: var(--touch);
+    height: var(--touch);
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    transition: background var(--ease), color var(--ease);
+}
+
+/* Tom tilstand: ikon i cirkel, overskrift og forklaring */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-6) var(--space-4);
+    text-align: center;
+}
+
+.empty-icon {
+    display: grid;
+    place-items: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--accent-light);
+    margin-bottom: var(--space-2);
+}
+
+.empty-icon .icon {
+    width: 36px;
+    height: 36px;
+}
+
+.empty-state .button {
+    margin-top: var(--space-3);
+}
+
+/* Tilbage-link øverst på undersider (fx afspilleren på telefon) */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    align-self: flex-start;
+    min-height: var(--touch);
+    padding-right: var(--space-3);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* ---------- Fejlboks fra Blazor ---------- */
+
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.8rem;
+    background: #ffe27a;
+    color: black;
+    z-index: 1000;
+}
+
+#blazor-error-ui a {
+    color: black;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+
+/* ---------- Hover kun med mus ---------- */
+
+@media (hover: hover) {
+    .button:hover {
+        filter: brightness(1.12);
+    }
+
+    input[type=text]:hover, input[type=search]:hover, input[type=email]:hover, input[type=password]:hover {
+        border-color: var(--muted);
+    }
+
+    button.setting-row:hover:not(:disabled) {
+        background: var(--surface-2);
+    }
+
+    .switch:hover:not(:disabled) {
+        filter: brightness(1.12);
+    }
+
+    .icon-button:hover {
+        background: var(--surface-2);
+        color: var(--text);
+    }
+}
+
+input[type=text]:focus-visible, input[type=search]:focus-visible, input[type=email]:focus-visible, input[type=password]:focus-visible {
+    border-color: var(--accent-light);
+}
+
+/* ---------- Brugere, der vil have mindre bevægelse ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .button, input, .switch, .switch::after, button.setting-row, .icon-button {
+        transition: none;
+    }
+}
+
+/* Tablet og desktop: tilbage-linket er overflødigt, når menuen altid er synlig */
+@media (min-width: 768px) and (min-height: 500px) {
+    .back-link {
+        display: none;
+    }
+}
+
+/* Tynd, mørk scrollbar i stedet for den hvide standard */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-2) transparent;
+}

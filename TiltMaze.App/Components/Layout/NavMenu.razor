@@ -1,0 +1,41 @@
+<nav class="nav-menu" aria-label="Main menu">
+    <div class="brand">
+        <img src="images/logo.svg" alt="" width="36" height="36" />
+        <span class="wordmark">TiltMaze</span>
+    </div>
+
+    <a class="button primary play-button" href="play/@scores.NextLevel()" title="Play">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z" /></svg>
+        <span>Play</span>
+    </a>
+
+    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="4" width="7" height="7" rx="1.5" />
+            <rect x="13" y="4" width="7" height="7" rx="1.5" />
+            <rect x="4" y="13" width="7" height="7" rx="1.5" />
+            <rect x="13" y="13" width="7" height="7" rx="1.5" />
+        </svg>
+        <span>Levels</span>
+    </NavLink>
+
+    <div class="bottom">
+        <NavLink class="nav-link" href="about">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 11v5" />
+                <path d="M12 8v.01" />
+            </svg>
+            <span>About</span>
+        </NavLink>
+
+        <!-- Plads til konto og login senere -->
+        <div class="account">
+            <span class="avatar" aria-hidden="true">G</span>
+            <span class="account-text">
+                <span class="account-name">Guest</span>
+                <span class="account-sub">Scores saved on this device</span>
+            </span>
+        </div>
+    </div>
+</nav>

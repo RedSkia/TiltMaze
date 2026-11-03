@@ -1,0 +1,91 @@
+/* Layout: top, indhold og bundmenu på smal skærm. Sidemenu til venstre på bredere */
+
+.page {
+    height: 100%;
+    display: grid;
+    grid-template-areas: "header" "main" "nav";
+    grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.app-header {
+    grid-area: header;
+    display: flex;
+    align-items: center;
+    padding: var(--space-3) max(var(--space-4), env(safe-area-inset-right)) var(--space-3) max(var(--space-4), env(safe-area-inset-left));
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+}
+
+main {
+    grid-area: main;
+    overflow-y: auto;
+    padding: var(--space-4) max(var(--space-4), env(safe-area-inset-right)) var(--space-5) max(var(--space-4), env(safe-area-inset-left));
+}
+
+/* Spil-siden: ingen top og ingen menu, banen får hele skærmen (spillet har selv en menu-knap) */
+.page.on-play {
+    display: block;
+}
+
+.page.on-play .app-header,
+.page.on-play ::deep .nav-menu {
+    display: none;
+}
+
+.page.on-play main {
+    height: 100%;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Tablet og desktop: sidemenu til venstre */
+@media (min-width: 768px) and (min-height: 500px) {
+    .page:not(.on-play) {
+        grid-template-areas: "nav main";
+        grid-template-columns: 220px minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+    }
+
+    .app-header {
+        display: none; /* mærket står i sidemenuen */
+    }
+
+    main {
+        padding: var(--space-5) var(--space-6);
+    }
+}
+
+/* Tablet (under 1100 px): smal menu-skinne */
+@media (min-width: 768px) and (max-width: 1099px) and (min-height: 500px) {
+    .page:not(.on-play) {
+        grid-template-columns: 96px minmax(0, 1fr);
+    }
+
+    main {
+        padding: var(--space-5);
+    }
+}
+
+@media (min-width: 1100px) and (min-height: 500px) {
+    .page:not(.on-play) {
+        grid-template-columns: 260px minmax(0, 1fr);
+    }
+}
+
+/* Telefon på langs: smal menu-skinne med ikoner */
+@media (max-height: 499px) and (min-width: 600px) {
+    .page:not(.on-play) {
+        grid-template-areas: "nav main";
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+    }
+
+    .app-header {
+        display: none;
+    }
+
+    main {
+        padding-top: var(--space-3);
+        padding-bottom: var(--space-3);
+    }
+}

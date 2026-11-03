@@ -9,11 +9,15 @@ public class TiltSensor
 
     public bool IsSupported => Accelerometer.Default.IsSupported;
 
+    DisplayRotation rotation;   // gemmes, så vi ikke spørger skærmen ved hver måling
+
     public void Start()
     {
         if (!IsSupported || Accelerometer.Default.IsMonitoring)
             return;
 
+        rotation = DeviceDisplay.Current.MainDisplayInfo.Rotation;
+        DeviceDisplay.Current.MainDisplayInfoChanged += OnDisplayChanged;
         Accelerometer.Default.ReadingChanged += OnReading;
         Accelerometer.Default.Start(SensorSpeed.Game);
     }
@@ -25,20 +29,27 @@ public class TiltSensor
 
         Accelerometer.Default.Stop();
         Accelerometer.Default.ReadingChanged -= OnReading;
+        DeviceDisplay.Current.MainDisplayInfoChanged -= OnDisplayChanged;
         X = 0;
         Y = 0;
     }
 
-    // Sensoren giver tyngdekraften i g langs enhedens akser (X mod højre, Y mod toppen).
-    // Når skærmen drejes til landskab, bytter akserne plads.
+    void OnDisplayChanged(object? sender, DisplayInfoChangedEventArgs e)
+    {
+        rotation = e.DisplayInfo.Rotation;
+    }
+
+    // Sensoren giver kraften på telefonen i g langs enhedens akser (X mod højre, Y mod toppen).
+    // På Android peger målingen væk fra tyngdekraften (+1 g på Z, når telefonen ligger fladt),
+    // så fortegnet vendes til sidst. Når skærmen drejes til landskab, bytter akserne plads.
     void OnReading(object? sender, AccelerometerChangedEventArgs e)
     {
         double x = e.Reading.Acceleration.X;
         double y = e.Reading.Acceleration.Y;
+
         double screenX;
         double screenY;
-
-        switch (DeviceDisplay.Current.MainDisplayInfo.Rotation)
+        switch (rotation)
         {
             case DisplayRotation.Rotation90:
                 screenX = -y;
@@ -59,8 +70,8 @@ public class TiltSensor
         }
 
         // 0,4 g (ca. 24 graders) giver fuld vip. Helt små udslag ignoreres.
-        X = ToTilt(screenX);
-        Y = ToTilt(screenY);
+        X = ToTilt(-screenX);
+        Y = ToTilt(-screenY);
     }
 
     static double ToTilt(double g)

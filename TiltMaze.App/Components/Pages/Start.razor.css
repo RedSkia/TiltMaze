@@ -1,0 +1,52 @@
+/* Startside: ét kort pr. sværhedsgrad med bedste tider og to knapper */
+.difficulty {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.difficulty h2 {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    width: fit-content;
+}
+
+.times {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+}
+
+.label {
+    display: block;
+    color: var(--muted);
+    font-size: var(--font-s);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.time {
+    font-size: var(--font-l);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+}
+
+.play {
+    min-height: 52px;
+    font-size: var(--font-m);
+}
+
+@media (min-width: 600px) {
+    .buttons {
+        grid-template-columns: 2fr 1fr;
+    }
+}

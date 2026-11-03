@@ -7,14 +7,15 @@ public class BallTests
     // Kører kuglen rundt med tilfældig vip og tjekker hele tiden, at den aldrig kommer gennem en væg:
     // når kuglens midte skifter celle, skal det være til en nabocelle uden væg imellem.
     [Theory]
-    [InlineData(1)]
-    [InlineData(6)]
-    [InlineData(12)]
-    public void BallNeverPassesThroughAWall(int levelNumber)
+    [InlineData(Difficulty.Easy, 1)]
+    [InlineData(Difficulty.Normal, 6)]
+    [InlineData(Difficulty.Hard, 12)]
+    [InlineData(Difficulty.Expert, 7)]
+    public void BallNeverPassesThroughAWall(Difficulty difficulty, int seed)
     {
-        var level = new Level(levelNumber);
-        var random = new Random(levelNumber);
-        var ball = new Ball(level.Segments, level.Start.X + 0.5, level.Start.Y + 0.5);
+        var course = new Course(difficulty, seed);
+        var random = new Random(seed);
+        var ball = new Ball(course.Segments, course.Start.X + 0.5, course.Start.Y + 0.5);
         double ax = 0, ay = 0;
         bool reachedMaxSpeed = false;
 
@@ -33,33 +34,42 @@ public class BallTests
             int newX = (int)Math.Floor(ball.X);
             int newY = (int)Math.Floor(ball.Y);
 
-            Assert.InRange(newX, 0, level.Width - 1);
-            Assert.InRange(newY, 0, level.Height - 1);
-            if (ball.VX * ball.VX + ball.VY * ball.VY > (Ball.MaxSpeed - 0.1) * (Ball.MaxSpeed - 0.1))
+            Assert.InRange(newX, 0, course.Width - 1);
+            Assert.InRange(newY, 0, course.Height - 1);
+            if (ball.Speed > Ball.MaxSpeed - 0.1)
                 reachedMaxSpeed = true;
-
             if (newX == oldX && newY == oldY) continue;
 
-            // Kun ét skridt ad gangen og ikke på tværs af et hjørne
-            Assert.Equal(1, Math.Abs(newX - oldX) + Math.Abs(newY - oldY));
-            Wall side = newX > oldX ? Wall.East : newX < oldX ? Wall.West : newY > oldY ? Wall.South : Wall.North;
-            Assert.False(level.Walls[oldX, oldY].HasFlag(side), $"Ball went through the {side} wall of {oldX},{oldY}");
+            // Højst ét felt ad gangen (også på skrå), og der skal være en åben vej dertil
+            Assert.InRange(newX - oldX, -1, 1);
+            Assert.InRange(newY - oldY, -1, 1);
+            Assert.True(CanMove(course.Walls, oldX, oldY, newX - oldX, newY - oldY), $"Ball went through a wall at {oldX},{oldY}");
         }
-
         Assert.True(reachedMaxSpeed, "The test never reached max speed");
+    }
+
+    // Kan man gå fra (x, y) ét felt i retning (dx, dy) uden at gå gennem en væg? På skrå (fx i et rum) må begge veje om hjørnet være åbne.
+    static bool CanMove(Wall[,] walls, int x, int y, int dx, int dy)
+    {
+        if (dx != 0 && dy != 0)
+            return CanMove(walls, x, y, dx, 0) && CanMove(walls, x + dx, y, 0, dy)
+                || CanMove(walls, x, y, 0, dy) && CanMove(walls, x, y + dy, dx, 0);
+
+        Wall side = dx > 0 ? Wall.East : dx < 0 ? Wall.West : dy > 0 ? Wall.South : Wall.North;
+        return !walls[x, y].HasFlag(side);
     }
 
     [Fact]
     public void BallStopsAtTheOuterWall()
     {
-        var level = new Level(1);
-        var ball = new Ball(level.Segments, 0.5, 0.5);
+        var course = new Course(Difficulty.Easy, 1);
+        var ball = new Ball(course.Segments, 0.5, 0.5);
 
         // Hold fuld vip mod øst og syd i 10 sekunder
         for (int i = 0; i < 600; i++)
             ball.Update(1.0 / 60, 1, 1);
 
-        Assert.InRange(ball.X, 0, level.Width);
-        Assert.InRange(ball.Y, 0, level.Height);
+        Assert.InRange(ball.X, Ball.Radius, course.Width - Ball.Radius);
+        Assert.InRange(ball.Y, Ball.Radius, course.Height - Ball.Radius);
     }
 }

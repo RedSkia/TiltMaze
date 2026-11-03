@@ -52,9 +52,17 @@
     font-size: var(--font-s);
 }
 
+/* Seed i lille skrift, så en labyrint kan spilles igen eller deles */
+.seed {
+    grid-column: 1 / -1;
+    font-size: var(--font-s);
+    font-variant-numeric: tabular-nums;
+}
+
 /* ---------- Banen ---------- */
 
 .board-area {
+    position: relative;
     flex: 1;
     min-height: 0;
     display: flex;
@@ -74,35 +82,88 @@
     display: block;
 }
 
+/* Banen set oppefra med lidt højde: gulv med fliser, vægge med top og side, skygger og huller med dybde */
 .floor {
-    fill: var(--surface);
+    fill: url(#floorFill);
+}
+
+.tiles {
+    fill: url(#tiles);
 }
 
 .start {
     fill: rgba(124, 58, 237, 0.18);
 }
 
-.walls {
+/* Væggene er tre kopier af samme form: skygge, mørk side (forskudt ned og til højre) og lys top */
+.wall-shadow {
     fill: none;
-    stroke: url(#wallFill);
+    stroke: #000;
+    stroke-opacity: 0.35;
+    stroke-width: 0.1;
+    stroke-linecap: round;
+}
+
+.wall-side {
+    fill: none;
+    stroke: #4c1d95;
+    stroke-width: 0.08;
+    stroke-linecap: round;
+}
+
+.wall-top {
+    fill: none;
+    stroke: url(#wallTop);
     stroke-width: 0.08;
     stroke-linecap: round;
 }
 
 .hole {
-    fill: #000;
+    fill: url(#holeFill);
     stroke: var(--danger);
+    stroke-opacity: 0.5;
+    stroke-width: 0.03;
+}
+
+/* Indre kant, lidt forskudt, så hullet ser dybt ud */
+.hole-rim {
+    fill: none;
+    stroke: #000;
+    stroke-opacity: 0.8;
     stroke-width: 0.04;
 }
 
 .goal {
-    fill: rgba(74, 222, 128, 0.25);
+    fill: rgba(74, 222, 128, 0.2);
     stroke: var(--ok);
     stroke-width: 0.05;
 }
 
+.goal-core {
+    fill: rgba(74, 222, 128, 0.35);
+}
+
+.ball-shadow {
+    fill: #000;
+    fill-opacity: 0.4;
+}
+
 .ball {
     fill: url(#ballFill);
+}
+
+.ball-shine {
+    fill: #fff;
+    fill-opacity: 0.75;
+}
+
+/* Spøgelset: dit bedste løb på denne labyrint */
+.ghost {
+    fill: #c9b2ff;
+    fill-opacity: 0.35;
+    stroke: #c9b2ff;
+    stroke-opacity: 0.6;
+    stroke-width: 0.02;
 }
 
 /* Synlig ramme, når banen har tastatur-fokus */
@@ -162,7 +223,7 @@
         grid-template-columns: 1fr 1fr;
     }
 
-    .level-stat {
+    .mode-stat {
         grid-column: 1 / -1;
     }
 

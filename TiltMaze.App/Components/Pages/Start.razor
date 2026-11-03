@@ -1,0 +1,40 @@
+@page "/"
+
+<div class="page-narrow">
+    <div class="page-head">
+        <div>
+            <h1>Play</h1>
+            <p class="page-sub">Pick a difficulty. Every maze is new. Roll fast to jump over holes.</p>
+        </div>
+    </div>
+
+    @foreach (var difficulty in difficulties)
+    {
+        var settings = DifficultySettings.For(difficulty);
+        var daily = scores.Best(difficulty, dailySeed);
+        var best = scores.BestOf(difficulty);
+        <section class="card difficulty">
+            <div>
+                <h2>@difficulty</h2>
+                <p class="muted">@settings.Width x @settings.Height cells · @settings.SmallHoles small and @settings.BigHoles big holes</p>
+            </div>
+            <div class="times">
+                <div>
+                    <span class="label">Today's best</span>
+                    <span class="time">@(daily == null ? "-" : Format.Time(daily.Value))</span>
+                </div>
+                <div>
+                    <span class="label">Best</span>
+                    <span class="time">@(best == null ? "-" : Format.Time(best.Value))</span>
+                </div>
+            </div>
+            <div class="buttons">
+                <button type="button" class="button primary play" @onclick="() => PlayRandom(difficulty)">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z" /></svg>
+                    <span>Random maze</span>
+                </button>
+                <button type="button" class="button" @onclick="() => PlayDaily(difficulty)">Daily maze</button>
+            </div>
+        </section>
+    }
+</div>

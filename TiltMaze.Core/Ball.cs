@@ -13,6 +13,8 @@ public class Ball
 
     public double X, Y, VX, VY;
 
+    public double Speed => Math.Sqrt(VX * VX + VY * VY);
+
     readonly List<Segment> walls;
     double leftover;   // tid der endnu ikke er brugt på et helt tidsskridt
 
@@ -35,13 +37,15 @@ public class Ball
 
     // Kør fysikken "seconds" frem. ax og ay er vip fra -1 til 1. Tiden deles op i faste små skridt,
     // så kuglen aldrig flytter sig længere pr. skridt, end en væg er tyk (ingen tunnelering).
-    public void Update(double seconds, double ax, double ay)
+    // "stop" kaldes efter hvert skridt (fx tjek af hul og mål). Giver den true, stopper vi med det samme.
+    public void Update(double seconds, double ax, double ay, Func<bool>? stop = null)
     {
         leftover += seconds;
         while (leftover >= Step)
         {
             leftover -= Step;
             OneStep(ax, ay);
+            if (stop != null && stop()) return;
         }
     }
 
@@ -52,7 +56,7 @@ public class Ball
         VY += (ay * Accel - VY * Friction) * Step;
 
         // Maks-fart
-        double speed = Math.Sqrt(VX * VX + VY * VY);
+        double speed = Speed;
         if (speed > MaxSpeed)
         {
             VX = VX / speed * MaxSpeed;

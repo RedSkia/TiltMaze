@@ -55,9 +55,6 @@ public class Auth
     // Logget ind = vi har et refresh-token, der ikke er udløbet. Kræver ikke net
     public bool IsLoggedIn => refreshToken != null && refreshExpires > DateTime.UtcNow;
 
-    // Sider lytter på denne for at vise login eller konto
-    public event Action? Changed;
-
     // Læser det gemte login. Kan kaldes flere gange
     public Task Load()
     {
@@ -110,7 +107,6 @@ public class Auth
         Email = email.Trim().ToLowerInvariant();
         await SaveTokens(tokens);
         await LoadNickname();
-        Changed?.Invoke();
         return new AuthResult { Ok = true };
     }
 
@@ -140,7 +136,6 @@ public class Auth
         {
             // Kaldenavnet hentes igen ved næste login
         }
-        Changed?.Invoke();
     }
 
     public void Logout()
@@ -160,7 +155,6 @@ public class Auth
         {
             // Intet at rydde op, hvis SecureStorage ikke virker
         }
-        Changed?.Invoke();
     }
 
     // Giver et gyldigt adgangstoken og fornyer det med refresh-token, når det er udløbet.

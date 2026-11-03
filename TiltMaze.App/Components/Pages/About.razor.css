@@ -41,9 +41,11 @@
     line-height: 1.5;
 }
 
-/* Lavet af: RedSkia-rød kant i venstre side */
+/* Lavet af: RedSkia-rød kant i venstre side og et svagt rødt skær, så kortet kan kendes */
 .maker {
-    box-shadow: inset 4px 0 0 #ee3b33;
+    border-color: rgba(238, 59, 51, 0.45);
+    background: radial-gradient(80% 90% at 0% 0%, rgba(238, 59, 51, 0.16), transparent 60%), linear-gradient(180deg, var(--surface-2), var(--surface));
+    box-shadow: inset 4px 0 0 #ee3b33, var(--shadow-card);
 }
 
 .maker .section-label {
@@ -63,15 +65,12 @@
 
 .maker-logo {
     border-radius: var(--radius-m);
+    filter: drop-shadow(0 0 16px rgba(238, 59, 51, 0.45));
 }
 
 .maker-name {
     font-size: var(--font-xl);
-}
-
-.maker-brand {
     color: #ff6b62;
-    font-weight: 700;
 }
 
 .links {
@@ -80,9 +79,12 @@
     gap: var(--space-2);
 }
 
+/* RedSkia-knap: rød arkade-knap med mørkerød kant */
 .button.brand {
+    border-color: transparent;
     background: #ee3b33;
     color: #fff;
+    box-shadow: 0 4px 0 #9e1f19;
 }
 
 .footer {

@@ -5,12 +5,6 @@ using TiltMaze.Core;
 
 namespace TiltMaze.Api;
 
-// Brugeren er Identity's bruger plus et kaldenavn, som vises på top-listen (aldrig e-mailen)
-public class AppUser : IdentityUser
-{
-    public string? Nickname { get; set; }
-}
-
 // En brugers bedste tid på én labyrint (sværhedsgrad + seed), med spøgelset der beviser den
 public class RunEntity
 {
@@ -23,7 +17,9 @@ public class RunEntity
     public DateTime CreatedAt { get; set; }
 }
 
-public class GameDb : IdentityDbContext<AppUser>
+// Brugerne er Identity's egne (IdentityUser). UserName er brugernavnet, som også står på top-listen. Ingen e-mail.
+// Identity har et unikt indeks på NormalizedUserName (store bogstaver), så to brugere kan ikke hedde "Marcus" og "marcus"
+public class GameDb : IdentityDbContext<IdentityUser>
 {
     public GameDb(DbContextOptions<GameDb> options) : base(options)
     {
@@ -35,13 +31,9 @@ public class GameDb : IdentityDbContext<AppUser>
     {
         base.OnModelCreating(builder);
 
-        // Kaldenavne er unikke (store/små bogstaver er ens). Brugere uden kaldenavn (null) må der gerne være flere af
-        builder.Entity<AppUser>().Property(u => u.Nickname).UseCollation("NOCASE");
-        builder.Entity<AppUser>().HasIndex(u => u.Nickname).IsUnique();
-
-        // Slettes brugeren, slettes tiderne også
+        // Slettes brugeren, slettes tiderne (og spøgelserne) også
         builder.Entity<RunEntity>()
-            .HasOne<AppUser>()
+            .HasOne<IdentityUser>()
             .WithMany()
             .HasForeignKey(r => r.UserId)
             .OnDelete(DeleteBehavior.Cascade);
@@ -60,12 +52,20 @@ public record RunRequest(Difficulty Difficulty, int Seed, int TimeMs, string Gho
 // Svar efter en tid: er den brugerens nye bedste, og hvilken plads giver den
 public record RunResponse(int Id, int TimeMs, bool IsBest, int Rank);
 
-// En linje på top-listen. RunId bruges til at hente spøgelset. Aldrig e-mail
-public record LeaderboardRow(int Rank, int RunId, string Nickname, int TimeMs, bool IsMe);
+// En linje på top-listen. RunId bruges til at hente spøgelset
+public record LeaderboardRow(int Rank, int RunId, string Username, int TimeMs, bool IsMe);
 
 // Et spøgelse fra en anden spiller
-public record GhostResponse(string Nickname, int TimeMs, string Ghost);
+public record GhostResponse(string Username, int TimeMs, string Ghost);
 
-public record CreateAccountRequest(string? Email, string? Password, string? Nickname);
+public record CreateAccountRequest(string? Username, string? Password);
 
-public record NicknameRequest(string? Nickname);
+public record LoginRequest(string? Username, string? Password);
+
+public record RefreshRequest(string? RefreshToken);
+
+public record UsernameRequest(string? Username);
+
+public record AccountResponse(string Username);
+
+public record AvailableResponse(bool Available);

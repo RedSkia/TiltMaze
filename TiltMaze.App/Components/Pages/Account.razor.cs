@@ -14,6 +14,7 @@ public partial class Account
     private string error = "";
     private string message = "";
     private bool busy;
+    private bool confirmDelete;   // dialogen "Delete account?" er åben
 
     protected override async Task OnInitializedAsync()
     {
@@ -49,17 +50,16 @@ public partial class Account
         navigation.NavigateTo("login");
     }
 
+    private void AskDelete()
+    {
+        confirmDelete = true;
+    }
+
     private async Task DeleteAccount()
     {
+        confirmDelete = false;
         error = "";
         message = "";
-
-        var page = Application.Current!.Windows[0].Page!;
-        var yes = await page.DisplayAlertAsync("Delete account",
-            "This deletes your account, your times and your ghosts on the server. This cannot be undone.",
-            "Delete my account", "Cancel");
-        if (!yes)
-            return;
 
         busy = true;
         error = await api.DeleteAccount();

@@ -581,6 +581,56 @@ input[type=text]:focus-visible, input[type=search]:focus-visible, input[type=ema
     border-color: var(--accent-light);
 }
 
+/* ---------- Dialoger (Game og ConfirmDialog): mørk bagrund med et kort i midten ---------- */
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: var(--space-3);
+    border-radius: var(--radius-l);
+    background: rgba(5, 8, 20, 0.72);
+    animation: fade-in 160ms ease-out;
+}
+
+.dialog {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    width: min(360px, 100%);
+    max-height: 100%;
+    overflow-y: auto;
+    text-align: center;
+    border-color: rgba(45, 226, 200, 0.35);
+    animation: pop-in 240ms cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.dialog h2 {
+    font-size: var(--font-xl);
+}
+
+.dialog-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.overlay.fixed {
+    position: fixed;
+    z-index: 1000;
+    border-radius: 0;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+}
+
+@keyframes pop-in {
+    from { opacity: 0; transform: scale(0.9) translateY(12px); }
+}
+
 /* ---------- Brugere, der vil have mindre bevægelse ---------- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -594,6 +644,10 @@ input[type=text]:focus-visible, input[type=search]:focus-visible, input[type=ema
 
     .spinner {
         animation-duration: 2.4s; /* snurrer langsomt, så man stadig ser, at der arbejdes */
+    }
+
+    .overlay, .dialog {
+        animation: none;
     }
 }
 

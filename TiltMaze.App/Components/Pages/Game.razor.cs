@@ -362,14 +362,10 @@ public partial class Game : IDisposable
         SetKey(e.Key, false);
     }
 
-    // Esc i en dialog: luk den (fortsæt)
+    // Esc i pause-dialogen: fortsæt
     private void OverlayKey(KeyboardEventArgs e)
     {
-        if (e.Key != "Escape" || e.Repeat)
-            return;
-        if (confirmLeave)
-            KeepPlaying();
-        else
+        if (e.Key == "Escape" && !e.Repeat)
             TogglePause();
     }
 
@@ -425,7 +421,6 @@ public partial class Game : IDisposable
         pausedBeforeLeave = paused;
         paused = true;
         confirmLeave = true;
-        focusDialog = true;
     }
 
     private void KeepPlaying()

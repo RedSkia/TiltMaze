@@ -1,0 +1,11 @@
+<!-- Dialog i appen (ikke systemets): første knap er det trygge valg og har fokus, Esc svarer som den -->
+<div class="overlay @(Fullscreen ? "fixed" : "")" @onkeydown="KeyDown">
+    <div class="card dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        <h2 id="confirm-title">@Title</h2>
+        <p class="muted">@Text</p>
+        <div class="dialog-buttons">
+            <button type="button" class="button primary big" @ref="safeButton" @onclick="OnSafe">@SafeText</button>
+            <button type="button" class="button danger" @onclick="OnDanger">@DangerText</button>
+        </div>
+    </div>
+</div>

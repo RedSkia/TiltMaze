@@ -120,16 +120,8 @@
 
             @if (confirmLeave)
             {
-                <div class="overlay" @onkeydown="OverlayKey">
-                    <div class="card dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
-                        <h2 id="dialog-title">Leave run?</h2>
-                        <p class="muted">The time on this run will be lost.</p>
-                        <div class="dialog-buttons">
-                            <button type="button" class="button primary big" @ref="dialogButton" @onclick="KeepPlaying">Keep playing</button>
-                            <button type="button" class="button danger" @onclick="Leave">Leave</button>
-                        </div>
-                    </div>
-                </div>
+                <ConfirmDialog Title="Leave run?" Text="The time on this run will be lost."
+                               SafeText="Keep playing" DangerText="Leave" OnSafe="KeepPlaying" OnDanger="Leave" />
             }
             else if (paused && !finished)
             {

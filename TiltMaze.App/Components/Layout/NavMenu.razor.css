@@ -1,9 +1,9 @@
-/* Menu: bundmenu med to punkter på smal skærm, sidemenu med "Play" på bredere */
+/* Menu: bundmenu med fire punkter på smal skærm, sidemenu på bredere */
 
 .nav-menu {
     grid-area: nav;
     display: flex;
-    background: var(--surface);
+    background: rgba(15, 24, 48, 0.92);
     border-top: 1px solid var(--border);
     padding-bottom: env(safe-area-inset-bottom);
 }
@@ -27,8 +27,8 @@
     gap: 2px;
     min-height: 64px;
     color: var(--muted);
-    font-size: var(--font-s);
-    font-weight: 600;
+    font-size: 0.78rem;
+    font-weight: 650;
     text-decoration: none;
     transition: color var(--ease);
 }
@@ -48,8 +48,10 @@
     background: var(--gradient);
 }
 
+/* Aktivt ikon lyser i accent-farven */
 ::deep .nav-link.active .icon {
-    color: var(--accent-light);
+    color: var(--accent);
+    filter: drop-shadow(0 0 6px rgba(45, 226, 200, 0.6));
 }
 
 @media (hover: hover) {

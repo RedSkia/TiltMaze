@@ -32,8 +32,8 @@
 
     <ItemGroup>
         <!-- App-ikon og splash -->
-        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#6D28D9" />
-        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0D0B14" BaseSize="128,128" />
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#0F1830" />
+        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#070B18" BaseSize="128,128" />
 
         <MauiImage Include="Resources\Images\*" />
         <MauiFont Include="Resources\Fonts\*" />

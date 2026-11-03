@@ -1,4 +1,4 @@
-/* Om Pulsify. Sideramme og kort står i app.css */
+/* Om TiltMaze. Sideramme og kort står i app.css */
 
 .about-page {
     gap: var(--space-4);
@@ -88,4 +88,12 @@
 .footer {
     text-align: center;
     font-size: var(--font-s);
+}
+
+.hero .accent {
+    color: var(--accent);
+}
+
+.app-logo {
+    filter: drop-shadow(0 0 24px rgba(45, 226, 200, 0.35));
 }

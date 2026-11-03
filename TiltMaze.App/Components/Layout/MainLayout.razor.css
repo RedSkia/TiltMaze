@@ -13,7 +13,7 @@
     align-items: center;
     padding: var(--space-3) max(var(--space-4), env(safe-area-inset-right)) var(--space-3) max(var(--space-4), env(safe-area-inset-left));
     border-bottom: 1px solid var(--border);
-    background: var(--surface);
+    background: rgba(15, 24, 48, 0.92);
 }
 
 main {

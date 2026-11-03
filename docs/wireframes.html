@@ -13,39 +13,42 @@
   .tablet { width: 620px; height: 380px; }
   .box { border: 2px dashed #888; border-radius: 6px; padding: 6px; font-size: 12px; }
   .bar { background: #eee; border: 2px solid #888; border-radius: 6px; padding: 6px; font-size: 12px; text-align: center; }
-  .item { border: 1px solid #999; border-radius: 4px; padding: 5px; font-size: 11px; margin-top: 4px; display: flex; justify-content: space-between; }
-  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 6px; }
-  .tile { border: 1px solid #999; border-radius: 4px; padding: 6px; font-size: 11px; text-align: center; }
+  .card { border: 1px solid #999; border-radius: 6px; padding: 6px; font-size: 11px; margin-top: 4px; }
+  .btns { display: flex; gap: 4px; margin-top: 4px; }
+  .btn { border: 1px solid #555; border-radius: 10px; padding: 2px 6px; font-size: 10px; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
   .grow { flex: 1; }
   .split { display: flex; gap: 8px; flex: 1; }
   .note { font-size: 12px; color: #555; max-width: 260px; }
-  .maze { position: relative; border: 2px solid #555; border-radius: 4px; background: #fafafa; flex: 1; }
+  .maze { position: relative; border: 2px solid #555; border-radius: 4px; background: #fafafa; flex: 1; overflow: hidden; }
   .wall { position: absolute; background: #666; }
-  .hole { position: absolute; width: 16px; height: 16px; border-radius: 50%; background: #222; }
+  .hole { position: absolute; border-radius: 50%; background: #222; }
   .ball { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: #c33; }
-  .goal { position: absolute; width: 18px; height: 18px; border: 2px solid #393; border-radius: 4px; font-size: 9px; text-align: center; }
-  .bridge { position: absolute; height: 8px; width: 30px; background: #b80; border: 1px dashed #640; }
+  .ghost { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: rgba(60,60,200,.35); border: 1px dashed #339; }
+  .goal { position: absolute; width: 18px; height: 18px; border: 2px solid #393; border-radius: 4px; font-size: 8px; text-align: center; }
+  .stick { position: absolute; width: 54px; height: 54px; border-radius: 50%; border: 2px dashed #555; }
+  .knob { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: #999; left: 16px; top: 8px; }
+  .mini { position: absolute; width: 46px; height: 60px; border: 1px solid #555; background: #eee; font-size: 8px; text-align: center; }
 </style>
 </head>
 <body>
 <h1>TiltMaze – Wireframes</h1>
 
 <div class="page">
-  <h2>1. Hovedskærm (Baner) – mobil, portræt</h2>
+  <h2>1. Hovedskærm (Spil) – mobil, portræt</h2>
   <div class="row">
     <div class="device phone">
       <div class="bar">TiltMaze</div>
-      <div class="box grow">Baner
-        <div class="item"><span>1. Første rul</span><span>★★★ 0:12</span></div>
-        <div class="item"><span>2. Zigzag</span><span>★★ 0:31</span></div>
-        <div class="item"><span>3. Hullet</span><span>★ —</span></div>
-        <div class="item"><span>4. Broen</span><span>🔒</span></div>
+      <div class="box grow">Vælg sværhed
+        <div class="card"><b>Easy</b> 5×7 · bedst 0:12<div class="btns"><span class="btn">▶ Random</span><span class="btn">📅 Daily</span></div></div>
+        <div class="card"><b>Normal</b> 7×10 · bedst 0:31<div class="btns"><span class="btn">▶ Random</span><span class="btn">📅 Daily</span></div></div>
+        <div class="card"><b>Hard</b> 9×13 · —<div class="btns"><span class="btn">▶ Random</span><span class="btn">📅 Daily</span></div></div>
+        <div class="card"><b>Expert</b> 11×16 · —<div class="btns"><span class="btn">▶ Random</span><span class="btn">📅 Daily</span></div></div>
       </div>
-      <div class="box" style="text-align:center">🏆 Highscore</div>
-      <div class="bar">🎮 Baner &nbsp; | &nbsp; 🏆 Top &nbsp; | &nbsp; 👤 Konto</div>
+      <div class="bar">▶ Spil &nbsp; | &nbsp; 🏆 Top &nbsp; | &nbsp; 👤 Konto</div>
     </div>
-    <p class="note">Én kolonne. Navigation via bundmenu. Tryk på en bane starter spillet (banens id sendes med).
-      Stjerner og bedste tid vises på hver bane. Baner ligger lokalt, så listen virker offline.</p>
+    <p class="note">Én kolonne og bundmenu. Hver sværhed har "Random" (ny labyrint) og "Daily" (dagens labyrint, samme for
+      alle). Valget sendes videre til spilskærmen (sværhed + seed).</p>
   </div>
 </div>
 
@@ -55,55 +58,55 @@
     <div class="device tablet">
       <div class="bar">TiltMaze</div>
       <div class="split">
-        <div class="box" style="width:70px">🎮 Baner<br><br>🏆 Top<br><br>👤 Konto</div>
-        <div class="box grow">Baner
+        <div class="box" style="width:70px">▶ Spil<br><br>🏆 Top<br><br>👤 Konto</div>
+        <div class="box grow">Vælg sværhed
           <div class="grid">
-            <div class="tile">1. Første rul<br>★★★ 0:12</div>
-            <div class="tile">2. Zigzag<br>★★ 0:31</div>
-            <div class="tile">3. Hullet<br>★ —</div>
-            <div class="tile">4. Broen<br>🔒</div>
-            <div class="tile">5. Spiralen<br>🔒</div>
-            <div class="tile">6. Finalen<br>🔒</div>
+            <div class="card"><b>Easy</b> 5×7<div class="btns"><span class="btn">▶ Random</span><span class="btn">📅 Daily</span></div></div>
+            <div class="card"><b>Normal</b> 7×10<div class="btns"><span class="btn">▶ Random</span><span class="btn">📅 Daily</span></div></div>
+            <div class="card"><b>Hard</b> 9×13<div class="btns"><span class="btn">▶ Random</span><span class="btn">📅 Daily</span></div></div>
+            <div class="card"><b>Expert</b> 11×16<div class="btns"><span class="btn">▶ Random</span><span class="btn">📅 Daily</span></div></div>
           </div>
         </div>
-        <div class="box" style="width:150px">Top 10 – Zigzag<br><br>1. anna 0:18<br>2. marcus 0:21<br>3. … </div>
+        <div class="box" style="width:150px">Dagens top 10 – Normal<br><br>1. anna 0:18<br>2. marcus 0:21<br>3. … </div>
       </div>
     </div>
-    <p class="note">Bundmenu bliver til sidemenu. Banerne vises som gitter i stedet for liste, og top 10 for den valgte
-      bane står ved siden af.</p>
+    <p class="note">Bundmenu bliver til sidemenu. Sværhederne vises som gitter, og dagens top 10 står ved siden af.</p>
   </div>
 </div>
 
 <div class="page">
-  <h2>3. Spilskærm – mobil (portræt) og PC (landskab)</h2>
+  <h2>3. Spilskærm – mobil (kamera følger kuglen) og PC (hele banen)</h2>
   <div class="row">
     <div class="device phone">
-      <div class="bar">⏸ &nbsp; 0:07 &nbsp; ★☆☆ &nbsp; Broer: 1</div>
+      <div class="bar">⏸ &nbsp; 0:07 &nbsp; Normal &nbsp; 👻 −0:02</div>
       <div class="maze">
-        <div class="wall" style="left:0;top:60px;width:140px;height:6px"></div>
-        <div class="wall" style="left:50px;top:150px;width:140px;height:6px"></div>
-        <div class="wall" style="left:0;top:240px;width:140px;height:6px"></div>
-        <div class="hole" style="left:150px;top:100px"></div>
-        <div class="bridge" style="left:110px;top:200px"></div>
-        <div class="ball" style="left:20px;top:20px"></div>
-        <div class="goal" style="left:160px;top:300px">MÅL</div>
+        <div class="wall" style="left:0;top:60px;width:150px;height:6px"></div>
+        <div class="wall" style="left:60px;top:160px;width:150px;height:6px"></div>
+        <div class="wall" style="left:0;top:250px;width:120px;height:6px"></div>
+        <div class="hole" style="left:150px;top:100px;width:22px;height:22px"></div>
+        <div class="hole" style="left:40px;top:200px;width:10px;height:10px"></div>
+        <div class="ball" style="left:90px;top:120px"></div>
+        <div class="ghost" style="left:120px;top:122px"></div>
+        <div class="mini" style="right:4px;top:4px">minikort</div>
+        <div class="stick" style="left:12px;bottom:12px"><div class="knob"></div></div>
       </div>
-      <div class="box" style="text-align:center">Vip telefonen · træk 🟧 bro på plads</div>
     </div>
     <div class="device" style="width:420px;height:300px">
       <div class="split">
         <div class="maze">
           <div class="wall" style="left:0;top:50px;width:180px;height:6px"></div>
           <div class="wall" style="left:80px;top:120px;width:180px;height:6px"></div>
-          <div class="hole" style="left:200px;top:80px"></div>
+          <div class="hole" style="left:200px;top:80px;width:22px;height:22px"></div>
           <div class="ball" style="left:20px;top:20px"></div>
+          <div class="ghost" style="left:60px;top:20px"></div>
           <div class="goal" style="left:240px;top:200px">MÅL</div>
         </div>
-        <div class="box" style="width:110px">⏱ 0:07<br>★☆☆<br>Broer: 1<br><br>WASD / pile<br><br>⏸ Pause<br>↻ Forfra</div>
+        <div class="box" style="width:110px">⏱ 0:07<br>Bedst 0:12<br>👻 anna 0:18<br><br>WASD / pile<br><br>⏸ Pause<br>↻ Forfra<br>☰ Menu</div>
       </div>
     </div>
-    <p class="note">Telefon: vip for at styre, og træk broen med fingeren. PC: piletaster/WASD, og træk broen med musen.
-      Banen skaleres i fast forhold. Pause, når appen skjules. Falder kuglen i et hul, starter banen forfra.</p>
+    <p class="note">Telefon: vip eller træk joysticken. Kameraet følger kuglen, og minikortet viser hele labyrinten.
+      PC: hele banen, piletaster/WASD. Spøgelset er bedste tur. Menu midt i et løb giver dialogen "Forlad løbet?".
+      Pause, når appen skjules.</p>
   </div>
 </div>
 </body>

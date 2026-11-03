@@ -5,33 +5,33 @@ namespace TiltMaze.App;
 
 public static class MauiProgram
 {
-	public static MauiApp CreateMauiApp()
-	{
-		var builder = MauiApp.CreateBuilder();
-		builder
-			.UseMauiApp<App>()
-			.ConfigureFonts(fonts =>
-			{
-				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-			});
+    public static MauiApp CreateMauiApp()
+    {
+        var builder = MauiApp.CreateBuilder();
+        builder
+            .UseMauiApp<App>()
+            .ConfigureFonts(fonts =>
+            {
+                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+            });
 
-		builder.Services.AddMauiBlazorWebView();
-		builder.Services.AddSingleton<GameDatabase>();
-		builder.Services.AddSingleton<Auth>();
-		builder.Services.AddSingleton<Api>();
-		builder.Services.AddSingleton<RunQueue>();
-		builder.Services.AddSingleton<Scores>();
-		builder.Services.AddSingleton<TiltSensor>();
+        builder.Services.AddMauiBlazorWebView();
+        builder.Services.AddSingleton<GameDatabase>();
+        builder.Services.AddSingleton<Auth>();
+        builder.Services.AddSingleton<Api>();
+        builder.Services.AddSingleton<RunQueue>();
+        builder.Services.AddSingleton<Scores>();
+        builder.Services.AddSingleton<TiltSensor>();
 
 #if DEBUG
-		builder.Services.AddBlazorWebViewDeveloperTools();
-		builder.Logging.AddDebug();
+        builder.Services.AddBlazorWebViewDeveloperTools();
+        builder.Logging.AddDebug();
 #endif
 
-		var app = builder.Build();
+        var app = builder.Build();
 
-		// Send rekorder, der ventede da appen sidst blev lukket
-		_ = app.Services.GetRequiredService<RunQueue>().Start();
-		return app;
-	}
+        // Send rekorder, der ventede da appen sidst blev lukket
+        _ = app.Services.GetRequiredService<RunQueue>().Start();
+        return app;
+    }
 }

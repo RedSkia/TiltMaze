@@ -1,40 +1,66 @@
 @page "/"
 
-<div class="page-narrow">
-    <div class="page-head">
-        <div>
-            <h1>Play</h1>
-            <p class="page-sub">Pick a difficulty. Every maze is new. Roll fast to jump over holes.</p>
+<div class="page-wide start">
+    <!-- Hovedhandlingen: dagens labyrint i den valgte sværhedsgrad -->
+    <section class="card hero" aria-labelledby="hero-title">
+        <img class="hero-art" src="images/logo.svg" alt="" width="120" height="120" />
+        <div class="hero-text">
+            <span class="kicker">Daily maze · @today</span>
+            <h1 id="hero-title">Today's maze</h1>
+            <p class="page-sub">The same maze for everyone today. Roll fast to jump over holes.</p>
         </div>
-    </div>
-
-    @foreach (var difficulty in difficulties)
-    {
-        var settings = DifficultySettings.For(difficulty);
-        var daily = scores.Best(difficulty, dailySeed);
-        var best = scores.BestOf(difficulty);
-        <section class="card difficulty">
+        <div class="hero-times">
             <div>
-                <h2>@difficulty</h2>
-                <p class="muted">@settings.Width x @settings.Height cells · @settings.SmallHoles small and @settings.BigHoles big holes</p>
+                <span class="label">Today's best</span>
+                <span class="time">@TimeText(scores.Best(selected, dailySeed))</span>
             </div>
-            <div class="times">
-                <div>
-                    <span class="label">Today's best</span>
-                    <span class="time">@(daily == null ? "-" : Format.Time(daily.Value))</span>
-                </div>
-                <div>
-                    <span class="label">Best</span>
-                    <span class="time">@(best == null ? "-" : Format.Time(best.Value))</span>
-                </div>
+            <div>
+                <span class="label">Best @selected</span>
+                <span class="time">@TimeText(scores.BestOf(selected))</span>
             </div>
-            <div class="buttons">
-                <button type="button" class="button primary play" @onclick="() => PlayRandom(difficulty)">
-                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z" /></svg>
-                    <span>Random maze</span>
+        </div>
+        <div class="hero-buttons">
+            <button type="button" class="button primary big" @onclick="PlayDaily">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z" /></svg>
+                <span>Play daily</span>
+                <span class="level-tag">@selected</span>
+            </button>
+            <button type="button" class="button" @onclick="PlayRandom">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
+                </svg>
+                <span>Random maze</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Valg af sværhedsgrad: et stort felt pr. sværhedsgrad med størrelse, huller og bedste tider -->
+    <section aria-labelledby="levels-title">
+        <h2 id="levels-title" class="section-label">Difficulty</h2>
+        <div class="levels">
+            @foreach (var difficulty in difficulties)
+            {
+                var settings = DifficultySettings.For(difficulty);
+                int level = (int)difficulty + 1;
+                bool isSelected = difficulty == selected;
+                <button type="button" class="level @(isSelected ? "selected" : "")" aria-pressed="@(isSelected ? "true" : "false")"
+                        @onclick="() => Select(difficulty)">
+                    <span class="level-head">
+                        <span class="level-name">@difficulty</span>
+                        <span class="pips" aria-hidden="true">
+                            @for (int i = 1; i <= 4; i++)
+                            {
+                                <i class="@(i <= level ? "on" : "")"></i>
+                            }
+                        </span>
+                    </span>
+                    <span class="level-info">@settings.Width x @settings.Height · @(settings.SmallHoles + settings.BigHoles) holes</span>
+                    <span class="level-times">
+                        <span><span class="label">Best</span> <span class="time">@TimeText(scores.BestOf(difficulty))</span></span>
+                        <span><span class="label">Today</span> <span class="time">@TimeText(scores.Best(difficulty, dailySeed))</span></span>
+                    </span>
                 </button>
-                <button type="button" class="button" @onclick="() => PlayDaily(difficulty)">Daily maze</button>
-            </div>
-        </section>
-    }
+            }
+        </div>
+    </section>
 </div>

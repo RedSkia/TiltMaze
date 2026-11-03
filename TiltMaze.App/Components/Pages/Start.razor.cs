@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using TiltMaze.App.Services;
 using TiltMaze.Core;
@@ -11,21 +12,43 @@ public partial class Start
 
     private readonly Difficulty[] difficulties = Enum.GetValues<Difficulty>();
     private readonly int dailySeed = Course.DailySeed();
+    private readonly string today = DateTime.UtcNow.ToString("ddd d MMM", CultureInfo.InvariantCulture);
 
-    // Ny tilfældig labyrint
-    private void PlayRandom(Difficulty difficulty)
+    // Den valgte sværhedsgrad huskes til næste gang
+    private Difficulty selected = Difficulty.Normal;
+
+    protected override void OnInitialized()
     {
-        Open(difficulty, Course.NewSeed());
+        string saved = Preferences.Default.Get("difficulty", "Normal");
+        if (Enum.TryParse(saved, out Difficulty difficulty))
+            selected = difficulty;
+    }
+
+    private void Select(Difficulty difficulty)
+    {
+        selected = difficulty;
+        Preferences.Default.Set("difficulty", difficulty.ToString());
     }
 
     // Dagens labyrint: ens for alle, fordi seed er datoen
-    private void PlayDaily(Difficulty difficulty)
+    private void PlayDaily()
     {
-        Open(difficulty, dailySeed);
+        Open(selected, dailySeed);
+    }
+
+    // Ny tilfældig labyrint
+    private void PlayRandom()
+    {
+        Open(selected, Course.NewSeed());
     }
 
     private void Open(Difficulty difficulty, int seed)
     {
         navigation.NavigateTo("play/" + difficulty.ToString().ToLower() + "/" + seed);
+    }
+
+    private static string TimeText(double? seconds)
+    {
+        return seconds == null ? "-" : Format.Time(seconds.Value);
     }
 }

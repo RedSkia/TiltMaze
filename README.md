@@ -2,7 +2,6 @@
 
 Labyrintspil: styr en kugle ved at vippe telefonen (Android), med joysticken på skærmen eller med piletaster/WASD (Windows). Undgå hullerne og nå målet så hurtigt som muligt. Rul hurtigt, så kan kuglen hoppe over hullerne.
 
-Skoleprojekt i App-programmering 2026 (.NET MAUI Blazor Hybrid). Senere: broer med touch, API med highscores og login (Leaderboard og Account).
 Skoleprojekt i App-programmering 2026 (.NET MAUI Blazor Hybrid). Med API, konti og top-lister (Docker). Senere: broer med touch.
 
 - Plan og kravspec: `docs/plan.md`, wireframes: `docs/wireframes.html`, PDF: `docs/TiltMaze-kravspec.pdf`
@@ -25,7 +24,7 @@ Vælg Easy, Normal, Hard eller Expert på startsiden (valget huskes), og tryk de
 - **Daily maze:** dagens labyrint er ens for alle, fordi seed er datoen.
 - **Random maze:** ny labyrint hver gang. Dens seed står i pausemenuen. Retry spiller samme labyrint igen, New maze laver en ny.
 - Hvert løb starter med en nedtælling 3-2-1-Go. Falder du i et hul, ryster skærmen, og kuglen starter forfra.
-- Bedste tid gemmes pr. labyrint (sværhedsgrad + seed) og pr. sværhedsgrad. Dit bedste løb vises som et spøgelse næste gang, og under tiden ser du, om du er foran (grøn, minus) eller bagud (rød, plus).
+- Bedste tid gemmes pr. labyrint (sværhedsgrad + seed) og pr. sværhedsgrad. Dit bedste løb vises som et spøgelse næste gang, og under tiden ser du, om du er foran (grøn, minus) eller bagud (rød, plus). Er du logget ind, ræser du også mod de 3 bedste andre (halvgennemsigtige kugler med kaldenavn).
 - Små huller kan man rulle forbi langs væggen. Store huller fylder hele gangen, men med fuld fart og et lige tilløb kan man hoppe over dem.
 - På en lille skærm følger kameraet kuglen, og et minikort i hjørnet viser hele banen.
 - **Menu** midt i et løb spørger først "Leave run?".
@@ -37,9 +36,8 @@ Vælg Easy, Normal, Hard eller Expert på startsiden (valget huskes), og tryk de
 
 Spillet pauser, når appen skjules, og fortsætter først, når du trykker Resume.
 
-Leaderboard og Account er "Coming soon", indtil API'et er klar.
-
 Design: "Neon Arcade" (natblå, turkis, orange kugle, guld mål). Lavet af RedSkia.Dev.
+
 ## Online: konto, top-liste og spøgelser
 
 Spillet virker helt uden net. Med en konto (e-mail, kodeord og kaldenavn) sendes dine rekorder til serveren, der viser en top 10 pr. labyrint (`/leaderboard`: vælg sværhedsgrad og dagens labyrint eller en seed). Serveren afspiller hver tur mod samme labyrint og fysik og afviser snyd ("Run could not be verified"). Rekorder sat uden net eller login venter i en kø og sendes automatisk senere. Kaldenavn, log ud og slet konto ligger under `/account`.

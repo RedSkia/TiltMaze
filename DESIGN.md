@@ -17,8 +17,8 @@ Et mørkt arkadespil: natblå baggrund med et svagt blåt lys fra toppen, turkis
 - **Start:** øverst et stort kort "Today's maze" med dagens og bedste tid og en stor "Play daily"-knap (plus "Random maze"). Under det fire felter, ét pr. sværhedsgrad (størrelse, huller, bedste tid, dagens tid). Det valgte felt lyser og huskes. Bred skærm: kortet og felterne side om side.
 - **Spil, telefon i højformat:** HUD øverst (pause, stor tid med forskel til spøgelset, menu og små "chips" med sværhedsgrad, bedste tid og fald). Banen fylder resten. Kan hele banen ikke vises med mindst 40 px pr. celle, følger kameraet kuglen, og et minikort står i hjørnet. Joysticken står nederst til venstre.
 - **Spil, landskab og computer:** hele banen og et sidepanel med tid, tal, hjælpetekst og knapperne Pause, Retry og Menu.
-- **Dialoger** (i appen, ikke systemets): Paused (med joystick til/fra og seed), Leave run? og Maze complete. Fokus på første knap, `Esc` lukker, resten af skærmen er `inert`.
-- **Leaderboard og Account:** "Coming soon"-sider indtil API'et kommer.
+- **Dialoger** (i appen, ikke systemets): Paused (med joystick til/fra og seed), Leave run?, Maze complete og Delete account? (på Account-siden). De to spørgsmåls-dialoger er den fælles `ConfirmDialog`. Fokus på første knap, `Esc` lukker, resten af skærmen er `inert`.
+- **Leaderboard:** top 10 pr. labyrint (dagens eller en seed), din egen linje er markeret. **Account:** log ind eller opret konto (`/login`), skift kaldenavn, log ud og slet konto (med en in-app dialog).
 
 ## Det store billede
 
@@ -57,12 +57,11 @@ Components/Pages   Start, Game, About, ...        Components/Layout   MainLayout
 Components/Play    MazeLayer, Joystick            wwwroot/js/game.js  størrelse og pointer capture
         │  @inject
         ▼
-Services           Scores (bedste tid, spøgelser), Api, Auth, RunQueue, TiltSensor
+Services           Scores + GameDatabase (bedste tid, spøgelser), Api, Auth, RunQueue, TiltSensor
         │
         ▼
 TiltMaze.Core      MazeGenerator, Course, Ball, Camera, Ghost   (ingen MAUI, testes med xUnit)
 ```
-
 
 ## Spillet
 
@@ -70,16 +69,12 @@ TiltMaze.Core      MazeGenerator, Course, Ball, Camera, Ghost   (ingen MAUI, tes
 - **Seed:** vises i sidepanelet og i pausemenuen. Random maze = ny tilfældig seed. Daily maze = datoen (UTC) som tal, ens for alle. Retry bruger samme seed, New maze en ny.
 - **Huller:** små (radius ca. 0,12-0,17) kan kuglen rulle forbi langs siden af gangen. Store (radius 0,45) fylder hele gangen. Store huller ligger kun på den korteste vej og kun hvis målet stadig kan nås uden om dem (bredde-først tjek), så der er altid en vej uden store huller. Små huller kan ligge overalt undtagen start og mål.
 - **Fald og hop:** kuglen falder, hvis dens midte er inde i hullet og farten er under 60 % af maks-farten, eller hvis den er over hullet i mere end 0,2 s. Med fart ruller den derfor hen over små huller og, med fuld fart og et lige tilløb, over store.
-- **Tegning:** ét SVG med `viewBox` i celler. Set oppefra med højde (2,5D), lys fra øverst til venstre: gulv med turkise fliser og kant, vægge med glans, lys top, mørk side og skygge (samme `path` tegnet fire gange), huller med indre væg, forskudt mørk brønd og rød kant, mål som guld ring med pulserende glød, kugle med glød, skygge og glans, spøgelse med stiplet kant. Den faste del (`MazeLayer`) tegnes kun, når labyrinten skifter.
+- **Tegning:** ét SVG med `viewBox` i celler. Set oppefra med højde (2,5D), lys fra øverst til venstre: gulv med turkise fliser og kant, vægge med glans, lys top, mørk side og skygge (samme `path` tegnet fire gange), huller med indre væg, forskudt mørk brønd og rød kant, mål som guld ring med pulserende glød, kugle med glød, skygge og glans, dit eget spøgelse med stiplet kant og andres spøgelser som dæmpede kugler med kaldenavn. Den faste del (`MazeLayer`) tegnes kun, når labyrinten skifter.
 - **Kamera og minikort:** passer hele banen ikke med mindst 40 px pr. celle, viser `viewBox` kun et udsnit (56 px pr. celle), som glider blødt efter kuglen (`Camera.Follow`, samme brøkdel af afstanden pr. tid) og holdes inden for banen. Et minikort (samme `MazeLayer` i enkel udgave) viser hele banen, kuglen og udsnittet.
 - **Fysik:** `Ball.Update` kører i faste skridt på 1/120 s: fart fra vip, friktion, maks-fart, så kollision mellem kuglens cirkel og hver væg (et linjestykke). Skridtet er meget mindre end en væg er tyk, så kuglen ikke kan gå gennem den. Hul og mål tjekkes efter hvert skridt.
 - **Løkke:** `PeriodicTimer` (16 ms) i `Game.razor.cs` flytter kuglen og kameraet og kalder `StateHasChanged`. Før start tælles 3-2-1-Go ned (kuglen står stille, uret går ikke).
-- **Spøgelse:** under et løb gemmes kuglens x og y hvert 1/30 sekund i en liste af tal. Ved ny rekord på labyrinten gemmes listen i en lille fil. Næste gang på samme labyrint tegnes en halvgennemsigtig kugle, der afspiller løbet i takt med uret. Formatet er en simpel `float[]`, så det senere kan sendes til en server. `Ghost` (Core) afspiller løbet og husker, hvornår spøgelset første gang var i hver celle. Når kuglen kommer ind i en ny celle, vises forskellen under tiden (grøn minus = foran, rød plus = bagud).
-- **Bedste tid:** pr. (sværhedsgrad, seed) og pr. sværhedsgrad i Preferences. Dagens bedste tid er bare tiden for dagens seed.
 - **Styring:** tastatur (WASD, piletaster), accelerometer (`TiltSensor`, tager højde for skærmens rotation) og joystick på skærmen (`Joystick`: pointer events, så både finger og mus virker; knappen springer tilbage ved slip). De tre lægges sammen og klippes til -1..1.
-- **Løkke:** `PeriodicTimer` (16 ms) i `Game.razor.cs` flytter kuglen og kalder `StateHasChanged`.
-- **Spøgelse:** under et løb gemmes kuglens x og y hvert 1/30 sekund i en liste af tal. Ved ny rekord på labyrinten gemmes listen i SQLite og sendes til serveren. Næste gang på samme labyrint tegnes en halvgennemsigtig kugle, der afspiller løbet i takt med uret. Formatet er en simpel `float[]` (som bytes/base64 på nettet), så serveren kan afspille og tjekke det.
+- **Spøgelse:** under et løb gemmes kuglens x og y hvert 1/30 sekund i en liste af tal. Optagelsen følger fysikken (hvert fysik-skridt tæller tiden op, og kuglens plads gemmes, hver gang tiden passerer et nyt 1/30 sekund), så langsomme billeder ikke giver dobbelte målinger. Ved ny rekord på labyrinten gemmes listen i SQLite og sendes til serveren. Næste gang på samme labyrint tegnes en halvgennemsigtig kugle, der afspiller løbet i takt med uret. Er man logget ind og online, hentes også de 3 bedste andre ture fra serveren (uden ens egen) og vises som kugler i hver sin dæmpede farve med kaldenavnet som lille tekst. Formatet er en simpel `float[]` (som bytes/base64 på nettet), så serveren kan afspille og tjekke det.
 - **Bedste tid:** pr. (sværhedsgrad, seed) og pr. sværhedsgrad i SQLite (`GameDatabase`). Dagens bedste tid er bare tiden for dagens seed.
-- **Styring:** tastatur (WASD, piletaster) og accelerometer (`TiltSensor`, tager højde for skærmens rotation).
 - **Pause:** knap, `P`/`Esc`, og automatisk når vinduet skjules (`Window.Stopped`, sensoren slukkes). Spillet fortsætter først, når man trykker Resume.
 - **Forlad løbet:** Menu midt i et løb åbner dialogen "Leave run?" (Keep playing / Leave). Før start og efter mål går Menu direkte.

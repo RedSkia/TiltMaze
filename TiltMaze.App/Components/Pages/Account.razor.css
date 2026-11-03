@@ -1,0 +1,19 @@
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+}
+
+.card p {
+    margin: 0;
+}
+
+.nickname-form {
+    align-items: stretch;
+}
+
+.hint {
+    font-weight: 400;
+    font-size: var(--font-s);
+}

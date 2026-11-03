@@ -1,0 +1,55 @@
+@page "/login"
+
+<div class="page-narrow login">
+    <div class="page-head">
+        <div>
+            <h1>@(creating ? "Create account" : "Sign in")</h1>
+            <p class="page-sub">@(creating ? "Put your times on the leaderboard and race other players." : "Welcome back. Your times are waiting.")</p>
+        </div>
+    </div>
+
+    <div class="segmented" role="group" aria-label="Sign in or create account">
+        <button type="button" class="@(creating ? "" : "active")" aria-pressed="@(!creating)" @onclick="() => SetMode(false)" disabled="@busy">Sign in</button>
+        <button type="button" class="@(creating ? "active" : "")" aria-pressed="@creating" @onclick="() => SetMode(true)" disabled="@busy">Create account</button>
+    </div>
+
+    <form class="login-form" @onsubmit="Submit">
+        <label class="field">
+            <span>Email</span>
+            <input type="email" autocomplete="email" @bind="email" maxlength="100" disabled="@busy" />
+        </label>
+        @if (creating)
+        {
+            <label class="field">
+                <span>Nickname</span>
+                <input type="text" autocomplete="nickname" @bind="nickname" maxlength="16" disabled="@busy" />
+                <span class="hint muted">3-16 letters, digits or underscores. Shown on the leaderboard.</span>
+            </label>
+        }
+        <label class="field">
+            <span>Password</span>
+            <input type="password" autocomplete="@(creating ? "new-password" : "current-password")" @bind="password" maxlength="100" disabled="@busy" />
+            @if (creating)
+            {
+                <span class="hint muted">At least 8 characters</span>
+            }
+        </label>
+        <button type="submit" class="button primary" disabled="@busy">@(creating ? "Create account" : "Sign in")</button>
+    </form>
+
+    @if (busy)
+    {
+        <div class="loading" role="status">
+            <div class="spinner"></div>
+            <p>@(creating ? "Creating account..." : "Signing in...")</p>
+        </div>
+    }
+
+    @if (error != "")
+    {
+        <p class="alert error" role="alert">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 2.5 20h19z" /><path d="M12 10v4" /><path d="M12 17.5v.01" /></svg>
+            @error
+        </p>
+    }
+</div>

@@ -1,0 +1,53 @@
+.choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+    gap: var(--space-2);
+}
+
+.seed-form {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-3);
+}
+
+.seed-form .field {
+    flex: 1;
+}
+
+.board {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.board li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+}
+
+.board li + li {
+    border-top: 1px solid var(--border);
+}
+
+.board li.me {
+    background: var(--surface-2);
+    font-weight: 700;
+}
+
+.rank {
+    width: 2rem;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.time {
+    font-variant-numeric: tabular-nums;
+}

@@ -1,17 +1,74 @@
 @page "/account"
 
-@* Pladsholder: konto og login bygges på en anden gren *@
 <div class="page-narrow">
-    <section class="card empty-state">
-        <div class="empty-icon">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="8" r="4" />
-                <path d="M4 21a8 8 0 0 1 16 0" />
-            </svg>
+    <div class="page-head">
+        <div>
+            <h1>Account</h1>
+            <p class="page-sub">Your login and nickname.</p>
         </div>
-        <span class="badge">Coming soon</span>
-        <h1>Account</h1>
-        <p class="muted">Sign in to save your times online and show up on the leaderboard.</p>
-        <a class="button primary" href="">Play now</a>
-    </section>
+    </div>
+
+    @if (!auth.IsLoggedIn)
+    {
+        <section class="card">
+            <p>You are not signed in. Your times are saved on this device, and an account lets you share them on the leaderboard.</p>
+            <a class="button primary" href="login">Sign in or create account</a>
+        </section>
+    }
+    else
+    {
+        <section class="card" aria-label="Your profile">
+            <span class="section-label">Signed in as</span>
+            <strong>@auth.Email</strong>
+            <p class="muted">Nickname: @(auth.Nickname == "" ? "-" : auth.Nickname)</p>
+        </section>
+
+        <section aria-labelledby="nickname-title">
+            <h2 class="section-label" id="nickname-title">Nickname</h2>
+            <form class="card nickname-form" @onsubmit="SaveNickname">
+                <label class="field">
+                    <span>New nickname</span>
+                    <input type="text" @bind="nickname" maxlength="16" disabled="@busy" />
+                    <span class="hint muted">3-16 letters, digits or underscores. Shown on the leaderboard.</span>
+                </label>
+                <button type="submit" class="button primary" disabled="@busy">Save nickname</button>
+            </form>
+        </section>
+
+        <section aria-labelledby="session">
+            <h2 class="section-label" id="session">Session</h2>
+            <div class="card">
+                <button type="button" class="button" @onclick="Logout" disabled="@busy">Sign out</button>
+            </div>
+        </section>
+
+        <section aria-labelledby="danger">
+            <h2 class="section-label" id="danger">Danger zone</h2>
+            <div class="card">
+                <p class="muted">Deletes your account, your times and your ghosts on the server. Times saved on this device stay. This cannot be undone.</p>
+                <button type="button" class="button danger" @onclick="DeleteAccount" disabled="@busy">Delete account</button>
+            </div>
+        </section>
+    }
+
+    @if (busy)
+    {
+        <div class="loading" role="status">
+            <div class="spinner"></div>
+            <p>Working...</p>
+        </div>
+    }
+
+    @if (message != "")
+    {
+        <p class="alert notice" role="status">@message</p>
+    }
+
+    @if (error != "")
+    {
+        <p class="alert error" role="alert">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 2.5 20h19z" /><path d="M12 10v4" /><path d="M12 17.5v.01" /></svg>
+            @error
+        </p>
+    }
 </div>

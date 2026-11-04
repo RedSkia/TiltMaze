@@ -22,7 +22,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<RunQueue>();
         builder.Services.AddSingleton<Scores>();
         builder.Services.AddSingleton<TiltSensor>();
-        builder.Services.AddSingleton<Sound>();
+        builder.Services.AddScoped<Sound>();   // Scoped: IJSRuntime hører til WebView'en, ikke hele appen
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();

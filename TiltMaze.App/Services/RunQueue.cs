@@ -52,7 +52,7 @@ public class RunQueue
             {
                 // Kun gæsterekorder og den indloggede brugers egne sendes
                 string owner = run.Username ?? "";
-                if (owner != "" && owner != auth.Username)
+                if (owner != "" && !string.Equals(owner, auth.Username, StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 var (result, rank) = await api.SendRun(run.Difficulty, run.Seed, run.TimeMs, run.Ghost);

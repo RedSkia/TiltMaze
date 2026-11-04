@@ -111,6 +111,12 @@ public class GameDatabase
         db.DeleteAll<PendingRun>();
     }
 
+    // Brugeren har skiftet navn: ventende rekorder under det gamle navn hører stadig til brugeren
+    public void RenamePending(string oldName, string newName)
+    {
+        db.Execute("UPDATE PendingRun SET Username = ? WHERE Username = ? COLLATE NOCASE", newName, oldName);
+    }
+
     public BestRun? GetBest(Difficulty difficulty, int seed)
     {
         return db.Table<BestRun>().FirstOrDefault(b => b.Difficulty == difficulty && b.Seed == seed);

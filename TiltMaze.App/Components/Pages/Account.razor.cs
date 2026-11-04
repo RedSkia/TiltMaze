@@ -46,7 +46,7 @@ public partial class Account
 
         if (error == "")
         {
-            await auth.SetUsername(username);
+            await auth.ChangeUsername(username);
             message = "Username saved.";
         }
     }

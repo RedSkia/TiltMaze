@@ -151,6 +151,13 @@ public class Auth
         return answer != null && answer.TryGetValue("available", out bool available) ? available : null;
     }
 
+    // Navnet er skiftet på serveren: flyt ventende rekorder med over på det nye navn, og gem det
+    public async Task ChangeUsername(string username)
+    {
+        database.RenamePending(Username, username);
+        await SetUsername(username);
+    }
+
     // Gemmer brugernavnet lokalt (efter login og når det er ændret på serveren)
     public async Task SetUsername(string username)
     {

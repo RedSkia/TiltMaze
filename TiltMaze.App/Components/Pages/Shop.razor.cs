@@ -7,6 +7,7 @@ namespace TiltMaze.App.Components.Pages;
 public partial class Shop
 {
     [Inject] private Wallet wallet { get; set; } = null!;
+    [Inject] private Sound sound { get; set; } = null!;
 
     // Fanerne øverst
     private record Tab(ShopCategory Category, string Label);
@@ -50,7 +51,8 @@ public partial class Shop
 
     private void Buy(ShopItem item)
     {
-        wallet.Buy(item);
+        if (wallet.Buy(item))
+            sound.Buy();
         Refresh();
     }
 

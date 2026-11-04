@@ -31,6 +31,9 @@ public class Course
     public const double PullMargin = 0.12;
     public const double PullAccel = 3;   // celler pr. sekund i anden
 
+    // Mønter ligger midt i en celle. Kuglen samler en op, når de to cirkler rører hinanden.
+    public const double CoinRadius = 0.12;
+
     public Difficulty Difficulty { get; }
     public int Seed { get; }
     public int Width { get; }
@@ -40,6 +43,7 @@ public class Course
     public Cell Goal { get; private set; }
     public List<Hole> Holes { get; } = new();
     public List<Segment> Segments { get; } = new();
+    public List<Cell> Coins { get; } = new();
 
     double timeOverHole;   // hvor længe kuglen har været inde over et hul i træk
 
@@ -54,6 +58,7 @@ public class Course
         var random = new Random(seed);
         BuildMaze(settings, random);
         PlaceHoles(settings, random);
+        PlaceCoins(settings, random);
         BuildSegments();
     }
 
@@ -185,6 +190,49 @@ public class Course
         int[,] fromGoal = MazeGenerator.Distances(Walls, Goal, blocked);
         int d = fromStart[cell.X, cell.Y];
         return d >= 0 && d + fromGoal[cell.X, cell.Y] == fromStart[Goal.X, Goal.Y];
+    }
+
+    // Rører kuglen mønt nummer i? Mønten påvirker hverken fysik, tid eller spøgelse.
+    public bool TouchesCoin(Ball ball, int i)
+    {
+        double dx = ball.X - (Coins[i].X + 0.5);
+        double dy = ball.Y - (Coins[i].Y + 0.5);
+        double reach = Ball.Radius + CoinRadius;
+        return dx * dx + dy * dy < reach * reach;
+    }
+
+    // Mønter i celler uden start, mål og huller. Celler uden for den korteste vej kommer først,
+    // så det koster tid at samle dem. Samme (sværhedsgrad, seed) giver altid de samme mønter.
+    void PlaceCoins(DifficultySettings settings, Random random)
+    {
+        var taken = new bool[Width, Height];
+        taken[Start.X, Start.Y] = true;
+        taken[Goal.X, Goal.Y] = true;
+        foreach (Hole hole in Holes)
+            taken[hole.Cell.X, hole.Cell.Y] = true;
+
+        var offPath = new List<Cell>();
+        var onPath = new List<Cell>();
+        var noBlocks = new bool[Width, Height];
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                if (taken[x, y]) continue;
+                var cell = new Cell(x, y);
+                if (IsOnShortestPath(cell, noBlocks)) onPath.Add(cell);
+                else offPath.Add(cell);
+            }
+        }
+
+        // Trækker tilfældigt: først blandt cellerne uden for vejen, derefter blandt resten
+        while (Coins.Count < settings.Coins && (offPath.Count > 0 || onPath.Count > 0))
+        {
+            List<Cell> from = offPath.Count > 0 ? offPath : onPath;
+            int i = random.Next(from.Count);
+            Coins.Add(from[i]);
+            from.RemoveAt(i);
+        }
     }
 
     // Laver alle vægge om til linjestykker. Hver væg tegnes kun én gang:

@@ -19,6 +19,9 @@ public partial class Account
     private bool biometricAvailable;   // kontakten vises kun, hvis enheden har fingeraftryk / Windows Hello
     private bool confirmDelete;        // dialogen "Delete account?" er åben
 
+    // Første bogstav af brugernavnet til cirklen på profilen
+    private string Initial => auth.Username == "" ? "?" : auth.Username[..1].ToUpperInvariant();
+
     protected override async Task OnInitializedAsync()
     {
         await auth.Load();

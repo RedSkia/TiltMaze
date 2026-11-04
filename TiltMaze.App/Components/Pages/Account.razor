@@ -1,6 +1,6 @@
 @page "/account"
 
-<div class="page-narrow" inert="@confirmDelete">
+<div class="page-narrow account" inert="@confirmDelete">
     <div class="page-head">
         <div>
             <h1>Account</h1>
@@ -31,7 +31,7 @@
 
     @if (auth.IsLocked)
     {
-        <section class="card">
+        <section class="card locked">
             <p>Your account is locked on this device. Unlock it with your fingerprint or Windows Hello, or sign in with your password.</p>
             <div class="actions">
                 <button type="button" class="button primary" @onclick="Unlock" disabled="@busy">Unlock</button>
@@ -41,63 +41,111 @@
     }
     else if (!auth.IsLoggedIn)
     {
-        <section class="card cta">
-            <p>You are not signed in. Your times are saved on this device, and an account lets you share them on the leaderboard.</p>
-            <a class="button primary" href="login">Sign in</a>
-        </section>
+        <!-- Ikke logget ind: opfordring til venstre, fordele til højre -->
+        <div class="account-grid">
+            <section class="card cta">
+                <p>You are not signed in. Your times are saved on this device, and an account lets you share them on the leaderboard.</p>
+                <a class="button primary" href="login">Sign in</a>
+            </section>
+
+            <section class="card" aria-labelledby="benefits-title">
+                <h2 id="benefits-title" class="section-label">With an account</h2>
+                <ul class="benefits">
+                    <li>
+                        <span class="row-icon">
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z" />
+                                <path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3" />
+                            </svg>
+                        </span>
+                        <span>Put your best times on the leaderboard</span>
+                    </li>
+                    <li>
+                        <span class="row-icon">
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M5 21V11a7 7 0 0 1 14 0v10l-3-2-2 2-2-2-2 2-2-2z" /><path d="M9.5 11v.01M14.5 11v.01" />
+                            </svg>
+                        </span>
+                        <span>Race the ghosts of the fastest players</span>
+                    </li>
+                    <li>
+                        <span class="row-icon">
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" /><path d="m9 12 2 2 4-4" /></svg>
+                        </span>
+                        <span>Unlock quickly with your fingerprint</span>
+                    </li>
+                </ul>
+            </section>
+        </div>
     }
     else
     {
-        <section class="card" aria-label="Your profile">
-            <span class="section-label">Signed in as</span>
-            <strong class="username">@auth.Username</strong>
-            <p class="muted">Your username is shown on the leaderboard.</p>
-        </section>
-
-        <section aria-labelledby="username-title">
-            <h2 class="section-label" id="username-title">Username</h2>
-            <form class="card username-form" @onsubmit="SaveUsername">
-                <label class="field">
-                    <span>New username</span>
-                    <input type="text" autocomplete="username" autocapitalize="none" spellcheck="false" @bind="username" maxlength="16" disabled="@busy"
-                           aria-invalid="@(error != "" ? "true" : null)" aria-describedby="username-hint" />
-                    <span class="hint muted" id="username-hint">3-16 letters, digits or underscores. You sign in with the new name.</span>
-                </label>
-                <button type="submit" class="button primary" disabled="@busy">Save username</button>
-            </form>
-        </section>
-
-        @if (biometricAvailable || biometrics.Enabled)
-        {
-            <section aria-labelledby="security">
-                <h2 class="section-label" id="security">Security</h2>
-                <div class="card rows">
-                    <div class="setting-row">
-                        <div class="setting-text">
-                            <span class="setting-title" id="biometric-title">Unlock with fingerprint or Windows Hello</span>
-                            <span class="setting-desc">The app asks when it opens. Your biometric data never leaves the device.</span>
-                        </div>
-                        <button type="button" class="switch" role="switch" aria-checked="@(biometrics.Enabled ? "true" : "false")"
-                                aria-labelledby="biometric-title" @onclick="ToggleBiometrics" disabled="@busy"></button>
-                    </div>
+        <!-- Logget ind: profil til venstre, indstillinger og farezone til højre -->
+        <div class="account-grid">
+            <section class="card profile" aria-label="Your profile">
+                <span class="avatar" aria-hidden="true">@Initial</span>
+                <div class="profile-text">
+                    <strong class="username">@auth.Username</strong>
+                    <span class="status"><i class="dot" aria-hidden="true"></i>Signed in</span>
                 </div>
+                <p class="muted">Your username is shown on the leaderboard.</p>
             </section>
-        }
 
-        <section aria-labelledby="session">
-            <h2 class="section-label" id="session">Session</h2>
-            <div class="card">
-                <button type="button" class="button" @onclick="Logout" disabled="@busy">Sign out</button>
-            </div>
-        </section>
+            <div class="account-main">
+                <section aria-labelledby="settings-title">
+                    <h2 class="section-label" id="settings-title">Settings</h2>
+                    <div class="card rows">
+                        @if (biometricAvailable || biometrics.Enabled)
+                        {
+                            <div class="setting-row">
+                                <span class="row-icon">
+                                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" /><path d="m9 12 2 2 4-4" /></svg>
+                                </span>
+                                <div class="setting-text">
+                                    <span class="setting-title" id="biometric-title">Unlock with fingerprint or Windows Hello</span>
+                                    <span class="setting-desc">The app asks when it opens. Your biometric data never leaves the device.</span>
+                                </div>
+                                <button type="button" class="switch" role="switch" aria-checked="@(biometrics.Enabled ? "true" : "false")"
+                                        aria-labelledby="biometric-title" @onclick="ToggleBiometrics" disabled="@busy"></button>
+                            </div>
+                        }
 
-        <section aria-labelledby="danger">
-            <h2 class="section-label" id="danger">Danger zone</h2>
-            <div class="card">
-                <p class="muted">Deletes your account, your times and your ghosts on the server. Times saved on this device stay. This cannot be undone.</p>
-                <button type="button" class="button danger" @onclick="AskDelete" disabled="@busy">Delete account</button>
+                        <form class="username-form" @onsubmit="SaveUsername">
+                            <div class="username-head">
+                                <span class="row-icon">
+                                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+                                </span>
+                                <label class="setting-text" for="new-username">
+                                    <span class="setting-title">Change username</span>
+                                    <span class="setting-desc" id="username-hint">3-16 letters, digits or underscores. You sign in with the new name.</span>
+                                </label>
+                            </div>
+                            <div class="username-row">
+                                <input id="new-username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" @bind="username" maxlength="16" disabled="@busy"
+                                       aria-invalid="@(error != "" ? "true" : null)" aria-describedby="username-hint" />
+                                <button type="submit" class="button primary" disabled="@busy">Save</button>
+                            </div>
+                        </form>
+
+                        <button type="button" class="setting-row" @onclick="Logout" disabled="@busy">
+                            <span class="row-icon">
+                                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9" /></svg>
+                            </span>
+                            <span class="setting-text">
+                                <span class="setting-title">Sign out</span>
+                                <span class="setting-desc">Your times stay on this device.</span>
+                            </span>
+                        </button>
+                    </div>
+                </section>
+
+                <section class="card danger-zone" aria-labelledby="danger">
+                    <h2 class="section-label" id="danger">Danger zone</h2>
+                    <p class="muted">Deletes your account, your times and your ghosts on the server. Times saved on this device stay. This cannot be undone.</p>
+                    <button type="button" class="button danger" @onclick="AskDelete" disabled="@busy">Delete account</button>
+                </section>
             </div>
-        </section>
+        </div>
     }
 </div>
 

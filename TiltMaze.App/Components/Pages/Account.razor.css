@@ -1,3 +1,12 @@
+/* Account: profil og indstillinger. På bred skærm står de i to kolonner */
+
+/* Telefon og tablet: kortene under hinanden. Bred skærm: to kolonner (se nederst) */
+.account-grid, .account-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
 .card {
     display: flex;
     flex-direction: column;
@@ -5,22 +14,23 @@
     gap: var(--space-3);
 }
 
-.card.rows {
-    align-items: stretch;
-}
-
 .card p {
     margin: 0;
 }
 
-/* Langt navn uden mellemrum må gerne brydes, så kortet ikke bliver bredere end skærmen */
-.username {
-    max-width: 100%;
-    overflow-wrap: anywhere;
+.card .section-label {
+    margin: 0;
 }
 
-.username-form {
-    align-items: stretch;
+/* Opfordringen: tekst og knap på en række, når der er plads (.card gør ellers alt til en kolonne) */
+.card.cta {
+    flex-direction: row;
+    align-items: center;
+}
+
+/* Låst: et kort, ikke bredere end nødvendigt */
+.locked {
+    max-width: 720px;
 }
 
 /* Knapper ved siden af hinanden; på smal skærm under hinanden */
@@ -28,4 +38,166 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-3);
+}
+
+/* ---------- Profil ---------- */
+
+.profile {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: var(--space-4);
+}
+
+.profile p {
+    grid-column: 1 / -1;
+}
+
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--gradient);
+    color: var(--accent-ink);
+    font-size: 2rem;
+    font-weight: 850;
+    box-shadow: 0 4px 0 var(--accent-edge), var(--shadow-glow);
+}
+
+.profile-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+/* Langt navn uden mellemrum må gerne brydes, så kortet ikke bliver bredere end skærmen */
+.username {
+    max-width: 100%;
+    font-size: var(--font-l);
+    overflow-wrap: anywhere;
+}
+
+/* Status: grøn prik OG tekst, så farven ikke står alene */
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--ok);
+    font-size: var(--font-s);
+    font-weight: 750;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ok);
+}
+
+/* ---------- Indstillinger ---------- */
+
+.card.rows {
+    align-items: stretch;
+    gap: 0;
+    overflow: hidden;
+}
+
+/* Rundt ikon foran en række */
+.row-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--surface-3);
+    color: var(--accent);
+}
+
+.card.rows > * + * {
+    border-top: 1px solid var(--border);
+}
+
+.username-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+}
+
+.username-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+/* Felt og knap på en række, så længe der er plads */
+.username-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.username-row input {
+    flex: 1 1 12rem;
+    min-width: 0;
+    width: auto;
+}
+
+/* ---------- Farezone ---------- */
+
+.danger-zone {
+    border-color: rgba(255, 93, 115, 0.5);
+    background: linear-gradient(180deg, rgba(255, 93, 115, 0.1), var(--surface));
+}
+
+.danger-zone .section-label {
+    color: var(--danger);
+}
+
+/* ---------- Fordele (når man ikke er logget ind) ---------- */
+
+.benefits {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.benefits li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* ---------- Bred skærm: to kolonner ---------- */
+
+@media (min-width: 900px) {
+    .account {
+        max-width: 1000px;
+    }
+
+    .account-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+        align-items: start;
+        gap: var(--space-6);
+    }
+
+    /* Profilen står lodret midt i sin kolonne */
+    .profile {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: center;
+        row-gap: var(--space-3);
+        text-align: center;
+    }
+
+    .profile-text {
+        align-items: center;
+    }
 }

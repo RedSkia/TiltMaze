@@ -171,6 +171,44 @@
     stroke-dasharray: 0.07 0.05;
 }
 
+/* ---------- Mønter: guld, små. Dem fra tidligere løb er svage. En ring "popper", når en mønt tages ---------- */
+
+.coin circle {
+    fill: var(--gold);
+    stroke: #a56d00;
+    stroke-width: 0.025;
+}
+
+.coin .coin-shine {
+    fill: #fff;
+    fill-opacity: 0.85;
+    stroke: none;
+}
+
+.coin.old {
+    opacity: 0.3;
+}
+
+.coin-pop {
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 0.04;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: coin-pop 350ms ease-out;
+}
+
+@keyframes coin-pop {
+    from { opacity: 1; transform: scale(0.6); }
+    to { opacity: 0; transform: scale(1.8); }
+}
+
+/* Mønt-chip i HUD'en: tallet lyser guld */
+.stats .coins-chip dd {
+    color: var(--gold);
+}
+
 /* ---------- Fald: ring ved start, rystelse og rødt blink ---------- */
 
 .spawn {
@@ -301,6 +339,27 @@
 .finish {
     border-color: rgba(255, 200, 87, 0.5);
     box-shadow: var(--shadow-card), 0 0 40px rgba(255, 200, 87, 0.2);
+}
+
+/* Mønter tjent i dette løb */
+.coins-earned {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    font-size: var(--font-l);
+    font-weight: 800;
+    color: var(--gold);
+}
+
+/* Pausemenuen: tre knapper. Leave har rød kant, så den ikke tages ved et uheld */
+.pause .button.leave {
+    border-color: rgba(255, 93, 115, 0.55);
+    color: var(--danger);
+}
+
+.pause-note {
+    font-size: var(--font-s);
 }
 
 .record {
@@ -450,7 +509,7 @@
 /* ---------- Mindre bevægelse: ingen rystelse, konfetti eller "pop" ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-    .board.shake-a, .board.shake-b, .spawn, .record {
+    .board.shake-a, .board.shake-b, .spawn, .coin-pop, .record {
         animation: none;
     }
 

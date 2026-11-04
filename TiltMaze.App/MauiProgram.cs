@@ -17,6 +17,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<GameDatabase>();
         builder.Services.AddSingleton<Biometrics>();
         builder.Services.AddSingleton<Auth>();
+        builder.Services.AddSingleton<Wallet>();
         builder.Services.AddSingleton<Api>();
         builder.Services.AddSingleton<RunQueue>();
         builder.Services.AddSingleton<Scores>();

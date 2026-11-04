@@ -32,6 +32,12 @@ public class GhostDto
     public string Ghost { get; set; } = "";
 }
 
+// Svar fra POST /api/runs: pladsen på top-listen for brugerens bedste tid
+public class RunReply
+{
+    public int Rank { get; set; }
+}
+
 // Hvad serveren svarede på en tid
 public enum SendResult
 {
@@ -51,18 +57,21 @@ public class Api
         this.auth = auth;
     }
 
-    // Sender en ny rekord
-    public async Task<SendResult> SendRun(Difficulty difficulty, int seed, int timeMs, byte[] ghost)
+    // Sender en ny rekord. Ved Sent er Rank pladsen på top-listen (ellers 0)
+    public async Task<(SendResult Result, int Rank)> SendRun(Difficulty difficulty, int seed, int timeMs, byte[] ghost)
     {
         var body = new { difficulty = difficulty.ToString(), seed, timeMs, ghost = Convert.ToBase64String(ghost) };
         using var response = await Send(() => new HttpRequestMessage(HttpMethod.Post, "/api/runs") { Content = JsonContent.Create(body) });
         if (response == null || response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.TooManyRequests)
-            return SendResult.TryLater;
+            return (SendResult.TryLater, 0);
         if (response.IsSuccessStatusCode)
-            return SendResult.Sent;
+        {
+            var reply = await ReadJson<RunReply>(response);
+            return (SendResult.Sent, reply?.Rank ?? 0);
+        }
         if ((int)response.StatusCode >= 500)
-            return SendResult.TryLater;
-        return SendResult.Rejected;
+            return (SendResult.TryLater, 0);
+        return (SendResult.Rejected, 0);
     }
 
     // Top-listen for en labyrint. Giver null, hvis den ikke kunne hentes (fx uden net)

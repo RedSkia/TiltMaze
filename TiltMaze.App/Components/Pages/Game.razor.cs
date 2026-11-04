@@ -15,6 +15,7 @@ public partial class Game : IDisposable
     [Parameter] public int? Seed { get; set; }
 
     [Inject] private Scores scores { get; set; } = null!;
+    [Inject] private Wallet wallet { get; set; } = null!;
     [Inject] private Api api { get; set; } = null!;
     [Inject] private Auth auth { get; set; } = null!;
     [Inject] private TiltSensor tilt { get; set; } = null!;
@@ -45,9 +46,7 @@ public partial class Game : IDisposable
     private bool finished;
     private bool newBest;
     private bool isDaily;
-    private bool confirmLeave;         // "Leave run?" er åben
-    private bool pausedBeforeLeave;    // var spillet på pause, før dialogen kom frem
-    private bool needFocus;            // banen skal have tastatur-fokus efter næste tegning
+    private bool needFocus;           // banen skal have tastatur-fokus efter næste tegning
     private bool focusDialog;          // dialogens første knap skal have fokus efter næste tegning
     private bool started;              // spil-løkken er sat i gang
     private bool disposed;
@@ -66,6 +65,16 @@ public partial class Game : IDisposable
     private double ghostX, ghostY;
     private double? delta;            // forskel til spøgelset ved sidste nye celle (minus = foran)
     private int lastCellX, lastCellY;
+
+    // Mønter: coinMask er dem der blev samlet op i tidligere løb (tegnes svagt), picked dem i dette løb (tegnes ikke).
+    // runCoins er mønterne dette løb har givet (kun nye mønter), completionReward belønningen for at klare labyrinten.
+    private int coinMask;
+    private bool[] picked = [];
+    private int runCoins;
+    private int completionReward;
+    private BallColor ballColor = Rewards.BallColors[0];
+    private double popX, popY;
+    private int pops;   // tæller op ved hver mønt, så "pop"-ringen starter forfra
 
     // Andres spøgelser (top 3 fra serveren): hentes i baggrunden ved start, og springes over uden net eller login
     private class Rival
@@ -172,7 +181,12 @@ public partial class Game : IDisposable
         paused = false;
         finished = false;
         newBest = false;
-        confirmLeave = false;
+
+        coinMask = wallet.CoinMask(difficulty, seed);
+        picked = new bool[maze.Coins.Count];
+        runCoins = 0;
+        completionReward = 0;
+        ballColor = wallet.Equipped;
     }
 
     private async Task LoadRivals(Difficulty difficulty, int seed)
@@ -328,6 +342,7 @@ public partial class Game : IDisposable
 
         outcome = Outcome.None;
         ball.Update(seconds, ax, ay, CheckOutcome);
+        CollectCoins();
         MoveGhost();
         UpdateDelta();
 
@@ -356,6 +371,31 @@ public partial class Game : IDisposable
             recording.Add((float)ball.X);
             recording.Add((float)ball.Y);
         }
+    }
+
+    // Rører kuglen en mønt, tages den. Giver kun en mønt i pungen første gang på labyrinten (Wallet).
+    // Mønterne påvirker ikke fysikken, tiden eller optagelsen.
+    private void CollectCoins()
+    {
+        for (int i = 0; i < picked.Length; i++)
+        {
+            if (picked[i] || !maze.TouchesCoin(ball, i))
+                continue;
+
+            picked[i] = true;
+            if (wallet.TakeCoin(maze.Difficulty, maze.Seed, i))
+                runCoins++;
+            popX = maze.Coins[i].X + 0.5;
+            popY = maze.Coins[i].Y + 0.5;
+            pops++;
+            if (Vibration.Default.IsSupported)
+                Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(15));
+        }
+    }
+
+    private bool IsOldCoin(int i)
+    {
+        return (coinMask >> i & 1) == 1;
     }
 
     private void MoveGhost()
@@ -396,6 +436,7 @@ public partial class Game : IDisposable
         oldBest = best;
         newBest = scores.Save(maze.Difficulty, maze.Seed, time, recording.ToArray());
         best = scores.Best(maze.Difficulty, maze.Seed);
+        completionReward = wallet.Complete(maze.Difficulty, maze.Seed);
         if (Vibration.Default.IsSupported)
             Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(40));
     }
@@ -412,13 +453,12 @@ public partial class Game : IDisposable
         SetKey(e.Key, false);
     }
 
-    // Esc i pause-dialogen: fortsæt
+    // Esc i pausemenuen: fortsæt
     private void OverlayKey(KeyboardEventArgs e)
     {
         if (e.Key == "Escape" && !e.Repeat)
             TogglePause();
     }
-
     // Banen mistede fokus (fx alt-tab): ellers bliver en holdt tast ved med at være "nede"
     private void ClearKeys()
     {
@@ -459,30 +499,7 @@ public partial class Game : IDisposable
             needFocus = true;
     }
 
-    // Menu midt i et løb: spørg først. Før løbet er i gang (eller når det er slut) går vi bare til menuen.
-    private void AskLeave()
-    {
-        bool running = !finished && (time > 0 || falls > 0);
-        if (!running)
-        {
-            Leave();
-            return;
-        }
-        pausedBeforeLeave = paused;
-        paused = true;
-        confirmLeave = true;
-    }
-
-    private void KeepPlaying()
-    {
-        confirmLeave = false;
-        paused = pausedBeforeLeave;
-        if (paused)
-            focusDialog = true;   // tilbage til pausemenuen
-        else
-            needFocus = true;
-    }
-
+    // Pausemenuen er den eneste menu: Resume, Retry eller Leave (Leave er selv bekræftelsen)
     private void Leave()
     {
         navigation.NavigateTo("");

@@ -727,3 +727,15 @@ input[type=text]:focus-visible, input[type=search]:focus-visible, input[type=ema
     scrollbar-width: thin;
     scrollbar-color: var(--surface-3) transparent;
 }
+
+/* ---------- Mønter og butik (Game og Shop): lille guldmønt som ikon ---------- */
+
+.coin-dot {
+    display: inline-block;
+    flex: none;
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff0b0, var(--gold) 55%, #a56d00);
+    box-shadow: 0 0 8px rgba(255, 200, 87, 0.55);
+}

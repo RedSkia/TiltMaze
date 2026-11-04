@@ -7,13 +7,15 @@ public class RunQueue
     private readonly GameDatabase database;
     private readonly Api api;
     private readonly Auth auth;
+    private readonly Wallet wallet;
     private readonly SemaphoreSlim onlyOne = new(1);
 
-    public RunQueue(GameDatabase database, Api api, Auth auth)
+    public RunQueue(GameDatabase database, Api api, Auth auth, Wallet wallet)
     {
         this.database = database;
         this.api = api;
         this.auth = auth;
+        this.wallet = wallet;
         Connectivity.Current.ConnectivityChanged += OnConnectivityChanged;
     }
 
@@ -48,10 +50,12 @@ public class RunQueue
         {
             foreach (var run in database.GetPending())
             {
-                var result = await api.SendRun(run.Difficulty, run.Seed, run.TimeMs, run.Ghost);
+                var (result, rank) = await api.SendRun(run.Difficulty, run.Seed, run.TimeMs, run.Ghost);
                 if (result == SendResult.TryLater)
                     break;   // Resten venter til næste gang
                 database.RemovePending(run);   // Sendt, eller afvist for altid
+                if (result == SendResult.Sent)
+                    wallet.GiveRankBonus(run.Difficulty, run.Seed, rank);
             }
         }
         catch (Exception)

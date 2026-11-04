@@ -1,4 +1,4 @@
-/* Menu: bundmenu med fire punkter på smal skærm, sidemenu på bredere */
+/* Menu: bundmenu med fem punkter på smal skærm, sidemenu på bredere */
 
 .nav-menu {
     grid-area: nav;
@@ -20,6 +20,7 @@
 ::deep .nav-link {
     position: relative;
     flex: 1;
+    min-width: 0;   /* fem punkter skal kunne være i bundmenuen på 360-390 px */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -27,8 +28,9 @@
     gap: 2px;
     min-height: 64px;
     color: var(--muted);
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 650;
+    letter-spacing: -0.02em;
     text-decoration: none;
     transition: color var(--ease);
 }
@@ -91,6 +93,7 @@
         padding: 0 var(--space-3);
         border-radius: var(--radius-m);
         font-size: var(--font-m);
+        letter-spacing: normal;
     }
 
     /* Aktiv i sidemenuen: tonet baggrund og streg i venstre side */
@@ -153,7 +156,7 @@
     ::deep .nav-link {
         flex: none;
         width: 100%;
-        min-height: 72px;
+        min-height: 60px;   /* fem punkter skal være i en telefon på langs */
     }
 
     ::deep .nav-link.active::before {

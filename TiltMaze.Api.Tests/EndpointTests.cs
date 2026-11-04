@@ -367,6 +367,22 @@ public class EndpointTests : IDisposable
         Assert.Equal(fast.TimeMs, rows![0].TimeMs);
     }
 
+    // Appen giver mønter ud fra rank i svaret, så den skal være pladsen for brugerens bedste tid
+    [Fact]
+    public async Task RunResponse_RankIsThePlaceOfTheUsersBestRun()
+    {
+        var slow = await CreateUser("Slow");
+        var fast = await CreateUser("Fast");
+
+        var first = await (await slow.PostAsJsonAsync("/api/runs", GenuineRun(2))).Content.ReadFromJsonAsync<RunResponse>();
+        var second = await (await fast.PostAsJsonAsync("/api/runs", GenuineRun(3))).Content.ReadFromJsonAsync<RunResponse>();
+        var slowAgain = await (await slow.PostAsJsonAsync("/api/runs", GenuineRun(2))).Content.ReadFromJsonAsync<RunResponse>();
+
+        Assert.Equal(1, first!.Rank);
+        Assert.Equal(1, second!.Rank);
+        Assert.Equal(2, slowAgain!.Rank);
+    }
+
     [Fact]
     public async Task Leaderboard_IsSortedAndMarksOnlyMe_AndWorksWithoutLogin()
     {

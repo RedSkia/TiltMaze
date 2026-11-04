@@ -16,7 +16,7 @@
                     <span class="delta @(delta < 0 ? "ahead" : "behind")">@Format.Delta(delta.Value) <small>ghost</small></span>
                 }
             </div>
-            <button type="button" class="icon-button hud-menu" aria-label="Menu" @onclick="AskLeave">
+            <button type="button" class="icon-button hud-menu" aria-label="Menu" @onclick="TogglePause">
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
             </button>
 
@@ -33,6 +33,10 @@
                     <dt>Falls</dt>
                     <dd>@falls</dd>
                 </div>
+                <div class="coins-chip">
+                    <dt>Coins</dt>
+                    <dd>@runCoins</dd>
+                </div>
                 <div class="seed">
                     <dt>Seed</dt>
                     <dd>@maze.Seed</dd>
@@ -42,7 +46,6 @@
             <div class="side-buttons">
                 <button type="button" class="button" @onclick="TogglePause">Pause</button>
                 <button type="button" class="button" @onclick="Retry">Retry</button>
-                <button type="button" class="button" @onclick="AskLeave">Menu</button>
             </div>
         </header>
 
@@ -53,20 +56,38 @@
                  @onkeydown:preventDefault="playing" @onkeyup:preventDefault="playing">
                 <svg viewBox="@ViewBox" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Maze">
                     <defs>
+                        <!-- Kuglens farver kommer fra den valgte farve i butikken -->
                         <radialGradient id="ballFill" cx="35%" cy="30%" r="75%">
                             <stop offset="0" stop-color="#fff4e6" />
-                            <stop offset="0.35" stop-color="#ffa45c" />
-                            <stop offset="0.75" stop-color="#ff7a29" />
-                            <stop offset="1" stop-color="#b8400c" />
+                            <stop offset="0.35" stop-color="@ballColor.Light" />
+                            <stop offset="0.75" stop-color="@ballColor.Mid" />
+                            <stop offset="1" stop-color="@ballColor.Dark" />
                         </radialGradient>
                         <radialGradient id="ballGlow">
-                            <stop offset="0" stop-color="#ff8a3d" stop-opacity="0.45" />
-                            <stop offset="1" stop-color="#ff8a3d" stop-opacity="0" />
+                            <stop offset="0" stop-color="@ballColor.Mid" stop-opacity="0.45" />
+                            <stop offset="1" stop-color="@ballColor.Mid" stop-opacity="0" />
                         </radialGradient>
                     </defs>
 
                     <!-- Den faste bane tegnes kun, når labyrinten skifter -->
                     <MazeLayer Maze="maze" />
+
+                    <!-- Mønter: guld. Dem fra tidligere løb er svage (de giver ikke flere mønter), dem taget nu forsvinder -->
+                    @for (int i = 0; i < picked.Length; i++)
+                    {
+                        @if (!picked[i])
+                        {
+                            <g class="coin @(IsOldCoin(i) ? "old" : "")">
+                                <circle cx="@N(maze.Coins[i].X + 0.5)" cy="@N(maze.Coins[i].Y + 0.5)" r="@N(Course.CoinRadius)" />
+                                <circle class="coin-shine" cx="@N(maze.Coins[i].X + 0.5 - 0.03)" cy="@N(maze.Coins[i].Y + 0.5 - 0.03)" r="0.04" />
+                            </g>
+                        }
+                    }
+                    @if (pops > 0)
+                    {
+                        <!-- Ny @key ved hver mønt, så ringen starter sin animation forfra -->
+                        <circle @key="pops" class="coin-pop" cx="@N(popX)" cy="@N(popY)" r="0.2" />
+                    }
 
                     @if (falls > 0)
                     {
@@ -106,7 +127,7 @@
                     {
                         <circle class="mini-ghost" cx="@N(ghostX)" cy="@N(ghostY)" r="0.35" />
                     }
-                    <circle class="mini-ball" cx="@N(ball.X)" cy="@N(ball.Y)" r="0.45" />
+                    <circle class="mini-ball" style="fill: @ballColor.Mid" cx="@N(ball.X)" cy="@N(ball.Y)" r="0.45" />
                 </svg>
             }
 
@@ -121,15 +142,11 @@
                 </div>
             }
 
-            @if (confirmLeave)
+            @if (paused && !finished)
             {
-                <ConfirmDialog Title="Leave run?" Text="The time on this run will be lost."
-                               SafeText="Keep playing" DangerText="Leave" OnSafe="KeepPlaying" OnDanger="Leave" />
-            }
-            else if (paused && !finished)
-            {
+                <!-- Pausemenuen er den eneste menu. Leave er selv bekræftelsen, og Esc er det samme som Resume -->
                 <div class="overlay" @onkeydown="OverlayKey">
-                    <div class="card dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+                    <div class="card dialog pause" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
                         <h2 id="dialog-title">Paused</h2>
                         <p class="muted">@maze.Difficulty · Seed @maze.Seed</p>
                         <div class="dialog-buttons">
@@ -137,10 +154,16 @@
                                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z" /></svg>
                                 <span>Resume</span>
                             </button>
-                            <button type="button" class="button" @onclick="Retry">Retry</button>
-                            <button type="button" class="button" @onclick="NewMaze">New maze</button>
-                            <button type="button" class="button" @onclick="AskLeave">Menu</button>
+                            <button type="button" class="button" @onclick="Retry">
+                                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7" /><path d="M20 4v5h-5" /></svg>
+                                <span>Retry</span>
+                            </button>
+                            <button type="button" class="button leave" @onclick="Leave">
+                                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9" /></svg>
+                                <span>Leave</span>
+                            </button>
                         </div>
+                        <p class="pause-note muted">Leaving ends this run. The time is lost.</p>
                     </div>
                 </div>
             }
@@ -167,6 +190,11 @@
                             }
                             <span>@falls @(falls == 1 ? "fall" : "falls")</span>
                         </p>
+                        <p class="coins-earned">
+                            <span class="coin-dot" aria-hidden="true"></span>
+                            <span>+@(runCoins + completionReward) coins</span>
+                        </p>
+                        <p class="muted">@runCoins from pickups · @completionReward for finishing</p>
                         <div class="dialog-buttons">
                             <button type="button" class="button primary big" @ref="dialogButton" @onclick="NewMaze">New maze</button>
                             <button type="button" class="button" @onclick="Retry">Retry</button>

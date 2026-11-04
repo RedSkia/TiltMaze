@@ -31,7 +31,34 @@ public class PendingRun
     public byte[] Ghost { get; set; } = [];
 }
 
-// Den lokale SQLite-database: bedste tider med spøgelser og køen af rekorder der skal sendes
+// Hvad der er tjent på en labyrint (sværhedsgrad + seed), så hver ting kun giver mønter én gang
+public class MazeProgress
+{
+    [PrimaryKey, AutoIncrement]
+    public int Id { get; set; }
+
+    [Indexed("Maze", 1, Unique = true)]
+    public Difficulty Difficulty { get; set; }
+
+    [Indexed("Maze", 2, Unique = true)]
+    public int Seed { get; set; }
+
+    public int CoinMask { get; set; }     // bit i er 1, hvis mønt nummer i er samlet op
+    public bool Completed { get; set; }   // belønningen for at klare labyrinten er givet
+    public int RankBonusPaid { get; set; }   // 0, 25 eller 50 (se Rewards)
+}
+
+// Pungen: antal mønter og de farver man ejer (id'er med komma imellem). Der er altid kun én række, med Id 1.
+public class WalletRow
+{
+    [PrimaryKey]
+    public int Id { get; set; }
+
+    public int Coins { get; set; }
+    public string Owned { get; set; } = "";
+}
+
+// Den lokale SQLite-database: bedste tider med spøgelser, køen af rekorder der skal sendes, og mønter
 public class GameDatabase
 {
     private readonly SQLiteConnection db;
@@ -41,6 +68,37 @@ public class GameDatabase
         db = new SQLiteConnection(Path.Combine(FileSystem.AppDataDirectory, "tiltmaze.db3"));
         db.CreateTable<BestRun>();
         db.CreateTable<PendingRun>();
+        db.CreateTable<MazeProgress>();
+        db.CreateTable<WalletRow>();
+    }
+
+    // Fremgangen på labyrinten (en tom, hvis der ikke er nogen endnu)
+    public MazeProgress GetProgress(Difficulty difficulty, int seed)
+    {
+        var progress = db.Table<MazeProgress>().FirstOrDefault(p => p.Difficulty == difficulty && p.Seed == seed);
+        return progress ?? new MazeProgress { Difficulty = difficulty, Seed = seed };
+    }
+
+    // Gemmer fremgangen og lægger de tjente mønter til pungen i én transaktion
+    public void SaveProgress(MazeProgress progress, int earned)
+    {
+        db.RunInTransaction(() =>
+        {
+            db.InsertOrReplace(progress);
+            var wallet = GetWallet();
+            wallet.Coins += earned;
+            db.InsertOrReplace(wallet);
+        });
+    }
+
+    public WalletRow GetWallet()
+    {
+        return db.Find<WalletRow>(1) ?? new WalletRow { Id = 1 };
+    }
+
+    public void SaveWallet(WalletRow wallet)
+    {
+        db.InsertOrReplace(wallet);
     }
 
     // Sletter alle ventende rekorder (når brugeren logger ud)

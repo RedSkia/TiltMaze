@@ -43,6 +43,12 @@ public class GameDatabase
         db.CreateTable<PendingRun>();
     }
 
+    // Sletter alle ventende rekorder (når brugeren logger ud)
+    public void ClearPending()
+    {
+        db.DeleteAll<PendingRun>();
+    }
+
     public BestRun? GetBest(Difficulty difficulty, int seed)
     {
         return db.Table<BestRun>().FirstOrDefault(b => b.Difficulty == difficulty && b.Seed == seed);

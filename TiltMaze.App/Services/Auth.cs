@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace TiltMaze.App.Services;
 
@@ -36,6 +37,7 @@ public class Auth
     private readonly HttpClient http = ApiSettings.CreateHttpClient();
     private readonly SemaphoreSlim refreshLock = new(1);
     private readonly Biometrics biometrics;
+    private readonly GameDatabase database;
     private Task? loading;
 
     private string? accessToken;
@@ -44,9 +46,10 @@ public class Auth
     private DateTime refreshExpires;
     private bool locked; // der er et gemt login, men fingeraftryk skal låse det op
 
-    public Auth(Biometrics biometrics)
+    public Auth(Biometrics biometrics, GameDatabase database)
     {
         this.biometrics = biometrics;
+        this.database = database;
     }
 
     // Brugernavnet er også navnet på top-listen
@@ -113,7 +116,7 @@ public class Auth
         if (!response.IsSuccessStatusCode)
             return new AuthResult { Error = await ReadError(response) };
 
-        var tokens = await response.Content.ReadFromJsonAsync<TokenDto>();
+        var tokens = await ReadJson<TokenDto>(response);
         if (tokens == null)
             return new AuthResult { Error = "The server sent an invalid response." };
 
@@ -133,7 +136,7 @@ public class Auth
         if (response == null || !response.IsSuccessStatusCode)
             return;
 
-        var account = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+        var account = await ReadJson<Dictionary<string, string>>(response);
         if (account != null && account.TryGetValue("username", out var name))
             await SetUsername(name);
     }
@@ -144,7 +147,7 @@ public class Auth
         using var response = await Send(() => http.GetAsync("/api/account/available?username=" + Uri.EscapeDataString(username)));
         if (response == null || !response.IsSuccessStatusCode)
             return null;
-        var answer = await response.Content.ReadFromJsonAsync<Dictionary<string, bool>>();
+        var answer = await ReadJson<Dictionary<string, bool>>(response);
         return answer != null && answer.TryGetValue("available", out bool available) ? available : null;
     }
 
@@ -162,7 +165,16 @@ public class Auth
         }
     }
 
+    // Brugeren logger selv ud (eller sletter kontoen): ventende rekorder hører til den bruger og slettes,
+    // så de ikke sendes under den næste, der logger ind
     public void Logout()
+    {
+        database.ClearPending();
+        ClearLogin();
+    }
+
+    // Glemmer login'et, men beholder ventende rekorder
+    private void ClearLogin()
     {
         accessToken = null;
         refreshToken = null;
@@ -217,13 +229,13 @@ public class Auth
         if (response.StatusCode == HttpStatusCode.Unauthorized)
         {
             // Refresh-tokenet er ugyldigt eller udløbet: brugeren skal logge ind igen
-            Logout();
+            ClearLogin();
             return null;
         }
         if (!response.IsSuccessStatusCode)
             return null;
 
-        var tokens = await response.Content.ReadFromJsonAsync<TokenDto>();
+        var tokens = await ReadJson<TokenDto>(response);
         if (tokens == null)
             return null;
         await SaveTokens(tokens);
@@ -261,6 +273,19 @@ public class Auth
         catch (TaskCanceledException)
         {
             return null;
+        }
+    }
+
+    // Læser JSON fra svaret. Er svaret ikke JSON (fx fra en proxy), giver den null i stedet for en fejl
+    private static async Task<T?> ReadJson<T>(HttpResponseMessage response)
+    {
+        try
+        {
+            return await response.Content.ReadFromJsonAsync<T>();
+        }
+        catch (JsonException)
+        {
+            return default;
         }
     }
 

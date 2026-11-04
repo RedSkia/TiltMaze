@@ -13,6 +13,7 @@ public class NicknameTests
     [InlineData("with space", false)]
     [InlineData("æøå", false)]
     [InlineData("", false)]
+    [InlineData("abc\n", false)]
     public void IsValid(string nickname, bool valid)
     {
         Assert.Equal(valid, Nickname.IsValid(nickname));

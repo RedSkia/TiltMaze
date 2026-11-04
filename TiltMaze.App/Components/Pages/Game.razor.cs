@@ -296,6 +296,11 @@ public partial class Game : IDisposable
         {
             // Siden blev lukket
         }
+        catch (Exception ex)
+        {
+            // Fx hvis siden er lukket midt i et billede. Løkken stopper, men appen går ikke ned
+            Debug.WriteLine("RunLoop stoppede: " + ex.Message);
+        }
     }
 
     // Ét billede: flyt kuglen (hul og mål tjekkes efter hvert fysik-skridt), spøgelset og kameraet

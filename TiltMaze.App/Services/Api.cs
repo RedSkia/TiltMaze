@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using TiltMaze.Core;
 
 namespace TiltMaze.App.Services;
@@ -71,7 +72,7 @@ public class Api
         using var response = await Send(() => new HttpRequestMessage(HttpMethod.Get, url));
         if (response == null || !response.IsSuccessStatusCode)
             return null;
-        return await response.Content.ReadFromJsonAsync<List<LeaderboardRow>>();
+        return await ReadJson<List<LeaderboardRow>>(response);
     }
 
     // De 3 bedste spøgelser på labyrinten, til at ræse mod. Ens egen tur springes over (den
@@ -91,7 +92,7 @@ public class Api
             using var response = await Send(() => new HttpRequestMessage(HttpMethod.Get, "/api/runs/" + row.RunId + "/ghost"));
             if (response == null || !response.IsSuccessStatusCode)
                 continue;
-            var ghost = await response.Content.ReadFromJsonAsync<GhostDto>();
+            var ghost = await ReadJson<GhostDto>(response);
             if (ghost == null)
                 continue;
             races.Add(new GhostRace { Username = ghost.Username, TimeMs = ghost.TimeMs, Samples = Ghost.FromBytes(Convert.FromBase64String(ghost.Ghost)) });
@@ -148,6 +149,19 @@ public class Api
         if (token != null)
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return await http.SendAsync(request);
+    }
+
+    // Læser JSON fra svaret. Er svaret ikke JSON (fx fra en proxy), giver den null i stedet for en fejl
+    private static async Task<T?> ReadJson<T>(HttpResponseMessage response)
+    {
+        try
+        {
+            return await response.Content.ReadFromJsonAsync<T>();
+        }
+        catch (JsonException)
+        {
+            return default;
+        }
     }
 
     // Fejlbesked ud fra svaret, eller "" hvis det lykkedes

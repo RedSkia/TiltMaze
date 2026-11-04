@@ -29,7 +29,7 @@ Vælg Easy, Normal, Hard eller Expert på startsiden (valget huskes), og tryk de
 - På en lille skærm følger kameraet kuglen, og et minikort i hjørnet viser hele banen.
 - **Pausemenuen** (`Esc`, `P` eller menu-knappen) har Resume, Retry og Leave. Leave afslutter løbet uden flere spørgsmål.
 - **Lyd:** korte arkadelyde (mønt, fald, nedtælling, mål, ny rekord), lavet med Web Audio uden lydfiler. Slås til/fra i pausemenuen eller på Account.
-- **Mønter:** et par stykker pr. labyrint (flest på Expert), ofte uden for den korteste vej. Hver mønt giver 1 mønt første gang, at klare en labyrint giver 5-40 første gang, og en plads på top 10 / top 3 giver 25 / 50 én gang. Mønterne bruges i **Shop** til nye farver til kuglen.
+- **Mønter:** et par stykker pr. labyrint (flest på Expert), ofte uden for den korteste vej. Hver mønt giver 1 mønt første gang, at klare en labyrint giver 5-40 første gang, og en plads på top 10 / top 3 giver 25 / 50 én gang. Mønterne bruges i **Shop** til udseende: kuglefarver, spor bag kuglen, mønstre på kuglen, effekter ved mål og bane-temaer (kun pynt, ændrer ikke spillet).
 
 | Platform | Styring |
 |---|---|

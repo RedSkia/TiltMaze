@@ -78,4 +78,4 @@ TiltMaze.Core      MazeGenerator, Course, Ball, Camera, Ghost   (ingen MAUI, tes
 - **Bedste tid:** pr. (sværhedsgrad, seed) og pr. sværhedsgrad i SQLite (`GameDatabase`). Dagens bedste tid er bare tiden for dagens seed.
 - **Pause:** knap, `P`/`Esc`, og automatisk når vinduet skjules (`Window.Stopped`, sensoren slukkes). Spillet fortsætter først, når man trykker Resume.
 - **Forlad løbet:** pausemenuen har Leave, som går direkte til menuen (ingen ekstra spørgsmål).
-- **Mønter og butik:** mønter ligger midt i nogle celler (3-9, ikke på start, mål eller huller) og påvirker ikke fysikken. De giver penge i `Wallet` (SQLite), sammen med belønning for at klare en labyrint og bonus for top 10 / top 3. I Shop køber man farver til kuglen.
+- **Mønter og butik:** mønter ligger midt i nogle celler (3-9, ikke på start, mål eller huller) og påvirker ikke fysikken. De giver penge i `Wallet` (SQLite), sammen med belønning for at klare en labyrint og bonus for top 10 / top 3. I Shop køber man udseende (farver, spor, mønstre, effekter ved mål og bane-temaer); det ændrer ikke fysik, tid eller spøgelse.

@@ -46,7 +46,7 @@
             </div>
         </header>
 
-        <div class="board-area">
+        <div class="board-area theme-@theme">
             <!-- Fokuseret felt: tastaturet virker kun, når det har fokus. Piletaster og mellemrum blokeres kun mens man spiller -->
             <div class="board @ShakeClass" tabindex="0" @ref="board" inert="@modalOpen"
                  @onkeydown="KeyDown" @onkeyup="KeyUp" @onfocusout="ClearKeys"
@@ -102,9 +102,14 @@
                             <RivalGhost Name="@rival.Name" Color="@rival.Color" X="@rival.X" Y="@rival.Y" />
                         }
                     }
+                    @if (trailKind != "none")
+                    {
+                        <TrailView Points="trail" Kind="@trailKind" />
+                    }
                     <circle class="ball-glow" cx="@N(ball.X)" cy="@N(ball.Y)" r="@N(Ball.Radius * 2)" />
                     <ellipse class="ball-shadow" cx="@N(ball.X + 0.06)" cy="@N(ball.Y + 0.09)" rx="@N(Ball.Radius)" ry="@N(Ball.Radius * 0.85)" />
                     <circle class="ball" cx="@N(ball.X)" cy="@N(ball.Y)" r="@N(Ball.Radius)" />
+                    <BallPattern Pattern="@pattern" X="@ball.X" Y="@ball.Y" R="@Ball.Radius" />
                     <circle class="ball-shine" cx="@N(ball.X - 0.09)" cy="@N(ball.Y - 0.1)" r="0.06" />
                 </svg>
             </div>
@@ -171,8 +176,8 @@
             }
             else if (finished)
             {
-                <div class="confetti" aria-hidden="true">
-                    @foreach (var piece in confetti)
+                <div class="effect @goalEffect" aria-hidden="true">
+                    @foreach (var piece in EffectPieces)
                     {
                         <i style="@piece"></i>
                     }

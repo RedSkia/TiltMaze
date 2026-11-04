@@ -375,8 +375,9 @@
     50% { box-shadow: 0 0 18px rgba(255, 200, 87, 0.6); }
 }
 
-/* Konfetti: falder ned over skærmen, når banen er klaret. Farven skifter mellem de fire spilfarver */
-.confetti {
+/* Effekt ved mål (butikken): stykkerne falder ned over skærmen eller flyver ud fra et udbrud.
+   Konfetti er standard; stjerner, fyrværkeri og mønt-regn bruger samme stykker med anden form */
+.effect {
     position: absolute;
     inset: 0;
     overflow: hidden;
@@ -384,15 +385,65 @@
     z-index: 1;
 }
 
-.confetti i {
+.effect i {
     position: absolute;
-    top: -8%;
     left: var(--x);
+    opacity: 0;
+}
+
+/* Stjerner: guld og hvide, falder og drejer */
+.stars i {
+    top: -8%;
+    width: 18px;
+    height: 18px;
+    background: var(--gold);
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    animation: confetti-fall 2.1s ease-in var(--delay) forwards;
+}
+
+.stars i:nth-child(2n) {
+    background: #fff;
+}
+
+/* Mønt-regn: guldmønter, der falder og vender om sig selv */
+.coins i {
+    top: -8%;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff0b0, var(--gold) 55%, #a56d00);
+    animation: coin-fall 1.9s ease-in var(--delay) forwards;
+}
+
+@keyframes coin-fall {
+    0% { opacity: 1; top: -8%; transform: rotateY(0deg); }
+    85% { opacity: 1; }
+    100% { opacity: 0; top: 105%; transform: rotateY(var(--turn)); }
+}
+
+/* Fyrværkeri: gnisterne flyver ud fra udbruddets midte (--x, --y) og bliver små og svage */
+.fireworks i {
+    top: var(--y);
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--c);
+    animation: spark 1.2s ease-out var(--delay) forwards;
+}
+
+@keyframes spark {
+    0% { opacity: 1; transform: translate(0, 0) scale(1.3); }
+    70% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); }
+}
+
+/* Konfetti: farven skifter mellem de fire spilfarver */
+.confetti i {
+    top: -8%;
     width: 8px;
     height: 14px;
     border-radius: 2px;
     background: var(--accent);
-    opacity: 0;
     animation: confetti-fall 1.9s ease-in var(--delay) forwards;
 }
 
@@ -510,7 +561,7 @@
     }
 }
 
-/* ---------- Mindre bevægelse: ingen rystelse, konfetti eller "pop" ---------- */
+/* ---------- Mindre bevægelse: ingen rystelse, effekt ved mål eller "pop" ---------- */
 
 @media (prefers-reduced-motion: reduce) {
     .board.shake-a, .board.shake-b, .spawn, .coin-pop, .record {
@@ -521,7 +572,7 @@
         animation: none;
     }
 
-    .confetti {
+    .effect {
         display: none;
     }
 

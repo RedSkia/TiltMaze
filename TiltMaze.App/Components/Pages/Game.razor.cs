@@ -74,6 +74,13 @@ public partial class Game : IDisposable
     private int runCoins;
     private int completionReward;
     private BallColor ballColor = Rewards.BallColors[0];
+
+    // Det man har valgt i butikken (kun udseende): mønster på kuglen, spor, effekt ved mål og bane-tema
+    private string pattern = "plain";
+    private string trailKind = "none";
+    private string goalEffect = "confetti";
+    private string theme = "neon";
+    private readonly Trail trail = new();
     private double popX, popY;
     private int pops;   // tæller op ved hver mønt, så "pop"-ringen starter forfra
 
@@ -99,10 +106,28 @@ public partial class Game : IDisposable
     private CancellationTokenSource? stop;
     private Window? window;
 
-    // Konfetti ved mål: 28 stykker med hver sin plads, forsinkelse og drejning
+    // Effekt ved mål. Konfetti, stjerner og mønt-regn: 28 stykker med hver sin plads, forsinkelse og drejning,
+    // der falder ned over skærmen (formen kommer fra CSS)
     private static readonly string[] confetti = Enumerable.Range(0, 28)
         .Select(i => "--x:" + (i * 37 % 100) + "%;--delay:" + N(i % 7 * 0.08) + "s;--turn:" + ((i % 2 == 0 ? 1 : -1) * (200 + i * 20)) + "deg")
         .ToArray();
+
+    // Fyrværkeri: 3 udbrud med 14 gnister hver. Hver gnist flyver ud fra udbruddets midte (--x, --y) i sin retning
+    private static readonly string[] burstX = ["25%", "70%", "48%"];
+    private static readonly string[] burstY = ["30%", "38%", "20%"];
+    private static readonly string[] burstColor = ["#ffc857", "#2de2c8", "#ff5fae"];
+    private static readonly string[] fireworks = Enumerable.Range(0, 42)
+        .Select(i =>
+        {
+            int burst = i / 14;
+            double angle = i % 14 * Math.PI * 2 / 14;
+            double distance = i % 2 == 0 ? 70 : 105;
+            return "--x:" + burstX[burst] + ";--y:" + burstY[burst] + ";--dx:" + N(Math.Cos(angle) * distance) + "px;--dy:" + N(Math.Sin(angle) * distance)
+                + "px;--delay:" + N(burst * 0.45) + "s;--c:" + burstColor[burst];
+        })
+        .ToArray();
+
+    private string[] EffectPieces => goalEffect == "fireworks" ? fireworks : confetti;
 
     // Udsnittet af banen, som SVG'en viser. Uden kamera er det hele banen.
     private string ViewBox => N(camera.Left) + " " + N(camera.Top) + " " + N(camera.ViewWidth) + " " + N(camera.ViewHeight);
@@ -188,7 +213,12 @@ public partial class Game : IDisposable
         picked = new bool[maze.Coins.Count];
         runCoins = 0;
         completionReward = 0;
-        ballColor = wallet.Equipped;
+        ballColor = wallet.EquippedColor;
+        pattern = wallet.EquippedId(ShopCategory.Pattern);
+        trailKind = wallet.EquippedId(ShopCategory.Trail);
+        goalEffect = wallet.EquippedId(ShopCategory.GoalEffect);
+        theme = wallet.EquippedId(ShopCategory.Theme);
+        trail.Clear();
     }
 
     private async Task LoadRivals(Difficulty difficulty, int seed)
@@ -350,6 +380,8 @@ public partial class Game : IDisposable
 
         outcome = Outcome.None;
         ball.Update(seconds, ax, ay, CheckOutcome);
+        if (trailKind != "none")
+            trail.Add(ball.X, ball.Y);
         MoveGhost();
         UpdateDelta();
 
@@ -435,6 +467,7 @@ public partial class Game : IDisposable
         falls++;
         sound.Fall();
         ball.Reset(maze.Start.X + 0.5, maze.Start.Y + 0.5);
+        trail.Clear();
         if (Vibration.Default.IsSupported)
             Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(120));
     }

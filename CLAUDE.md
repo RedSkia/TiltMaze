@@ -42,7 +42,7 @@ Labyrintspil, .NET MAUI Blazor Hybrid (Android + Windows) + ASP.NET Core API (Do
 - Tal i SVG formateres med `CultureInfo.InvariantCulture` (`N()` i Game, MazeLayer, Joystick og RivalGhost).
 - Alle tekster brugeren ser er på engelsk.
 - Design "Neon Arcade": natblå baggrund, turkis accent (`--accent`), orange kugle (`--ball`), guld mål/rekord (`--gold`), koral fare (`--danger`). Kun systemskrifttyper. Arkade-knapper med kant (`box-shadow`), der trykkes ned. Alle animationer slås fra eller dæmpes ved `prefers-reduced-motion`.
-- Fælles UI og tokens kommer fra `wwwroot/app.css`; sidens egen stil ligger i `.razor.css`.
+- Fælles UI og tokens kommer fra `wwwroot/app.css`; sidens egen stil ligger i `.razor.css`. Fælles klasser: `.cta` (kort med tekst + knap, fx "Sign in"), `.icon-button` (rund ikonknap, min 44 px), `.empty-state` (ikon, overskrift, tekst, knap: ingen tider, offline, NotFound), `.hint`, `.password-row`, `.segmented`.
 - Layout uden overlap (390, 900 og 1400 px): rækker af knapper bruger `flex-wrap` eller `minmax(0, 1fr)`, `.button` har `max-width: 100%`, `.page-head` brydes, lange navne får "...".
 - Mærke: kun RedSkia.Dev (About-kortet med RedSkia-rød `#ee3b33`, "by RedSkia.Dev" på startsiden). Intet personnavn i appen.
 - Android-tilladelser: `INTERNET`, `ACCESS_NETWORK_STATE` (appen ser, om der er net, før køen sendes), `VIBRATE` og `USE_BIOMETRIC`.

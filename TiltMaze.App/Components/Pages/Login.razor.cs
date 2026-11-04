@@ -16,6 +16,7 @@ public partial class Login : IDisposable
     private string error = "";
     private bool creating;   // false = log ind, true = opret konto
     private bool busy;
+    private bool showPassword;   // true = kodeordet vises som tekst
 
     // Er navnet ledigt? "" (intet at vise), "checking", "available", "taken", "invalid" eller "unknown" (uden net)
     private string availability = "";

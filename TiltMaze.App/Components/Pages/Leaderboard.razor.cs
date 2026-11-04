@@ -40,6 +40,11 @@ public partial class Leaderboard
             rows = null;
     }
 
+    // Link til spillet med den valgte sværhedsgrad og seed (dagens seed, hvis "Daily maze" er valgt)
+    private string PlayLink => daily
+        ? $"play/{difficulty}/{Course.DailySeed()}"
+        : $"play/{difficulty}/{seedText.Trim()}";
+
     private async Task Load()
     {
         error = "";

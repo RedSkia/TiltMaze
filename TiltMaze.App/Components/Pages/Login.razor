@@ -17,22 +17,29 @@
         <label class="field">
             <span>Username</span>
             <input type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="16" disabled="@busy"
+                   aria-invalid="@(availability == "taken" || availability == "invalid" ? "true" : null)"
+                   aria-describedby="@(creating ? "username-hint availability" : null)"
                    @bind="username" @bind:event="oninput" @bind:after="UsernameChanged" />
             @if (creating)
             {
-                <span class="hint muted">3-16 letters, digits or underscores. Shown on the leaderboard.</span>
+                <span class="hint muted" id="username-hint">3-16 letters, digits or underscores. Shown on the leaderboard.</span>
                 @if (availability != "")
                 {
-                    <span class="availability @availability" role="status">@AvailabilityText</span>
+                    <span class="availability @availability" id="availability" role="status">@AvailabilityText</span>
                 }
             }
         </label>
         <label class="field">
             <span>Password</span>
-            <input type="password" autocomplete="@(creating ? "new-password" : "current-password")" @bind="password" maxlength="100" disabled="@busy" />
+            <span class="password-row">
+                <input type="@(showPassword ? "text" : "password")" autocomplete="@(creating ? "new-password" : "current-password")" @bind="password" maxlength="100" disabled="@busy"
+                       aria-invalid="@(error != "" ? "true" : null)" aria-describedby="@(creating ? "password-hint" : null)" />
+                <button type="button" class="button" aria-label="@(showPassword ? "Hide password" : "Show password")" aria-pressed="@showPassword"
+                        @onclick="() => showPassword = !showPassword">@(showPassword ? "Hide" : "Show")</button>
+            </span>
             @if (creating)
             {
-                <span class="hint muted">At least 8 characters</span>
+                <span class="hint muted" id="password-hint">At least 8 characters</span>
             }
         </label>
         <button type="submit" class="button primary" disabled="@(busy || (creating && availability == "taken"))">@(creating ? "Create account" : "Sign in")</button>

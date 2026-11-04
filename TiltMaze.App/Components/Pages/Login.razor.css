@@ -8,11 +8,6 @@
     gap: var(--space-4);
 }
 
-.hint {
-    font-weight: 400;
-    font-size: var(--font-s);
-}
-
 /* Er brugernavnet ledigt? Farve og tekst, så farven ikke står alene */
 .availability {
     font-size: var(--font-s);

@@ -8,6 +8,27 @@
         </div>
     </div>
 
+    @if (busy)
+    {
+        <div class="loading" role="status">
+            <div class="spinner"></div>
+            <p>Working...</p>
+        </div>
+    }
+
+    @if (message != "")
+    {
+        <p class="alert notice" role="status">@message</p>
+    }
+
+    @if (error != "")
+    {
+        <p class="alert error" role="alert">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 2.5 20h19z" /><path d="M12 10v4" /><path d="M12 17.5v.01" /></svg>
+            @error
+        </p>
+    }
+
     @if (auth.IsLocked)
     {
         <section class="card">
@@ -20,9 +41,9 @@
     }
     else if (!auth.IsLoggedIn)
     {
-        <section class="card">
+        <section class="card cta">
             <p>You are not signed in. Your times are saved on this device, and an account lets you share them on the leaderboard.</p>
-            <a class="button primary" href="login">Sign in or create account</a>
+            <a class="button primary" href="login">Sign in</a>
         </section>
     }
     else
@@ -38,8 +59,9 @@
             <form class="card username-form" @onsubmit="SaveUsername">
                 <label class="field">
                     <span>New username</span>
-                    <input type="text" autocomplete="username" autocapitalize="none" spellcheck="false" @bind="username" maxlength="16" disabled="@busy" />
-                    <span class="hint muted">3-16 letters, digits or underscores. You sign in with the new name.</span>
+                    <input type="text" autocomplete="username" autocapitalize="none" spellcheck="false" @bind="username" maxlength="16" disabled="@busy"
+                           aria-invalid="@(error != "" ? "true" : null)" aria-describedby="username-hint" />
+                    <span class="hint muted" id="username-hint">3-16 letters, digits or underscores. You sign in with the new name.</span>
                 </label>
                 <button type="submit" class="button primary" disabled="@busy">Save username</button>
             </form>
@@ -76,27 +98,6 @@
                 <button type="button" class="button danger" @onclick="AskDelete" disabled="@busy">Delete account</button>
             </div>
         </section>
-    }
-
-    @if (busy)
-    {
-        <div class="loading" role="status">
-            <div class="spinner"></div>
-            <p>Working...</p>
-        </div>
-    }
-
-    @if (message != "")
-    {
-        <p class="alert notice" role="status">@message</p>
-    }
-
-    @if (error != "")
-    {
-        <p class="alert error" role="alert">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 2.5 20h19z" /><path d="M12 10v4" /><path d="M12 17.5v.01" /></svg>
-            @error
-        </p>
     }
 </div>
 

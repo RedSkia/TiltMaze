@@ -1,21 +1,10 @@
-/* Sværhedsgraderne står altid på én linje med fire lige brede knapper. Knapperne må krympe (min-width: 0),
-   så teksten aldrig skubber dem ind over hinanden på en smal telefon */
-.choices {
-    display: grid;
+/* Sværhedsgraderne: fire lige brede felter (.segmented har to kolonner som standard) */
+.difficulty {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--space-2);
-}
-
-.choices .button {
-    min-width: 0;
-    padding: 0 var(--space-1);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 @media (max-width: 380px) {
-    .choices .button {
+    .difficulty button {
         font-size: var(--font-s);
     }
 }
@@ -30,6 +19,11 @@
 .seed-form .field {
     flex: 1 1 12rem;
     min-width: 0;
+}
+
+/* Afrundede hjørner: kortet beskærer rækkerne */
+.rows {
+    overflow: hidden;
 }
 
 .board {
@@ -51,8 +45,18 @@
 
 .board li.me {
     background: var(--surface-2);
+    box-shadow: inset 4px 0 0 var(--accent);
     font-weight: 700;
 }
+
+.board li.me .name {
+    color: var(--accent);
+}
+
+/* Nr. 1-3 får guld, sølv og bronze; tallet er stadig synligt */
+.board li:nth-child(1) .rank { color: var(--gold); }
+.board li:nth-child(2) .rank { color: var(--silver); }
+.board li:nth-child(3) .rank { color: var(--bronze); }
 
 .rank {
     flex: none;
@@ -72,5 +76,6 @@
 
 .time {
     flex: none;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
 }

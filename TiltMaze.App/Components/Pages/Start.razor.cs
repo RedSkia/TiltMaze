@@ -14,6 +14,9 @@ public partial class Start
     private readonly int dailySeed = Course.DailySeed();
     private readonly string today = DateTime.UtcNow.ToString("ddd d MMM", CultureInfo.InvariantCulture);
 
+    // Tid til næste daglige labyrint (UTC-midnat), regnet ud når siden åbnes
+    private readonly string timeLeft = TimeUntilNextDaily();
+
     // Den valgte sværhedsgrad huskes til næste gang
     private Difficulty selected = Difficulty.Normal;
 
@@ -45,6 +48,13 @@ public partial class Start
     private void Open(Difficulty difficulty, int seed)
     {
         navigation.NavigateTo("play/" + difficulty.ToString().ToLower() + "/" + seed);
+    }
+
+    private static string TimeUntilNextDaily()
+    {
+        DateTime now = DateTime.UtcNow;
+        TimeSpan left = now.Date.AddDays(1) - now;
+        return (int)left.TotalHours + "h " + left.Minutes + "m";
     }
 
     private static string TimeText(double? seconds)

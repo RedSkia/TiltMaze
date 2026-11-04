@@ -3,23 +3,26 @@
 <div class="page-wide start">
     <!-- Hovedhandlingen: dagens labyrint i den valgte sværhedsgrad -->
     <section class="card hero" aria-labelledby="hero-title">
-        <img class="hero-art" src="images/logo.svg" alt="" width="120" height="120" />
-        <div class="hero-text">
-            <span class="kicker">Daily maze · @today</span>
-            <h1 id="hero-title">Today's maze</h1>
-            <p class="page-sub">The same maze for everyone today. Roll fast to jump over holes.</p>
-        </div>
-        <div class="hero-times">
-            <div>
-                <span class="label">Today's best</span>
-                <span class="time">@TimeText(scores.Best(selected, dailySeed))</span>
-            </div>
-            <div>
-                <span class="label">Best @selected</span>
-                <span class="time">@TimeText(scores.BestOf(selected))</span>
+        <div class="hero-main">
+            <img class="hero-art" src="images/logo.svg" alt="" width="96" height="96" />
+            <div class="hero-text">
+                <span class="kicker">Daily maze · @today</span>
+                <h1 id="hero-title">Today's maze</h1>
+                <p class="page-sub">The same maze for everyone. Roll fast to jump over holes.</p>
+                <span class="badge">New maze in @timeLeft</span>
             </div>
         </div>
-        <div class="hero-buttons">
+        <div class="hero-play">
+            <div class="hero-times">
+                <div>
+                    <span class="label">Your best today</span>
+                    <span class="time">@TimeText(scores.Best(selected, dailySeed))</span>
+                </div>
+                <div>
+                    <span class="label">Best on @selected</span>
+                    <span class="time">@TimeText(scores.BestOf(selected))</span>
+                </div>
+            </div>
             <button type="button" class="button primary big" @onclick="PlayDaily">
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z" /></svg>
                 <span>Play daily</span>
@@ -34,7 +37,7 @@
         </div>
     </section>
 
-    <!-- Valg af sværhedsgrad: et stort felt pr. sværhedsgrad med størrelse, huller og bedste tider -->
+    <!-- Valg af sværhedsgrad: et kort pr. sværhedsgrad med størrelse, huller og bedste tider -->
     <section aria-labelledby="levels-title">
         <h2 id="levels-title" class="section-label">Difficulty</h2>
         <div class="levels">
@@ -43,10 +46,14 @@
                 var settings = DifficultySettings.For(difficulty);
                 int level = (int)difficulty + 1;
                 bool isSelected = difficulty == selected;
-                <button type="button" class="level @(isSelected ? "selected" : "")" aria-pressed="@(isSelected ? "true" : "false")"
+                <button type="button" class="level @difficulty.ToString().ToLower() @(isSelected ? "selected" : "")" aria-pressed="@(isSelected ? "true" : "false")"
                         @onclick="() => Select(difficulty)">
                     <span class="level-head">
                         <span class="level-name">@difficulty</span>
+                        @if (isSelected)
+                        {
+                            <svg class="icon check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>
+                        }
                         <span class="pips" aria-hidden="true">
                             @for (int i = 1; i <= 4; i++)
                             {

@@ -16,7 +16,7 @@ Et mørkt arkadespil: natblå baggrund med et svagt blåt lys fra toppen, turkis
 
 - **Start:** øverst et stort kort "Today's maze" med dagens og bedste tid og en stor "Play daily"-knap (plus "Random maze"). Under det fire felter, ét pr. sværhedsgrad (størrelse, huller, bedste tid, dagens tid). Det valgte felt lyser og huskes. Bred skærm: kortet og felterne side om side.
 - **Spil, telefon i højformat:** HUD øverst (pause, stor tid med forskel til spøgelset, menu og små "chips" med sværhedsgrad, bedste tid og fald). Banen fylder resten. Kan hele banen ikke vises med mindst 40 px pr. celle, følger kameraet kuglen, og et minikort står i hjørnet. Joysticken er flydende: den kommer frem, hvor fingeren trykker på banen, og forsvinder, når man slipper.
-- **Spil, landskab og computer:** hele banen og et sidepanel med tid, tal, hjælpetekst og knapperne Pause, Retry og Menu.
+- **Spil, landskab og computer:** hele banen og et sidepanel med tid, tal, hjælpetekst og knapperne Pause og Retry.
 - **Dialoger** (i appen, ikke systemets): Paused (Resume, Retry, Leave; med seed), Maze complete og Delete account? (på Account-siden). "Delete account?" bruger den fælles `ConfirmDialog`. Fokus på første knap, `Esc` lukker, resten af skærmen er `inert`.
 - **Leaderboard:** top 10 pr. labyrint (dagens eller en seed), din egen linje er markeret. **Login:** brugernavn og kodeord (ingen e-mail); ved "Create account" vises mens man skriver, om navnet er ledigt. **Account:** skift brugernavn, lås op med fingeraftryk/Windows Hello til/fra, log ud og slet konto (med en in-app dialog). Er appen låst, er der en Unlock-knap.
 

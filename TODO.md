@@ -1,10 +1,10 @@
 # TODO
 
 - [ ] Aflever `docs/TiltMaze-kravspec.pdf`
-- [ ] Prøv på rigtig telefon (OnePlus 6): retning og følsomhed af vip, landskab, hop over huller og trækket mod hullerne (er Hard/Expert fair?), flydende joystick, kamera og minikort
+- [ ] Prøv på rigtig telefon (OnePlus 6): retning og følsomhed af vip, landskab, hop over huller og trækket mod hullerne (er Hard/Expert fair?), flydende joystick og kamera
 - [ ] Prøv fingeraftryk på telefonen og Windows Hello på PC (start låst, annuller = gæst, Unlock på Account)
 - [ ] Slet den gamle API-database med e-mail-konti før næste test: `docker compose down -v` (konti er nu brugernavn + kodeord)
-- [ ] Mål billedhastighed på telefon med 2.5D-banen, kamera og minikort (kameraet ændrer `viewBox` hvert billede; plan B: `<canvas>`)
+- [ ] Mål billedhastighed på telefon med 2.5D-banen og kamera (kameraet ændrer `viewBox` hvert billede; plan B: `<canvas>`)
 - [ ] Indtast eller del en seed (nu kun via adressen `/play/{sværhedsgrad}/{seed}`)
 - [ ] Broer med touch/mus (Must i kravspec)
 - [ ] Hent egen bedste tur fra serveren ved ny telefon/ominstallation (nu kun lokalt spøgelse)

@@ -119,20 +119,6 @@
                 <div @key="falls" class="fall-flash"></div>
             }
 
-            @if (follow)
-            {
-                <!-- Minikort: hele banen i lille, med kuglen og det udsnit, kameraet viser -->
-                <svg class="minimap" viewBox="-0.3 -0.3 @N(maze.Width + 0.6) @N(maze.Height + 0.6)" aria-hidden="true">
-                    <MazeLayer Maze="maze" Mini="true" />
-                    <rect class="mini-view" x="@N(camera.Left)" y="@N(camera.Top)" width="@N(camera.ViewWidth)" height="@N(camera.ViewHeight)" rx="0.3" />
-                    @if (showGhost)
-                    {
-                        <circle class="mini-ghost" cx="@N(ghostX)" cy="@N(ghostY)" r="0.35" />
-                    }
-                    <circle class="mini-ball" style="fill: @ballColor.Mid" cx="@N(ball.X)" cy="@N(ball.Y)" r="0.45" />
-                </svg>
-            }
-
             <!-- Flydende joystick over hele banen: ringen kommer frem, hvor man trykker -->
             <Joystick @ref="joystick" Disabled="@(modalOpen || tilt.Enabled)" />
 

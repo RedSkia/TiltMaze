@@ -38,7 +38,7 @@ Vælg Easy, Normal, Hard eller Expert på startsiden (valget huskes), og tryk de
 - Hvert løb starter med en nedtælling 3-2-1-Go. Falder du i et hul, ryster skærmen, og kuglen starter forfra.
 - Bedste tid gemmes pr. labyrint (sværhedsgrad + seed) og pr. sværhedsgrad. Dit bedste løb vises som et spøgelse næste gang, og under tiden ser du, om du er foran (grøn, minus) eller bagud (rød, plus). Er du logget ind, ræser du også mod de 3 bedste andre (halvgennemsigtige kugler med brugernavn).
 - Små huller kan man rulle forbi langs væggen. Store huller fylder hele gangen, men med (næsten) fuld fart og et lige tilløb kan man hoppe over dem. Tæt på et hul trækkes kuglen svagt ind mod det. Hard og Expert har flere huller, også på vejen. Der er altid en vej uden om de store huller.
-- På en lille skærm følger kameraet kuglen, og et minikort i hjørnet viser hele banen.
+- På en lille skærm følger kameraet kuglen.
 - **Pausemenuen** (`Esc`, `P` eller menu-knappen) har Resume, Retry og Leave. Leave afslutter løbet uden flere spørgsmål.
 - **Lyd:** korte arkadelyde (mønt, fald, nedtælling, mål, ny rekord, pause, dunk mod væg, klik på knapper, køb og valg i butikken), lavet med Web Audio uden lydfiler. Slås til/fra i pausemenuen eller på Account.
 - **Mønter:** et par stykker pr. labyrint (flest på Expert), ofte uden for den korteste vej. Hver mønt giver 1 mønt første gang, at klare en labyrint giver 5-40 første gang, og en plads på top 10 / top 3 giver 25 / 50 én gang. Mønterne bruges i **Shop** til udseende: kuglefarver, spor bag kuglen, mønstre på kuglen, effekter ved mål og bane-temaer (kun pynt, ændrer ikke spillet).

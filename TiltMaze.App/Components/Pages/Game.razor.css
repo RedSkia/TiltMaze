@@ -1,4 +1,4 @@
-/* Spil-siden. Telefon i højformat: HUD øverst og banen under (kameraet følger kuglen, minikort i hjørnet).
+/* Spil-siden. Telefon i højformat: HUD øverst og banen under (kameraet følger kuglen).
    Landskab og computer: hele banen og et sidepanel */
 
 .game {
@@ -257,37 +257,6 @@
 @keyframes flash {
     from { opacity: 1; }
     to { opacity: 0; }
-}
-
-/* ---------- Minikort ---------- */
-
-.minimap {
-    position: absolute;
-    top: var(--space-2);
-    right: var(--space-2);
-    width: clamp(70px, 24%, 120px);
-    height: auto;
-    border-radius: var(--radius-s);
-    background: rgba(7, 11, 24, 0.75);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-card);
-    pointer-events: none;
-}
-
-.mini-view {
-    fill: rgba(234, 241, 255, 0.07);
-    stroke: #eaf1ff;
-    stroke-opacity: 0.7;
-    stroke-width: 0.12;
-}
-
-.mini-ghost {
-    fill: #8af5e6;
-    fill-opacity: 0.6;
-}
-
-.mini-ball {
-    fill: var(--ball);
 }
 
 /* ---------- Nedtælling 3-2-1-Go ---------- */

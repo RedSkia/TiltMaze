@@ -105,29 +105,6 @@
     stroke-width: 0.018;
 }
 
-/* ---------- Minikort ---------- */
-
-.mini-floor {
-    fill: var(--m-floor-b);
-    fill-opacity: 0.9;
-}
-
-.mini-walls {
-    fill: none;
-    stroke: var(--m-line);
-    stroke-width: 0.18;
-    stroke-linecap: round;
-}
-
-.mini-hole {
-    fill: var(--m-hole-rim);
-    fill-opacity: 0.75;
-}
-
-.mini-goal {
-    fill: #ffc857;
-}
-
 @media (prefers-reduced-motion: reduce) {
     .goal-glow {
         animation: none;

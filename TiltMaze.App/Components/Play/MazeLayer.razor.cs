@@ -8,7 +8,6 @@ namespace TiltMaze.App.Components.Play;
 public partial class MazeLayer
 {
     [Parameter, EditorRequired] public Course Maze { get; set; } = null!;
-    [Parameter] public bool Mini { get; set; }
 
     private Course? drawn;      // labyrinten, der sidst blev tegnet
     private bool changed;

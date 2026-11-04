@@ -747,7 +747,7 @@ input[type=text]:focus-visible, input[type=search]:focus-visible, input[type=ema
 :root {
     --m-floor-a: #13203f;    /* gulv: forløb fra oven og ned */
     --m-floor-b: #0a1229;
-    --m-line: #2de2c8;       /* fliser, kant, start og minikortets vægge */
+    --m-line: #2de2c8;       /* fliser, kant og start */
     --m-frame: #050814;      /* kant om banen */
     --m-wall-a: #5cf2dc;     /* væggens top: forløb på skrå */
     --m-wall-b: #38bdf8;

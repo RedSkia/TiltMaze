@@ -81,14 +81,15 @@
                     }
                     @if (pops > 0)
                     {
-                        <!-- Ny @key ved hver mønt, så ringen starter sin animation forfra -->
-                        <circle @key="pops" class="coin-pop" cx="@N(popX)" cy="@N(popY)" r="0.2" />
+                        <!-- Ny @key ved hver mønt, så ringen starter sin animation forfra.
+                             Nøglerne har hvert sit forbogstav, for to søskende må ikke have samme nøgle (pops og falls kan begge være 1) -->
+                        <circle @key="@("pop" + pops)" class="coin-pop" cx="@N(popX)" cy="@N(popY)" r="0.2" />
                     }
 
                     @if (falls > 0)
                     {
                         <!-- Ny @key ved hvert fald, så ringen starter sin animation forfra -->
-                        <circle @key="falls" class="spawn" cx="@N(maze.Start.X + 0.5)" cy="@N(maze.Start.Y + 0.5)" r="0.4" />
+                        <circle @key="@("fall" + falls)" class="spawn" cx="@N(maze.Start.X + 0.5)" cy="@N(maze.Start.Y + 0.5)" r="0.4" />
                     }
                     @if (showGhost)
                     {

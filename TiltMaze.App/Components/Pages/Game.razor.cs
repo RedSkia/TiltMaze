@@ -210,6 +210,7 @@ public partial class Game : IDisposable
         coinMask = wallet.CoinMask(difficulty, seed);
         picked = new bool[maze.Coins.Count];
         runCoins = 0;
+        pops = 0;
         completionReward = 0;
         ballColor = wallet.EquippedColor;
         pattern = wallet.EquippedId(ShopCategory.Pattern);

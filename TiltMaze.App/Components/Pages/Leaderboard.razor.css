@@ -43,164 +43,98 @@
     min-width: 0;
 }
 
-/* ---------- Podie: nr. 1-3 ---------- */
 
-/* Tre lige brede kolonner i fuld bredde, alle med bunden på samme linje */
-.podium {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-items: end;
-    gap: var(--space-3);
-}
-
-.place {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-1);
-    padding: var(--space-4) var(--space-2);
-    border-radius: var(--radius-l);
-    border: 2px solid var(--border);
-    background: linear-gradient(180deg, var(--surface-2), var(--surface));
-    box-shadow: var(--shadow-card);
-    text-align: center;
-}
-
-/* Nr. 1 i midten og størst, nr. 2 til venstre, nr. 3 til højre */
-.place-1 {
-    order: 2;
-    padding-top: var(--space-5);
-    padding-bottom: var(--space-5);
-    border-color: var(--gold);
-    box-shadow: var(--shadow-card), 0 0 24px rgba(255, 200, 87, 0.25);
-}
-
-.place-2 {
-    order: 1;
-    border-color: var(--silver);
-}
-
-.place-3 {
-    order: 3;
-    border-color: var(--bronze);
-}
-
-.place.me {
-    background: linear-gradient(180deg, var(--surface-3), var(--surface-2));
-}
-
-/* Medalje: rund, med pladsens farve og tallet i */
-.medal {
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    color: var(--accent-ink);
-    font-size: var(--font-l);
-    font-weight: 850;
-}
-
-.place-1 .medal {
-    width: 52px;
-    height: 52px;
-    font-size: var(--font-xl);
-    background: var(--gold);
-}
-
-.place-2 .medal {
-    background: var(--silver);
-}
-
-.place-3 .medal {
-    background: var(--bronze);
-}
-
-.place .name {
-    flex: none;
-    max-width: 100%;
-    font-weight: 700;
-}
-
-.place .time {
-    font-size: var(--font-l);
-    font-weight: 800;
-}
-
-.place-1 .time {
-    color: var(--gold);
-    font-size: var(--font-xl);
-}
-
-.you {
-    padding: 0 8px;
-    border-radius: 999px;
-    background: var(--accent);
-    color: var(--accent-ink);
-    font-size: var(--font-s);
-    font-weight: 800;
-}
-
-/* ---------- Resten af listen ---------- */
+/* ---------- Tabel ---------- */
 
 /* Afrundede hjørner: kortet beskærer rækkerne */
 .rows {
     overflow: hidden;
 }
 
+/* Faste kolonner, så intet løber ud over kanten selv ved 360 px */
 .board {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
 }
 
-/* Faste kolonner: plads | navn | tid, så alle rækker står lige */
-.board li {
-    display: grid;
-    grid-template-columns: 2rem minmax(0, 1fr) auto;
-    align-items: center;
-    gap: var(--space-3);
-    min-height: var(--touch);
-    padding: var(--space-3) var(--space-4);
+.board th,
+.board td {
+    padding: 0 var(--space-3);
+    text-align: left;
 }
 
-.board li + li {
+.board td {
+    height: var(--touch);
+}
+
+.board th {
+    height: 36px;
+    color: var(--muted);
+    font-size: var(--font-s);
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+}
+
+.board tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.board tbody tr + tr {
     border-top: 1px solid var(--border);
 }
 
-.board li.me {
-    background: var(--surface-2);
+.board tr.me {
+    background: var(--surface-3);
     box-shadow: inset 4px 0 0 var(--accent);
     font-weight: 700;
 }
 
-.board li.me .name {
-    color: var(--accent);
+.board .rank {
+    width: 3rem;
+    text-align: center;
+    color: var(--muted);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
 }
 
-.rank {
-    color: var(--muted);
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
+.board .rank-1 {
+    color: var(--gold);
+}
+
+.board .rank-2 {
+    color: var(--silver);
+}
+
+.board .rank-3 {
+    color: var(--bronze);
 }
 
 /* Langt navn: "..." i stedet for at skubbe tiden ud af linjen */
 .name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.name-text {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.time {
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
+.you {
+    flex: none;
+    color: var(--accent);
+    font-size: var(--font-s);
+    font-weight: 800;
 }
 
 .board .time {
+    width: 6.5rem;
     text-align: right;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
 }

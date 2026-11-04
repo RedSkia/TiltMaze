@@ -77,39 +77,37 @@
         }
         else if (rows != null)
         {
-            <!-- Nr. 1-3 på podiet (2 - 1 - 3 med størst i midten), resten i en liste -->
-            <ol class="podium" aria-label="Top 3">
-                @for (int i = 0; i < Math.Min(3, rows.Count); i++)
-                {
-                    var row = rows[i];
-                    <li class="place place-@(i + 1) @(row.IsMe ? "me" : "")">
-                        <span class="medal">@row.Rank</span>
-                        <span class="name">@row.Username</span>
-                        @if (row.IsMe)
+            <!-- Alle rækker i én tabel: plads | spiller | tid -->
+            <section class="card rows">
+                <table class="board">
+                    <caption class="sr-only">Top times on this maze</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col" class="rank">#</th>
+                            <th scope="col">Player</th>
+                            <th scope="col" class="time">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in rows)
                         {
-                            <span class="you">You</span>
+                            <tr class="@(row.IsMe ? "me" : "")">
+                                <td class="rank rank-@row.Rank">@row.Rank</td>
+                                <td>
+                                    <div class="name">
+                                        <span class="name-text">@row.Username</span>
+                                        @if (row.IsMe)
+                                        {
+                                            <span class="you">(you)</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="time">@Format.Time(row.TimeMs / 1000.0)</td>
+                            </tr>
                         }
-                        <span class="time">@Format.Time(row.TimeMs / 1000.0)</span>
-                    </li>
-                }
-            </ol>
-
-            @if (rows.Count > 3)
-            {
-                <section class="card rows" aria-label="Rank 4 and below">
-                    <ol class="board" start="@rows[3].Rank">
-                        @for (int i = 3; i < rows.Count; i++)
-                        {
-                            var row = rows[i];
-                            <li class="@(row.IsMe ? "me" : "")">
-                                <span class="rank">@row.Rank</span>
-                                <span class="name">@row.Username@(row.IsMe ? " (you)" : "")</span>
-                                <span class="time">@Format.Time(row.TimeMs / 1000.0)</span>
-                            </li>
-                        }
-                    </ol>
-                </section>
-            }
+                    </tbody>
+                </table>
+            </section>
         }
 
         @if (!auth.IsLoggedIn)

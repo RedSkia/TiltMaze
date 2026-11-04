@@ -153,9 +153,20 @@ public partial class Game : IDisposable
     // Kører når siden åbnes
     protected override void OnInitialized()
     {
-        hint = tilt.IsSupported
-            ? "Tilt your phone, or touch and drag anywhere on the board. Holes pull the ball in; roll fast to jump them."
-            : "Drag anywhere on the board with the mouse or a finger. Holes pull the ball in; roll fast to jump them. P pauses.";
+        hint = tilt.Enabled
+            ? "Tilt your phone to roll the ball. Holes pull the ball in; roll fast to jump them."
+            : "Drag anywhere on the board with a finger or the mouse. Holes pull the ball in; roll fast to jump them.";
+    }
+
+    // Skift mellem vip og joystick (kun på en telefon med sensor)
+    private void ToggleTilt()
+    {
+        tilt.Enabled = !tilt.Enabled;
+        if (tilt.Enabled)
+            tilt.Start();
+        else
+            tilt.Stop();
+        OnInitialized();   // hjælpeteksten passer til den valgte styring
     }
 
     // Kører når siden åbnes og når adressen ændres (ny seed)
@@ -372,13 +383,18 @@ public partial class Game : IDisposable
             return;
         }
 
-        // Vip fra telefonen og joysticken lægges sammen
-        double ax = tilt.X;
-        double ay = tilt.Y;
-        if (joystick != null)
+        // Enten vip fra telefonen eller joysticken (valgt i pausemenuen eller på Account)
+        double ax = 0;
+        double ay = 0;
+        if (tilt.Enabled)
         {
-            ax += joystick.X;
-            ay += joystick.Y;
+            ax = tilt.X;
+            ay = tilt.Y;
+        }
+        else if (joystick != null)
+        {
+            ax = joystick.X;
+            ay = joystick.Y;
         }
         ax = Math.Clamp(ax, -1, 1);
         ay = Math.Clamp(ay, -1, 1);

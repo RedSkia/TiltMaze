@@ -9,11 +9,18 @@ public class TiltSensor
 
     public bool IsSupported => Accelerometer.Default.IsSupported;
 
+    // Styring: vip ELLER joystick, aldrig begge. Gemmes på enheden (standard: vip, hvis telefonen har sensoren)
+    public bool Enabled
+    {
+        get => IsSupported && Preferences.Default.Get("tilt", true);
+        set => Preferences.Default.Set("tilt", value);
+    }
+
     DisplayRotation rotation;   // gemmes, så vi ikke spørger skærmen ved hver måling
 
     public void Start()
     {
-        if (!IsSupported || Accelerometer.Default.IsMonitoring)
+        if (!Enabled || Accelerometer.Default.IsMonitoring)
             return;
 
         rotation = DeviceDisplay.Current.MainDisplayInfo.Rotation;

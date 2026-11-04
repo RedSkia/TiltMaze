@@ -486,3 +486,6 @@ $RECYCLE.BIN/
 
 # Data Protection-nøgler (lokal udvikling)
 TiltMaze.Api/keys/
+
+# Midlertidige worktrees
+.claude/worktrees/

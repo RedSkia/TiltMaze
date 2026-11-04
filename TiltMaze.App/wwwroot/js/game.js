@@ -85,9 +85,9 @@ window.tiltMaze = {
     }
 };
 
-// Ét lyttepunkt for alle knapper på siden (ikke selve banen). data-no-click på knapper, der har deres egen lyd
+// Ét lyttepunkt for alt man kan trykke på: knapper, links (også menuen), kontakter og faner (ikke selve banen). data-no-click på knapper, der har deres egen lyd
 document.addEventListener('pointerdown', function (e) {
-    const button = e.target.closest && e.target.closest('button, a.button');
+    const button = e.target.closest && e.target.closest('button, a, [role="switch"], [role="tab"], select, input[type="checkbox"], input[type="radio"]');
     if (button && !button.disabled && !button.hasAttribute('data-no-click'))
         window.tiltMaze.sound.click();
 });

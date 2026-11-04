@@ -134,7 +134,7 @@
             }
 
             <!-- Flydende joystick over hele banen: ringen kommer frem, hvor man trykker -->
-            <Joystick @ref="joystick" Disabled="@modalOpen" />
+            <Joystick @ref="joystick" Disabled="@(modalOpen || tilt.Enabled)" />
 
             @if (CountText != null)
             {
@@ -170,6 +170,15 @@
                             <button type="button" class="switch" role="switch" aria-checked="@(sound.Enabled ? "true" : "false")"
                                     aria-labelledby="sound-title" @onclick="ToggleSound"></button>
                         </div>
+                        @if (tilt.IsSupported)
+                        {
+                            <!-- Vip eller joystick, aldrig begge -->
+                            <div class="sound-row">
+                                <span id="tilt-title">Tilt (off = joystick)</span>
+                                <button type="button" class="switch" role="switch" aria-checked="@(tilt.Enabled ? "true" : "false")"
+                                        aria-labelledby="tilt-title" @onclick="ToggleTilt"></button>
+                            </div>
+                        }
                         <p class="pause-note muted">Leaving ends this run. The time is lost.</p>
                     </div>
                 </div>

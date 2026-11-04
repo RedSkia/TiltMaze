@@ -10,6 +10,7 @@ public partial class Account
     [Inject] private Api api { get; set; } = null!;
     [Inject] private Biometrics biometrics { get; set; } = null!;
     [Inject] private Sound sound { get; set; } = null!;
+    [Inject] private TiltSensor tilt { get; set; } = null!;
     [Inject] private RunQueue queue { get; set; } = null!;
     [Inject] private NavigationManager navigation { get; set; } = null!;
 
@@ -69,6 +70,12 @@ public partial class Account
     private void ToggleSound()
     {
         sound.Enabled = !sound.Enabled;
+    }
+
+    // Vip eller joystick. Game læser valget, når et løb starter
+    private void ToggleTilt()
+    {
+        tilt.Enabled = !tilt.Enabled;
     }
 
     private async Task ToggleBiometrics()

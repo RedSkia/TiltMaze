@@ -107,6 +107,21 @@
                                     aria-labelledby="sound-title" @onclick="ToggleSound"></button>
                         </div>
 
+                        @if (tilt.IsSupported)
+                        {
+                            <div class="setting-row">
+                                <span class="row-icon">
+                                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="14" rx="2" transform="rotate(20 12 10)" /><path d="M5 21h14" /></svg>
+                                </span>
+                                <div class="setting-text">
+                                    <span class="setting-title" id="tilt-title">Tilt controls</span>
+                                    <span class="setting-desc">On: tilt the phone. Off: joystick on the board. Never both.</span>
+                                </div>
+                                <button type="button" class="switch" role="switch" aria-checked="@(tilt.Enabled ? "true" : "false")"
+                                        aria-labelledby="tilt-title" @onclick="ToggleTilt"></button>
+                            </div>
+                        }
+
                         @if (biometricAvailable || biometrics.Enabled)
                         {
                             <div class="setting-row">

@@ -45,7 +45,7 @@ Vælg Easy, Normal, Hard eller Expert på startsiden (valget huskes), og tryk de
 
 | Platform | Styring |
 |---|---|
-| Android | Vip telefonen, eller tryk og træk hvor som helst på banen (joysticken kommer frem under fingeren) |
+| Android | Vip telefonen ELLER tryk og træk på banen (joystick). Vælg i pausemenuen eller på Account, aldrig begge på én gang |
 | Windows | Træk med musen på banen (joystick). Tastaturet styrer ikke kuglen. `P` eller `Esc` pauser |
 
 Spillet pauser, når appen skjules, og fortsætter først, når du trykker Resume.

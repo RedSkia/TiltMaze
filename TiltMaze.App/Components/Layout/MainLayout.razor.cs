@@ -9,6 +9,7 @@ public partial class MainLayout
     [Inject] private Auth auth { get; set; } = null!;
     [Inject] private Biometrics biometrics { get; set; } = null!;
     [Inject] private RunQueue queue { get; set; } = null!;
+    [Inject] private Sound sound { get; set; } = null!;
 
     private bool ready;               // det gemte login er læst (og låst op, hvis det kan)
     private string routeClass = "";   // "on-play" skjuler menuen, så banen får hele skærmen
@@ -32,6 +33,13 @@ public partial class MainLayout
 
         auth.Unlock();
         _ = queue.SendPending();   // RunQueue nåede ikke at sende, mens login var låst
+    }
+
+    // JavaScript skal vide, om lyden er slået til (til klik på knapper)
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+            sound.Sync();
     }
 
     // Kører ved hver sideskift

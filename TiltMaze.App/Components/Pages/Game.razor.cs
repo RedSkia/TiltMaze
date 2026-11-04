@@ -31,6 +31,11 @@ public partial class Game : IDisposable
     // Nedtælling 3-2-1 før start: hvert tal står Beat sekunder, "Go!" står de første 0,6 s af løbet
     private const double Beat = 0.7;
 
+    // Dunk mod væg: kun fra denne fart ind i væggen (celler pr. sekund), og højst ét pr. BumpPause sekunder
+    private const double BumpMin = 1;
+    private const double BumpPause = 0.12;
+    private double lastBump = -1;   // fysik-tid for sidste dunk
+
     private ElementReference board;
     private ElementReference dialogButton;   // første knap i den dialog, der er åben
     private Joystick? joystick;
@@ -200,6 +205,7 @@ public partial class Game : IDisposable
         isDaily = seed == Course.DailySeed();
         time = 0;
         steps = 0;
+        lastBump = -1;
         countdown = Beat * 3;
         sound.Countdown();   // bip for "3"
         falls = 0;
@@ -384,6 +390,13 @@ public partial class Game : IDisposable
         MoveGhost();
         UpdateDelta();
 
+        // Dunk når kuglen rammer en væg hårdt, højst ét hver BumpPause sekunder
+        if (ball.LastImpact > BumpMin && time - lastBump >= BumpPause)
+        {
+            lastBump = time;
+            sound.Bump(Math.Clamp(ball.LastImpact / Ball.MaxSpeed, 0.2, 1));
+        }
+
         if (outcome == Outcome.Fell)
             Fall();
         else if (outcome == Outcome.Won)
@@ -507,9 +520,15 @@ public partial class Game : IDisposable
             return;
         paused = !paused;
         if (paused)
+        {
             focusDialog = true;
+            sound.Pause();
+        }
         else
+        {
             needFocus = true;
+            sound.Resume();
+        }
     }
 
     private void ToggleSound()
@@ -544,6 +563,7 @@ public partial class Game : IDisposable
         {
             paused = true;
             focusDialog = true;
+            sound.Pause();
         }
         tilt.Stop();
         InvokeAsync(StateHasChanged);

@@ -13,6 +13,10 @@ public class Ball
 
     public double X, Y, VX, VY;
 
+    // Hvor hårdt kuglen ramte en væg i det seneste Update (fart ind i væggen, celler pr. sekund). 0 = ingen væg ramt.
+    // Bruges kun til lyd og ændrer ikke fysikken.
+    public double LastImpact { get; private set; }
+
     public double Speed => Math.Sqrt(VX * VX + VY * VY);
 
     readonly List<Segment> walls;
@@ -41,6 +45,7 @@ public class Ball
     public void Update(double seconds, double ax, double ay, Func<bool>? stop = null)
     {
         leftover += seconds;
+        LastImpact = 0;
         while (leftover >= Step)
         {
             leftover -= Step;
@@ -98,6 +103,7 @@ public class Ball
         double into = VX * nx + VY * ny;
         if (into < 0)
         {
+            LastImpact = Math.Max(LastImpact, -into);
             VX -= (1 + Bounce) * into * nx;
             VY -= (1 + Bounce) * into * ny;
         }

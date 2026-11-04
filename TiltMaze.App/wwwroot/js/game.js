@@ -68,6 +68,26 @@ window.tiltMaze = {
             [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => this.tone('triangle', f, f, i * 0.12, i == 6 ? 0.5 : 0.18, 0.12));
         },
         // Køb: to hurtige firkant-toner, G5 og C6, som en kasse
-        buy: function () { this.tone('square', 784, 784, 0, 0.08, 0.05); this.tone('square', 1047, 1047, 0.08, 0.2, 0.05); }
+        buy: function () { this.tone('square', 784, 784, 0, 0.08, 0.05); this.tone('square', 1047, 1047, 0.08, 0.2, 0.05); },
+        // Vælg i butikken: blødere end køb, én kort trekant-tone der stiger
+        equip: function () { this.tone('triangle', 660, 880, 0, 0.1, 0.06); },
+        // Pause: kort sinus-tone der falder
+        pause: function () { this.tone('sine', 520, 330, 0, 0.12, 0.07); },
+        // Fortsæt: kort sinus-tone der stiger
+        resume: function () { this.tone('sine', 330, 520, 0, 0.12, 0.07); },
+        // Klask mod væg: lavt dunk, højere jo hårdere (volume 0,2 til 1)
+        bump: function (volume) { this.tone('sine', 170, 70, 0, 0.1, 0.15 * volume); },
+
+        // Klik på knapper: et meget kort tik. Slås fra med setEnabled (kaldes fra C#)
+        enabled: true,
+        setEnabled: function (on) { this.enabled = on; },
+        click: function () { if (this.enabled) this.tone('sine', 900, 700, 0, 0.04, 0.05); }
     }
 };
+
+// Ét lyttepunkt for alle knapper på siden (ikke selve banen). data-no-click på knapper, der har deres egen lyd
+document.addEventListener('pointerdown', function (e) {
+    const button = e.target.closest && e.target.closest('button, a.button');
+    if (button && !button.disabled && !button.hasAttribute('data-no-click'))
+        window.tiltMaze.sound.click();
+});

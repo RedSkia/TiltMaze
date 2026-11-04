@@ -6,7 +6,7 @@
     <div class="game">
         <!-- HUD: tid (stor), forskel til spøgelset, pause og menu. På landskab/computer et sidepanel -->
         <header class="hud" inert="@modalOpen">
-            <button type="button" class="icon-button hud-pause" aria-label="Pause" @onclick="TogglePause">
+            <button type="button" class="icon-button hud-pause" data-no-click aria-label="Pause" @onclick="TogglePause">
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14" /></svg>
             </button>
             <div class="clock">
@@ -41,7 +41,7 @@
             </dl>
             <p class="hint muted">@hint</p>
             <div class="side-buttons">
-                <button type="button" class="button" @onclick="TogglePause">Pause</button>
+                <button type="button" class="button" data-no-click @onclick="TogglePause">Pause</button>
                 <button type="button" class="button" @onclick="Retry">Retry</button>
             </div>
         </header>
@@ -152,7 +152,7 @@
                         <h2 id="dialog-title">Paused</h2>
                         <p class="muted">@maze.Difficulty · Seed @maze.Seed</p>
                         <div class="dialog-buttons">
-                            <button type="button" class="button primary big" @ref="dialogButton" @onclick="TogglePause">
+                            <button type="button" class="button primary big" data-no-click @ref="dialogButton" @onclick="TogglePause">
                                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z" /></svg>
                                 <span>Resume</span>
                             </button>

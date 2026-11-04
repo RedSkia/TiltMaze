@@ -59,6 +59,7 @@ public partial class Shop
     private void Equip(ShopItem item)
     {
         wallet.Equip(item);
+        sound.Equip();
         Refresh();
     }
 }

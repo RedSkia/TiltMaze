@@ -60,6 +60,35 @@ public class BallTests
     }
 
     [Fact]
+    public void HittingAWallFastGivesImpact()
+    {
+        var course = new Course(Difficulty.Easy, 1);
+        var ball = new Ball(course.Segments, 0.5, 0.5);
+
+        // Fuld vip mod vest: kuglen rammer den ydre væg med fuld fart
+        double biggest = 0;
+        for (int i = 0; i < 120; i++)
+        {
+            ball.Update(1.0 / 60, -1, 0);
+            biggest = Math.Max(biggest, ball.LastImpact);
+        }
+
+        Assert.True(biggest > 1, $"Impact was {biggest}");
+    }
+
+    [Fact]
+    public void RollingFreeGivesNoImpact()
+    {
+        var course = new Course(Difficulty.Easy, 1);
+        var ball = new Ball(course.Segments, course.Start.X + 0.5, course.Start.Y + 0.5);
+
+        // Uden vip står kuglen stille midt i en celle og rammer intet
+        ball.Update(1.0 / 60, 0, 0);
+
+        Assert.Equal(0, ball.LastImpact);
+    }
+
+    [Fact]
     public void BallStopsAtTheOuterWall()
     {
         var course = new Course(Difficulty.Easy, 1);

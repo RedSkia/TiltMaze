@@ -1,45 +1,43 @@
 @page "/leaderboard"
 
-<div class="page-narrow board-page">
-    <!-- Valg af labyrint: til venstre på bred skærm, ellers øverst -->
-    <div class="side">
-        <div class="page-head">
-            <div>
-                <h1>Leaderboard</h1>
-                <p class="page-sub">The fastest times on a maze.</p>
-            </div>
-            <button type="button" class="icon-button" aria-label="Refresh" @onclick="Load" disabled="@busy">
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7" /><path d="M20 4v5h-5" /></svg>
-            </button>
+<div class="page-narrow">
+    <div class="page-head">
+        <div>
+            <h1>Leaderboard</h1>
+            <p class="page-sub">The fastest times on a maze.</p>
         </div>
-
-        <div class="controls">
-            <div class="segmented difficulty" role="group" aria-label="Difficulty">
-                @foreach (var d in difficulties)
-                {
-                    <button type="button" class="@(d == difficulty ? "active" : "")" aria-pressed="@(d == difficulty)" @onclick="() => SetDifficulty(d)">@d</button>
-                }
-            </div>
-
-            <div class="segmented maze" role="group" aria-label="Maze">
-                <button type="button" class="@(daily ? "active" : "")" aria-pressed="@daily" @onclick="() => SetDaily(true)">Daily maze</button>
-                <button type="button" class="@(daily ? "" : "active")" aria-pressed="@(!daily)" @onclick="() => SetDaily(false)">Seed</button>
-            </div>
-
-            @if (!daily)
-            {
-                <form class="seed-form" @onsubmit="Load">
-                    <label class="field">
-                        <span>Seed</span>
-                        <input type="text" inputmode="numeric" @bind="seedText" maxlength="9" />
-                    </label>
-                    <button type="submit" class="button primary" disabled="@busy">Show</button>
-                </form>
-            }
-        </div>
+        <button type="button" class="icon-button" aria-label="Refresh" @onclick="Load" disabled="@busy">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7" /><path d="M20 4v5h-5" /></svg>
+        </button>
     </div>
 
-    <!-- Resultater: til højre på bred skærm, ellers under valgene -->
+    <!-- Valg af labyrint: ét kort øverst -->
+    <div class="card controls">
+        <div class="segmented difficulty" role="group" aria-label="Difficulty">
+            @foreach (var d in difficulties)
+            {
+                <button type="button" class="@(d == difficulty ? "active" : "")" aria-pressed="@(d == difficulty)" @onclick="() => SetDifficulty(d)">@d</button>
+            }
+        </div>
+
+        <div class="segmented maze" role="group" aria-label="Maze">
+            <button type="button" class="@(daily ? "active" : "")" aria-pressed="@daily" @onclick="() => SetDaily(true)">Daily maze</button>
+            <button type="button" class="@(daily ? "" : "active")" aria-pressed="@(!daily)" @onclick="() => SetDaily(false)">Seed</button>
+        </div>
+
+        @if (!daily)
+        {
+            <form class="seed-form" @onsubmit="Load">
+                <label class="field">
+                    <span>Seed</span>
+                    <input type="text" inputmode="numeric" @bind="seedText" maxlength="9" />
+                </label>
+                <button type="submit" class="button primary" disabled="@busy">Show</button>
+            </form>
+        }
+    </div>
+
+    <!-- Resultater under valgene, i fuld bredde -->
     <div class="results">
         @if (error != "")
         {

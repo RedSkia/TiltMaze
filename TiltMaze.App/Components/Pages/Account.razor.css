@@ -1,6 +1,6 @@
-/* Account: profil og indstillinger. På bred skærm står de i to kolonner */
+/* Account: profil, indstillinger og farezone som en enkelt kolonne i samme bredde som de andre sider */
 
-/* Telefon og tablet: kortene under hinanden. Bred skærm: to kolonner (se nederst) */
+/* Alle kort under hinanden med samme mellemrum */
 .account-grid, .account-main {
     display: flex;
     flex-direction: column;
@@ -26,11 +26,6 @@
 .card.cta {
     flex-direction: row;
     align-items: center;
-}
-
-/* Låst: et kort, ikke bredere end nødvendigt */
-.locked {
-    max-width: 720px;
 }
 
 /* Knapper ved siden af hinanden; på smal skærm under hinanden */
@@ -175,29 +170,3 @@
     gap: var(--space-3);
 }
 
-/* ---------- Bred skærm: to kolonner ---------- */
-
-@media (min-width: 900px) {
-    .account {
-        max-width: 1000px;
-    }
-
-    .account-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
-        align-items: start;
-        gap: var(--space-6);
-    }
-
-    /* Profilen står lodret midt i sin kolonne */
-    .profile {
-        grid-template-columns: minmax(0, 1fr);
-        justify-items: center;
-        row-gap: var(--space-3);
-        text-align: center;
-    }
-
-    .profile-text {
-        align-items: center;
-    }
-}

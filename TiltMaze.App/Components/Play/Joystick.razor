@@ -1,6 +1,6 @@
 @* Flydende joystick: tryk hvor som helst på banen (finger eller mus). Ringen kommer frem dér, hvor man trykkede,
    og knappen følger fingeren. Slip: ringen forsvinder, og styringen er 0 igen.
-   Kun til touch og mus; tastaturet har piletasterne, derfor aria-hidden *@
+   Kun til touch og mus (tastaturet styrer ikke kuglen), derfor aria-hidden *@
 <div class="stick-zone" @ref="zone" aria-hidden="true" inert="@Disabled"
      @onpointerdown="Down" @onpointerdown:preventDefault="true"
      @onpointermove="Move" @onpointerup="Up" @onpointercancel="Up" @onlostpointercapture="Up"

@@ -1,6 +1,6 @@
 # TiltMaze
 
-Labyrintspil: styr en kugle ved at vippe telefonen (Android), ved at trække hvor som helst på banen (touch eller mus) eller med piletaster/WASD (Windows). Undgå hullerne og nå målet så hurtigt som muligt. Rul hurtigt, så kan kuglen hoppe over hullerne.
+Labyrintspil: styr en kugle ved at vippe telefonen (Android), ved at trække hvor som helst på banen (touch eller mus). Undgå hullerne og nå målet så hurtigt som muligt. Rul hurtigt, så kan kuglen hoppe over hullerne.
 
 Skoleprojekt i App-programmering 2026 (.NET MAUI Blazor Hybrid). Med API, konti og top-lister (Docker). Senere: broer med touch.
 
@@ -34,7 +34,7 @@ Vælg Easy, Normal, Hard eller Expert på startsiden (valget huskes), og tryk de
 | Platform | Styring |
 |---|---|
 | Android | Vip telefonen, eller tryk og træk hvor som helst på banen (joysticken kommer frem under fingeren) |
-| Windows | Piletaster eller WASD, eller træk med musen på banen. `P` eller `Esc` pauser |
+| Windows | Træk med musen på banen (joystick). Tastaturet styrer ikke kuglen. `P` eller `Esc` pauser |
 
 Spillet pauser, når appen skjules, og fortsætter først, når du trykker Resume.
 

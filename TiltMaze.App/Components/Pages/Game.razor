@@ -47,10 +47,9 @@
         </header>
 
         <div class="board-area theme-@theme">
-            <!-- Fokuseret felt: tastaturet virker kun, når det har fokus. Piletaster og mellemrum blokeres kun mens man spiller -->
+            <!-- Fokuseret felt: P og Esc (pause) virker kun, når det har fokus. Taster blokeres kun mens man spiller -->
             <div class="board @ShakeClass" tabindex="0" @ref="board" inert="@modalOpen"
-                 @onkeydown="KeyDown" @onkeyup="KeyUp" @onfocusout="ClearKeys"
-                 @onkeydown:preventDefault="playing" @onkeyup:preventDefault="playing">
+                 @onkeydown="KeyDown" @onkeydown:preventDefault="playing">
                 <svg viewBox="@ViewBox" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Maze">
                     <defs>
                         <!-- Kuglens farver kommer fra den valgte farve i butikken -->

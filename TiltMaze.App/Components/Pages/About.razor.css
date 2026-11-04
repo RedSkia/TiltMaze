@@ -101,7 +101,7 @@
     filter: drop-shadow(0 0 24px rgba(45, 226, 200, 0.35));
 }
 
-/* ---------- Sådan spiller man: tre små kort (taster, vip, joystick) ---------- */
+/* ---------- Sådan spiller man: tre små kort (pause, vip, joystick) ---------- */
 
 .how {
     display: grid;

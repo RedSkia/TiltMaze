@@ -97,8 +97,6 @@ public partial class Game : IDisposable
     private readonly List<Rival> rivals = new();
     private static readonly string[] rivalColors = ["#b794f6", "#f4a3c4", "#8fb4ff"];
 
-    // Taster der holdes nede
-    private bool left, right, up, down;
 
     private bool playing => !paused && !finished;
     private bool modalOpen => paused || finished;   // en dialog er åben, så resten af skærmen er "inert"
@@ -152,7 +150,7 @@ public partial class Game : IDisposable
     {
         hint = tilt.IsSupported
             ? "Tilt your phone, or touch and drag anywhere on the board. Holes pull the ball in; roll fast to jump them."
-            : "Use the arrow keys, WASD, or drag anywhere on the board with the mouse. Holes pull the ball in; roll fast to jump them. P pauses.";
+            : "Drag anywhere on the board with the mouse or a finger. Holes pull the ball in; roll fast to jump them. P pauses.";
     }
 
     // Kører når siden åbnes og når adressen ændres (ny seed)
@@ -367,9 +365,9 @@ public partial class Game : IDisposable
             return;
         }
 
-        // Taster giver -1, 0 eller 1. Vip fra telefonen og joysticken lægges til.
-        double ax = (right ? 1 : 0) - (left ? 1 : 0) + tilt.X;
-        double ay = (down ? 1 : 0) - (up ? 1 : 0) + tilt.Y;
+        // Vip fra telefonen og joysticken lægges sammen
+        double ax = tilt.X;
+        double ay = tilt.Y;
         if (joystick != null)
         {
             ax += joystick.X;
@@ -488,16 +486,11 @@ public partial class Game : IDisposable
             Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(40));
     }
 
+    // Tastaturet styrer ikke kuglen (det er for nemt), det kan kun sætte på pause
     private void KeyDown(KeyboardEventArgs e)
     {
-        SetKey(e.Key, true);
         if (!e.Repeat && (e.Key == "p" || e.Key == "P" || e.Key == "Escape"))
             TogglePause();
-    }
-
-    private void KeyUp(KeyboardEventArgs e)
-    {
-        SetKey(e.Key, false);
     }
 
     // Esc i pausemenuen: fortsæt
@@ -505,34 +498,6 @@ public partial class Game : IDisposable
     {
         if (e.Key == "Escape" && !e.Repeat)
             TogglePause();
-    }
-    // Banen mistede fokus (fx alt-tab): ellers bliver en holdt tast ved med at være "nede"
-    private void ClearKeys()
-    {
-        left = right = up = down = false;
-    }
-
-    private void SetKey(string key, bool pressed)
-    {
-        switch (key.ToLower())
-        {
-            case "arrowleft":
-            case "a":
-                left = pressed;
-                break;
-            case "arrowright":
-            case "d":
-                right = pressed;
-                break;
-            case "arrowup":
-            case "w":
-                up = pressed;
-                break;
-            case "arrowdown":
-            case "s":
-                down = pressed;
-                break;
-        }
     }
 
     private void TogglePause()

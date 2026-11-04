@@ -1,4 +1,5 @@
-/* Butikken: saldo og et gitter af kuglefarver. 2 kolonner på telefon, flere på bredere skærm */
+/* Butikken: saldo, faner og et gitter af kort. 2 kolonner på telefon, flere på bredere skærm.
+   Alle kort i en række er lige høje, og knappen ligger altid nederst */
 
 .balance {
     display: flex;
@@ -15,33 +16,56 @@
     font-variant-numeric: tabular-nums;
 }
 
-.colors {
+/* Fem faner i en række */
+.tabs {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.tabs button {
+    padding: 0 2px;
+    font-size: 0.8rem;
+}
+
+.items {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
     gap: var(--space-3);
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.color {
+.item {
+    display: flex;
+    flex-direction: column;
     align-items: center;
     text-align: center;
 }
 
-.color h2 {
+.item h2 {
     margin: 0;
     font-size: var(--font-m);
+    overflow-wrap: anywhere;
 }
 
-/* Den valgte farve lyser guld */
-.color.equipped {
+/* Den valgte ting lyser guld */
+.item.equipped {
     border-color: rgba(255, 200, 87, 0.6);
     box-shadow: var(--shadow-card), 0 0 24px rgba(255, 200, 87, 0.18);
 }
 
+/* Forhåndsvisningen har samme højde i alle slags, så kortene passer sammen */
 .preview {
-    width: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 72px;
+}
+
+.preview svg {
+    max-width: 100%;
     height: 72px;
 }
 
@@ -55,19 +79,180 @@
     font-variant-numeric: tabular-nums;
 }
 
-.color .button {
+.item .button {
     width: 100%;
+    margin-top: auto;
     padding: 0 var(--space-2);
 }
 
+/* ---------- Bane-tema: en lille bane med temaets farver (--m-... fra app.css) ---------- */
+
+.swatch {
+    width: 100%;
+    height: 100%;
+}
+
+.swatch svg {
+    width: 100%;
+    max-width: 108px;
+    height: 100%;
+}
+
+.sw-floor {
+    fill: var(--m-floor-a);
+    stroke: var(--m-line);
+    stroke-opacity: 0.5;
+    stroke-width: 0.1;
+}
+
+.sw-side, .sw-top {
+    fill: none;
+    stroke-linecap: round;
+}
+
+.sw-side {
+    stroke: var(--m-wall-side);
+    stroke-width: 0.34;
+}
+
+.sw-top {
+    stroke: var(--m-wall-a);
+    stroke-width: 0.26;
+}
+
+.sw-hole {
+    fill: #03050d;
+    stroke: var(--m-hole-rim);
+    stroke-width: 0.1;
+}
+
+.sw-goal {
+    fill: var(--gold);
+}
+
+.sw-ball {
+    fill: var(--ball);
+}
+
+/* ---------- Effekt ved mål: seks stykker, der gentager sig, så man ser hvad det er ---------- */
+
+.fx {
+    position: relative;
+    width: 100%;
+    max-width: 108px;
+    height: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-s);
+    background: var(--surface-3);
+}
+
+.fx i {
+    position: absolute;
+    opacity: 0;
+}
+
+.fx i:nth-child(1) { left: 8%; --delay: 0s; --dx: 30px; --dy: 0px; }
+.fx i:nth-child(2) { left: 24%; --delay: 0.5s; --dx: 15px; --dy: 26px; }
+.fx i:nth-child(3) { left: 40%; --delay: 0.2s; --dx: -15px; --dy: 26px; }
+.fx i:nth-child(4) { left: 56%; --delay: 0.7s; --dx: -30px; --dy: 0px; }
+.fx i:nth-child(5) { left: 72%; --delay: 0.3s; --dx: -15px; --dy: -26px; }
+.fx i:nth-child(6) { left: 88%; --delay: 0.9s; --dx: 15px; --dy: -26px; }
+
+/* Konfetti, stjerner og mønter falder */
+.confetti i, .stars i, .coins i {
+    top: -20%;
+    animation: fall 1.8s ease-in var(--delay) infinite;
+}
+
+.confetti i {
+    width: 6px;
+    height: 10px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+.confetti i:nth-child(3n + 2) {
+    background: var(--ball);
+}
+
+.confetti i:nth-child(3n + 3) {
+    background: var(--gold);
+}
+
+.stars i {
+    width: 14px;
+    height: 14px;
+    background: var(--gold);
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.stars i:nth-child(2n) {
+    background: #fff;
+}
+
+.coins i {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff0b0, var(--gold) 55%, #a56d00);
+}
+
+@keyframes fall {
+    0% { opacity: 1; top: -20%; }
+    85% { opacity: 1; }
+    100% { opacity: 0; top: 100%; }
+}
+
+/* Fyrværkeri: gnister flyver ud fra midten */
+.fireworks i {
+    top: 45%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: burst 1.4s ease-out var(--delay) infinite;
+}
+
+.fireworks i:nth-child(2n) {
+    background: var(--accent);
+}
+
+.fireworks i:nth-child(3n) {
+    background: #ff5fae;
+}
+
+@keyframes burst {
+    0% { opacity: 1; transform: translate(0, 0); }
+    70% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)); }
+}
+
 @media (min-width: 600px) {
-    .colors {
+    .items {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .tabs button {
+        font-size: var(--font-m);
     }
 }
 
 @media (min-width: 900px) {
-    .colors {
+    .items {
         grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+/* Mindre bevægelse: ingen animation, stykkerne står stille midt i ikonet */
+@media (prefers-reduced-motion: reduce) {
+    .fx i {
+        animation: none;
+        opacity: 1;
+        top: 40%;
+    }
+
+    .fireworks i {
+        transform: translate(var(--dx), var(--dy));
     }
 }

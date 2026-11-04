@@ -8,29 +8,55 @@ public partial class Shop
 {
     [Inject] private Wallet wallet { get; set; } = null!;
 
+    // Fanerne øverst
+    private record Tab(ShopCategory Category, string Label);
+
+    private static readonly Tab[] tabs =
+    [
+        new(ShopCategory.Color, "Colours"),
+        new(ShopCategory.Trail, "Trails"),
+        new(ShopCategory.Pattern, "Patterns"),
+        new(ShopCategory.GoalEffect, "Finish"),
+        new(ShopCategory.Theme, "Themes"),
+    ];
+
+    private ShopCategory category = ShopCategory.Color;
     private int coins;
     private string equippedId = "";
+    private BallColor ballColor = Rewards.BallColors[0];   // kuglen i forhåndsvisningerne
+    private readonly Trail previewTrail = new();
 
     protected override void OnInitialized()
     {
+        // Et lige spor til forhåndsvisningen, ældste punkt først
+        for (int i = 0; i < Trail.Length; i++)
+            previewTrail.Add(-3 + i * 0.2, 0);
+
+        Refresh();
+    }
+
+    private void Select(ShopCategory selected)
+    {
+        category = selected;
         Refresh();
     }
 
     private void Refresh()
     {
         coins = wallet.Coins;
-        equippedId = wallet.Equipped.Id;
+        ballColor = wallet.EquippedColor;
+        equippedId = wallet.EquippedId(category);
     }
 
-    private void Buy(BallColor color)
+    private void Buy(ShopItem item)
     {
-        wallet.Buy(color);
+        wallet.Buy(item);
         Refresh();
     }
 
-    private void Equip(BallColor color)
+    private void Equip(ShopItem item)
     {
-        wallet.Equip(color);
+        wallet.Equip(item);
         Refresh();
     }
 }

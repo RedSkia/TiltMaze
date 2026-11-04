@@ -4,7 +4,7 @@
     <div class="page-head">
         <div>
             <h1>Shop</h1>
-            <p class="page-sub">Spend your coins on a new ball colour.</p>
+            <p class="page-sub">Spend your coins on looks for your ball and your mazes.</p>
         </div>
         <p class="balance" aria-live="polite">
             <span class="coin-dot" aria-hidden="true"></span>
@@ -12,26 +12,63 @@
         </p>
     </div>
 
-    <ul class="colors">
-        @foreach (var color in Rewards.BallColors)
+    <div class="segmented tabs" role="group" aria-label="Shop category">
+        @foreach (var tab in tabs)
         {
-            bool owned = wallet.Owns(color);
-            bool equipped = color.Id == equippedId;
-            <li class="card color @(equipped ? "equipped" : "")">
-                <svg class="preview" viewBox="-1 -1 2 2" aria-hidden="true">
-                    <defs>
-                        <radialGradient id="shop-@color.Id" cx="35%" cy="30%" r="75%">
-                            <stop offset="0" stop-color="#fff4e6" />
-                            <stop offset="0.35" stop-color="@color.Light" />
-                            <stop offset="0.75" stop-color="@color.Mid" />
-                            <stop offset="1" stop-color="@color.Dark" />
-                        </radialGradient>
-                    </defs>
-                    <circle cx="0.06" cy="0.1" r="0.8" fill="#000" fill-opacity="0.4" />
-                    <circle cx="0" cy="0" r="0.8" fill="url(#shop-@color.Id)" />
-                    <circle cx="-0.28" cy="-0.3" r="0.18" fill="#fff" fill-opacity="0.85" />
-                </svg>
-                <h2>@color.Name</h2>
+            <button type="button" class="@(tab.Category == category ? "active" : "")" aria-pressed="@(tab.Category == category ? "true" : "false")"
+                    @onclick="() => Select(tab.Category)">@tab.Label</button>
+        }
+    </div>
+
+    <ul class="items">
+        @foreach (var item in ShopItems.In(category))
+        {
+            bool owned = wallet.Owns(item);
+            bool equipped = item.Id == equippedId;
+            <li class="card item @(equipped ? "equipped" : "")">
+                <div class="preview" aria-hidden="true">
+                    @switch (item.Category)
+                    {
+                        case ShopCategory.Color:
+                            <svg viewBox="-1 -1 2 2">
+                                <BallPreview Color="@Rewards.ColorById(item.Id)" Id="@item.Id" />
+                            </svg>
+                            break;
+                        case ShopCategory.Trail:
+                            <svg viewBox="-3.4 -1 4.4 2">
+                                @if (item.Id != "none")
+                                {
+                                    <TrailView Points="previewTrail" Kind="@item.Id" Size="0.8" />
+                                }
+                                <BallPreview Color="@ballColor" Id="@("trail-" + item.Id)" />
+                            </svg>
+                            break;
+                        case ShopCategory.Pattern:
+                            <svg viewBox="-1 -1 2 2">
+                                <BallPreview Color="@ballColor" Pattern="@item.Id" Id="@("pattern-" + item.Id)" />
+                            </svg>
+                            break;
+                        case ShopCategory.GoalEffect:
+                            <div class="fx @item.Id">
+                                <i></i><i></i><i></i><i></i><i></i><i></i>
+                            </div>
+                            break;
+                        default:
+                            <!-- Lille bane med temaets farver -->
+                            <div class="swatch theme-@item.Id">
+                                <svg viewBox="0 0 6 4">
+                                    <rect class="sw-floor" x="0" y="0" width="6" height="4" rx="0.3" />
+                                    <circle class="sw-hole" cx="2.1" cy="2.9" r="0.45" />
+                                    <circle class="sw-goal" cx="4" cy="0.9" r="0.3" />
+                                    <path class="sw-side" d="M1 0.6V3.4M1 2.2H3.2M3.2 0.6V2.2M5 1.6V3.4" transform="translate(0.06 0.1)" />
+                                    <path class="sw-top" d="M1 0.6V3.4M1 2.2H3.2M3.2 0.6V2.2M5 1.6V3.4" />
+                                    <circle class="sw-ball" cx="1.9" cy="1.4" r="0.25" />
+                                </svg>
+                            </div>
+                            break;
+                    }
+                </div>
+                <h2>@item.Name</h2>
                 <p class="price">
                     @if (equipped)
                     {
@@ -44,7 +81,7 @@
                     else
                     {
                         <span class="coin-dot" aria-hidden="true"></span>
-                        <span>@color.Price</span>
+                        <span>@item.Price</span>
                     }
                 </p>
                 @if (equipped)
@@ -53,15 +90,15 @@
                 }
                 else if (owned)
                 {
-                    <button type="button" class="button primary" @onclick="() => Equip(color)">Equip</button>
+                    <button type="button" class="button primary" @onclick="() => Equip(item)">Equip</button>
                 }
-                else if (coins < color.Price)
+                else if (coins < item.Price)
                 {
                     <button type="button" class="button" disabled>Not enough coins</button>
                 }
                 else
                 {
-                    <button type="button" class="button primary" @onclick="() => Buy(color)">Buy</button>
+                    <button type="button" class="button primary" @onclick="() => Buy(item)">Buy</button>
                 }
             </li>
         }

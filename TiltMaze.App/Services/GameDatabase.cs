@@ -49,7 +49,8 @@ public class MazeProgress
     public int RankBonusPaid { get; set; }   // 0, 25 eller 50 (se Rewards)
 }
 
-// Pungen: antal mønter og de farver man ejer (id'er med komma imellem). Der er altid kun én række, med Id 1.
+// Pungen: antal mønter og de ting man ejer (nøgler med komma imellem, se ShopItems.OwnedKey; farver er bare id'et).
+// Der er altid kun én række, med Id 1.
 public class WalletRow
 {
     [PrimaryKey]

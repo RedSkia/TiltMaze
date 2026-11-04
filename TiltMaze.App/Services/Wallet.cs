@@ -2,7 +2,7 @@ using TiltMaze.Core;
 
 namespace TiltMaze.App.Services;
 
-// Mønter og kuglens farver. Alt gemmes lokalt i SQLite (GameDatabase); den valgte farve ligger i Preferences.
+// Mønter og ting fra butikken. Alt gemmes lokalt i SQLite (GameDatabase); det valgte ligger i Preferences.
 // Hver ting giver kun mønter én gang pr. labyrint: hver mønt, belønningen for at klare den og top-listebonussen.
 public class Wallet
 {
@@ -16,7 +16,7 @@ public class Wallet
     public int Coins => database.GetWallet().Coins;
 
     // Kuglens farve lige nu
-    public BallColor Equipped => Rewards.ColorById(Preferences.Get("ballColor", Rewards.BallColors[0].Id));
+    public BallColor EquippedColor => Rewards.ColorById(EquippedId(ShopCategory.Color));
 
     // Hvilke mønter på labyrinten der allerede er samlet op (bit i = mønt i)
     public int CoinMask(Difficulty difficulty, int seed)
@@ -62,28 +62,48 @@ public class Wallet
         return bonus;
     }
 
-    public bool Owns(BallColor color)
+    // Ejede ting ligger i WalletRow.Owned som nøgler med komma imellem (se ShopItems.OwnedKey)
+    public bool Owns(ShopItem item)
     {
-        return color.Price == 0 || database.GetWallet().Owned.Split(',').Contains(color.Id);
+        return item.Price == 0 || database.GetWallet().Owned.Split(',').Contains(ShopItems.OwnedKey(item));
     }
 
-    // Køber farven, hvis man har råd og ikke ejer den. Giver true, hvis den blev købt.
-    public bool Buy(BallColor color)
+    // Køber tingen, hvis man har råd og ikke ejer den. Giver true, hvis den blev købt.
+    public bool Buy(ShopItem item)
     {
         var wallet = database.GetWallet();
-        if (Owns(color) || wallet.Coins < color.Price)
+        if (Owns(item) || wallet.Coins < item.Price)
             return false;
 
-        wallet.Coins -= color.Price;
-        wallet.Owned = wallet.Owned == "" ? color.Id : wallet.Owned + "," + color.Id;
+        string key = ShopItems.OwnedKey(item);
+        wallet.Coins -= item.Price;
+        wallet.Owned = wallet.Owned == "" ? key : wallet.Owned + "," + key;
         database.SaveWallet(wallet);
         return true;
     }
 
-    // Vælger farven til kuglen. Kun farver man ejer.
-    public void Equip(BallColor color)
+    // Vælger tingen. Kun ting man ejer.
+    public void Equip(ShopItem item)
     {
-        if (Owns(color))
-            Preferences.Set("ballColor", color.Id);
+        if (Owns(item))
+            Preferences.Set(PreferenceName(item.Category), item.Id);
+    }
+
+    // Id på den valgte ting i slagsen. Ukendt id giver den gratis.
+    public string EquippedId(ShopCategory category)
+    {
+        return ShopItems.ById(category, Preferences.Get(PreferenceName(category), "")).Id;
+    }
+
+    private static string PreferenceName(ShopCategory category)
+    {
+        return category switch
+        {
+            ShopCategory.Color => "ballColor",
+            ShopCategory.Trail => "trail",
+            ShopCategory.Pattern => "pattern",
+            ShopCategory.GoalEffect => "goalEffect",
+            _ => "theme",
+        };
     }
 }

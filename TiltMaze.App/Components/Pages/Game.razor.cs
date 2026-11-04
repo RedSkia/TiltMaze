@@ -342,7 +342,6 @@ public partial class Game : IDisposable
 
         outcome = Outcome.None;
         ball.Update(seconds, ax, ay, CheckOutcome);
-        CollectCoins();
         MoveGhost();
         UpdateDelta();
 
@@ -359,6 +358,7 @@ public partial class Game : IDisposable
         steps++;
         time = steps * Ball.Step;
         Record();
+        CollectCoins();
         outcome = maze.Check(ball);
         return outcome != Outcome.None;
     }

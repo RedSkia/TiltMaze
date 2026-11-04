@@ -13,20 +13,16 @@
 
 .hud {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto 1fr;
     grid-template-areas:
-        "pause clock menu"
-        "stats stats stats";
+        "pause clock"
+        "stats stats";
     align-items: center;
     gap: var(--space-2) var(--space-3);
 }
 
 .hud-pause {
     grid-area: pause;
-}
-
-.hud-menu {
-    grid-area: menu;
 }
 
 /* Tiden er det vigtigste tal, så den er stor og lyser svagt */
@@ -431,7 +427,7 @@
         overflow-y: auto;
     }
 
-    .hud-pause, .hud-menu {
+    .hud-pause {
         display: none;
     }
 

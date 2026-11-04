@@ -16,9 +16,6 @@
                     <span class="delta @(delta < 0 ? "ahead" : "behind")">@Format.Delta(delta.Value) <small>ghost</small></span>
                 }
             </div>
-            <button type="button" class="icon-button hud-menu" aria-label="Menu" @onclick="TogglePause">
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
-            </button>
 
             <dl class="stats">
                 <div class="mode">

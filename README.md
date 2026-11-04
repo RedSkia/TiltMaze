@@ -22,12 +22,13 @@ dotnet test                                                            # tests a
 Vælg Easy, Normal, Hard eller Expert på startsiden (valget huskes), og tryk den store **Play daily** eller **Random maze**. Sværhedsgraden bestemmer størrelse, antal løkker (alternative veje) og antal og størrelse af huller.
 
 - **Daily maze:** dagens labyrint er ens for alle, fordi seed er datoen.
-- **Random maze:** ny labyrint hver gang. Dens seed står i pausemenuen. Retry spiller samme labyrint igen, New maze laver en ny.
+- **Random maze:** ny labyrint hver gang. Dens seed står i pausemenuen. Retry spiller samme labyrint igen, og New maze (efter målet) laver en ny.
 - Hvert løb starter med en nedtælling 3-2-1-Go. Falder du i et hul, ryster skærmen, og kuglen starter forfra.
 - Bedste tid gemmes pr. labyrint (sværhedsgrad + seed) og pr. sværhedsgrad. Dit bedste løb vises som et spøgelse næste gang, og under tiden ser du, om du er foran (grøn, minus) eller bagud (rød, plus). Er du logget ind, ræser du også mod de 3 bedste andre (halvgennemsigtige kugler med brugernavn).
 - Små huller kan man rulle forbi langs væggen. Store huller fylder hele gangen, men med (næsten) fuld fart og et lige tilløb kan man hoppe over dem. Tæt på et hul trækkes kuglen svagt ind mod det. Hard og Expert har flere huller, også på vejen. Der er altid en vej uden om de store huller.
 - På en lille skærm følger kameraet kuglen, og et minikort i hjørnet viser hele banen.
-- **Menu** midt i et løb spørger først "Leave run?".
+- **Pausemenuen** (`Esc`, `P` eller menu-knappen) har Resume, Retry og Leave. Leave afslutter løbet uden flere spørgsmål.
+- **Mønter:** et par stykker pr. labyrint (flest på Expert), ofte uden for den korteste vej. Hver mønt giver 1 mønt første gang, at klare en labyrint giver 5-40 første gang, og en plads på top 10 / top 3 giver 25 / 50 én gang. Mønterne bruges i **Shop** til nye farver til kuglen.
 
 | Platform | Styring |
 |---|---|

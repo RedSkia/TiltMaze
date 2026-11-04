@@ -50,6 +50,11 @@ public class RunQueue
         {
             foreach (var run in database.GetPending())
             {
+                // Kun gæsterekorder og den indloggede brugers egne sendes
+                string owner = run.Username ?? "";
+                if (owner != "" && owner != auth.Username)
+                    continue;
+
                 var (result, rank) = await api.SendRun(run.Difficulty, run.Seed, run.TimeMs, run.Ghost);
                 if (result == SendResult.TryLater)
                     break;   // Resten venter til næste gang

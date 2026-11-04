@@ -29,6 +29,7 @@ public class PendingRun
     public int Seed { get; set; }
     public int TimeMs { get; set; }
     public byte[] Ghost { get; set; } = [];
+    public string? Username { get; set; }   // hvem rekorden er sat som (tom eller null = gæst)
 }
 
 // Hvad der er tjent på en labyrint (sværhedsgrad + seed), så hver ting kun giver mønter én gang
@@ -84,7 +85,10 @@ public class GameDatabase
     {
         db.RunInTransaction(() =>
         {
-            db.InsertOrReplace(progress);
+            if (progress.Id == 0)
+                db.Insert(progress);
+            else
+                db.Update(progress);
             var wallet = GetWallet();
             wallet.Coins += earned;
             db.InsertOrReplace(wallet);
@@ -123,7 +127,7 @@ public class GameDatabase
 
     // Ny bedste tid med turen, og rekorden sættes i kø til serveren. Det sker i én transaktion.
     // Kun den nyeste rekord pr. labyrint skal sendes.
-    public void SaveBest(Difficulty difficulty, int seed, double seconds, byte[] ghost)
+    public void SaveBest(Difficulty difficulty, int seed, double seconds, byte[] ghost, string username)
     {
         db.RunInTransaction(() =>
         {
@@ -138,7 +142,7 @@ public class GameDatabase
             }
 
             db.Execute("DELETE FROM PendingRun WHERE Difficulty = ? AND Seed = ?", (int)difficulty, seed);
-            db.Insert(new PendingRun { Difficulty = difficulty, Seed = seed, TimeMs = (int)Math.Round(seconds * 1000), Ghost = ghost });
+            db.Insert(new PendingRun { Difficulty = difficulty, Seed = seed, TimeMs = (int)Math.Round(seconds * 1000), Ghost = ghost, Username = username });
         });
     }
 

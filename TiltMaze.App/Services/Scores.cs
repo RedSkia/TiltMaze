@@ -8,9 +8,11 @@ public class Scores
 {
     private readonly GameDatabase database;
     private readonly RunQueue queue;
+    private readonly Auth auth;
 
-    public Scores(GameDatabase database, RunQueue queue)
+    public Scores(GameDatabase database, RunQueue queue, Auth auth)
     {
+        this.auth = auth;
         this.database = database;
         this.queue = queue;
     }
@@ -44,7 +46,7 @@ public class Scores
         if (old != null && old <= seconds)
             return false;
 
-        database.SaveBest(difficulty, seed, seconds, Ghost.ToBytes(samples));
+        database.SaveBest(difficulty, seed, seconds, Ghost.ToBytes(samples), auth.IsLoggedIn ? auth.Username : "");
         _ = queue.SendPending();
         return true;
     }

@@ -55,6 +55,7 @@ Labyrintspil, .NET MAUI Blazor Hybrid (Android + Windows) + ASP.NET Core API (Do
 - Indrykning: 4 mellemrum overalt (ingen tabulatorer).
 
 ## Kommandoer
+- Scripts i roden: `build.cmd` (tests + Release Windows og Android), `deploy.cmd` (Docker-API + `adb reverse` + app på telefonen; `deploy windows` = Windows-appen). adb: `C:\Program Files (x86)\Android\android-sdk\platform-tools\adb.exe`
 - Build: `dotnet build TiltMaze.App -c Release -f net10.0-windows10.0.19041.0` / `-f net10.0-android`
 - Kør: `dotnet run --project TiltMaze.App -f net10.0-windows10.0.19041.0`, telefon: `dotnet build TiltMaze.App -t:Run -f net10.0-android`
 - Test: `dotnet test` (Core og API). API lokalt: `docker compose up -d --build` (kræver `.env` med `CERT_PASSWORD`)

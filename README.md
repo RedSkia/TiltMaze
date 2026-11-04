@@ -11,11 +11,23 @@ Skoleprojekt i App-programmering 2026 (.NET MAUI Blazor Hybrid). Med API, konti 
 
 Krav: .NET 10 SDK og MAUI-workload (`dotnet workload install maui`). Android kræver Android SDK.
 
+Nemmest (dobbeltklik eller skriv i en terminal i projektmappen):
+
+```
+build              # tests + appen til Windows og Android (Release)
+deploy             # API i Docker + appen på telefonen (USB, USB-fejlfinding slået til)
+deploy windows     # API i Docker + Windows-appen
+```
+
+Det samme med kommandoerne direkte:
+
 ```
 dotnet run --project TiltMaze.App -f net10.0-windows10.0.19041.0     # Windows
 dotnet build TiltMaze.App -t:Run -f net10.0-android                    # Android (telefon eller emulator)
 dotnet test                                                            # tests af labyrint, fysik og API
 ```
+
+Telefon første gang: Indstillinger → Om telefonen → tryk 7 gange på Build-nummer, slå USB-fejlfinding til i Udviklerindstillinger, vælg "Filoverførsel" ved USB og tryk "Tillad" på telefonen.
 
 ## Spillet
 

@@ -8,12 +8,73 @@
         <span class="version">Version @version</span>
     </section>
 
-    <section class="card">
-        <h2>What is TiltMaze?</h2>
+    <section class="card" aria-labelledby="what-title">
+        <h2 id="what-title">What is TiltMaze?</h2>
         <p>
-            TiltMaze is a maze game. Tilt your phone or touch and drag anywhere on the board to roll the ball to the goal, or use the arrow keys, WASD or the mouse on a computer.
-            Watch out for the holes: they pull the ball in, and if you fall in, you start over. A fast ball can jump over them. Every maze is made from a seed, so you can replay it, and the daily maze is the same for everyone. Beat your best time and race your own ghost.
+            TiltMaze is a maze game. Roll the ball to the goal as fast as you can. Watch out for the holes: they pull the ball in, and if you fall in, you start over.
+            A fast ball can jump over them.
         </p>
+        <p>
+            Every maze is made from a seed, so you can replay it. The daily maze is the same for everyone. Beat your best time and race your own ghost.
+        </p>
+    </section>
+
+    <section aria-labelledby="how-title">
+        <h2 id="how-title" class="section-label">How to play</h2>
+        <ul class="how">
+            <li class="card">
+                <span class="how-icon">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="2" y="6" width="20" height="12" rx="2" />
+                        <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8" />
+                    </svg>
+                </span>
+                <strong>Keys</strong>
+                <span class="muted">Arrow keys or WASD roll the ball. P or Esc pauses.</span>
+            </li>
+            <li class="card">
+                <span class="how-icon">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="8" y="3" width="8" height="14" rx="2" transform="rotate(20 12 10)" />
+                        <path d="M5 21h14" />
+                    </svg>
+                </span>
+                <strong>Tilt</strong>
+                <span class="muted">Tilt your phone and the ball rolls that way.</span>
+            </li>
+            <li class="card">
+                <span class="how-icon">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                </span>
+                <strong>Joystick</strong>
+                <span class="muted">Touch and drag anywhere on the board, with a finger or the mouse.</span>
+            </li>
+        </ul>
+    </section>
+
+    <section class="card" aria-labelledby="privacy-title">
+        <h2 id="privacy-title">Privacy and security</h2>
+        <ul class="facts">
+            <li>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>
+                <span>Your times and ghosts are saved on this device.</span>
+            </li>
+            <li>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>
+                <span>An account is only a username and a password, no e-mail. Passwords are stored scrambled, never as plain text.</span>
+            </li>
+            <li>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>
+                <span>When you sign in, your username, best times and ghosts are sent to the server for the leaderboard. You can delete them on the Account page.</span>
+            </li>
+            <li>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>
+                <span>Fingerprint and Windows Hello only unlock your saved login on this device. Your biometric data is never sent anywhere.</span>
+            </li>
+        </ul>
     </section>
 
     <section class="card maker">

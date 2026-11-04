@@ -15,20 +15,20 @@ else
 {
     <defs>
         <linearGradient id="floorFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#13203f" />
-            <stop offset="1" stop-color="#0a1229" />
+            <stop class="floor-a" offset="0" />
+            <stop class="floor-b" offset="1" />
         </linearGradient>
         <pattern id="tiles" width="1" height="1" patternUnits="userSpaceOnUse">
-            <rect width="1" height="1" fill="none" stroke="#2de2c8" stroke-opacity="0.07" stroke-width="0.02" />
+            <rect class="tile-line" width="1" height="1" />
         </pattern>
         <linearGradient id="wallTop" x1="0" y1="0" x2="@Maze.Width" y2="@Maze.Height" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#5cf2dc" />
-            <stop offset="1" stop-color="#38bdf8" />
+            <stop class="wall-a" offset="0" />
+            <stop class="wall-b" offset="1" />
         </linearGradient>
         <radialGradient id="holeFill">
             <stop offset="0" stop-color="#000000" />
             <stop offset="0.7" stop-color="#03050d" />
-            <stop offset="1" stop-color="#160c26" />
+            <stop class="hole-edge" offset="1" />
         </radialGradient>
         <radialGradient id="goalGlow">
             <stop offset="0" stop-color="#ffc857" stop-opacity="0.6" />

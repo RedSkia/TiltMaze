@@ -1,0 +1,14 @@
+@* En stillestående kugle i butikken, i enhedscirkel (radius 0,8 omkring 0,0). Farve og mønster som i spillet. *@
+
+<defs>
+    <radialGradient id="shop-ball-@Id" cx="35%" cy="30%" r="75%">
+        <stop offset="0" stop-color="#fff4e6" />
+        <stop offset="0.35" stop-color="@Color.Light" />
+        <stop offset="0.75" stop-color="@Color.Mid" />
+        <stop offset="1" stop-color="@Color.Dark" />
+    </radialGradient>
+</defs>
+<circle cx="0.06" cy="0.1" r="0.8" fill="#000" fill-opacity="0.4" />
+<circle cx="0" cy="0" r="0.8" fill="url(#shop-ball-@Id)" />
+<BallPattern Pattern="@Pattern" X="0" Y="0" R="0.8" />
+<circle cx="-0.28" cy="-0.3" r="0.18" fill="#fff" fill-opacity="0.85" />

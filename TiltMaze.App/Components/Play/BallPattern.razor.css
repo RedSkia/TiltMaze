@@ -1,0 +1,42 @@
+/* Mønstrene på kuglen. Alle tal er i enhedscirklen (radius 1) */
+
+.pattern line {
+    stroke: #000;
+    stroke-opacity: 0.3;
+    stroke-width: 0.2;
+    stroke-linecap: round;
+}
+
+/* Planetens ring */
+.pattern ellipse {
+    fill: none;
+    stroke: #fff;
+    stroke-opacity: 0.8;
+    stroke-width: 0.13;
+}
+
+.white {
+    fill: #fff;
+}
+
+.iris {
+    fill: #1b8cff;
+}
+
+.pupil {
+    fill: #05060f;
+}
+
+/* Neon-ring: en bred, svag ring under en tynd lys ring (ingen filtre) */
+.glow {
+    fill: none;
+    stroke: #2de2c8;
+    stroke-opacity: 0.3;
+    stroke-width: 0.24;
+}
+
+.line {
+    fill: none;
+    stroke: #8af5e6;
+    stroke-width: 0.08;
+}

@@ -1,0 +1,30 @@
+@* Mønster oven på kuglen (kun udseende). Tegnet i en enhedscirkel (radius 1) og skaleret til kuglens størrelse,
+   så det passer til alle farver. Alt ligger inden for cirklen, så der ikke skal klippes. *@
+
+@if (Pattern != "plain")
+{
+    <g class="pattern" transform="translate(@N(X) @N(Y)) scale(@N(R))">
+        @if (Pattern == "stripes")
+        {
+            <line x1="-0.78" y1="-0.45" x2="0.78" y2="-0.45" />
+            <line x1="-0.9" y1="0" x2="0.9" y2="0" />
+            <line x1="-0.78" y1="0.45" x2="0.78" y2="0.45" />
+        }
+        else if (Pattern == "planet")
+        {
+            <ellipse cx="0" cy="0" rx="0.88" ry="0.3" transform="rotate(-20)" />
+        }
+        else if (Pattern == "eye")
+        {
+            <circle class="white" cx="0" cy="0" r="0.55" />
+            <circle class="iris" cx="0" cy="0" r="0.3" />
+            <circle class="pupil" cx="0" cy="0" r="0.14" />
+            <circle class="white" cx="-0.07" cy="-0.08" r="0.06" />
+        }
+        else if (Pattern == "ring")
+        {
+            <circle class="glow" cx="0" cy="0" r="0.62" />
+            <circle class="line" cx="0" cy="0" r="0.62" />
+        }
+    </g>
+}

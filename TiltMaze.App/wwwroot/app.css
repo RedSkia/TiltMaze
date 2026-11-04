@@ -739,3 +739,63 @@ input[type=text]:focus-visible, input[type=search]:focus-visible, input[type=ema
     background: radial-gradient(circle at 35% 30%, #fff0b0, var(--gold) 55%, #a56d00);
     box-shadow: 0 0 8px rgba(255, 200, 87, 0.55);
 }
+
+/* ---------- Bane-temaer (Game og Shop) ----------
+   Banens farver (MazeLayer) kommer fra --m-... Uden klasse gælder Neon. Et tema er en klasse om banen,
+   så MazeLayer ikke ændres og kun tegnes ved en ny labyrint. Hullerne er altid mørke med en tydelig kant. */
+
+:root {
+    --m-floor-a: #13203f;    /* gulv: forløb fra oven og ned */
+    --m-floor-b: #0a1229;
+    --m-line: #2de2c8;       /* fliser, kant, start og minikortets vægge */
+    --m-frame: #050814;      /* kant om banen */
+    --m-wall-a: #5cf2dc;     /* væggens top: forløb på skrå */
+    --m-wall-b: #38bdf8;
+    --m-wall-side: #0b5f63;
+    --m-wall-shine: #e0fffa;
+    --m-hole-wall: #2a1f4f;
+    --m-hole-rim: #ff5d73;
+    --m-hole-edge: #160c26;
+}
+
+.theme-lava {
+    --m-floor-a: #2e100a;
+    --m-floor-b: #150605;
+    --m-line: #ff7a29;
+    --m-frame: #0d0403;
+    --m-wall-a: #ffb347;
+    --m-wall-b: #ff4d1a;
+    --m-wall-side: #7a1f0a;
+    --m-wall-shine: #fff0d0;
+    --m-hole-wall: #4a1010;
+    --m-hole-rim: #ffd23f;
+    --m-hole-edge: #2a0505;
+}
+
+.theme-ice {
+    --m-floor-a: #1d3a57;
+    --m-floor-b: #10253d;
+    --m-line: #bfeaff;
+    --m-frame: #0a1626;
+    --m-wall-a: #ffffff;
+    --m-wall-b: #9fdcff;
+    --m-wall-side: #3b7ea6;
+    --m-wall-shine: #ffffff;
+    --m-hole-wall: #14304a;
+    --m-hole-rim: #7fb8ff;
+    --m-hole-edge: #0a1a2e;
+}
+
+.theme-retro {
+    --m-floor-a: #1f1736;
+    --m-floor-b: #0e0a1f;
+    --m-line: #ff4fd8;
+    --m-frame: #07040f;
+    --m-wall-a: #ff4fd8;
+    --m-wall-b: #ffe14d;
+    --m-wall-side: #5a1470;
+    --m-wall-shine: #ffffff;
+    --m-hole-wall: #301a4f;
+    --m-hole-rim: #3df5ff;
+    --m-hole-edge: #1a0a30;
+}

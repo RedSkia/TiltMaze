@@ -22,6 +22,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<RunQueue>();
         builder.Services.AddSingleton<Scores>();
         builder.Services.AddSingleton<TiltSensor>();
+        builder.Services.AddSingleton<Sound>();
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();

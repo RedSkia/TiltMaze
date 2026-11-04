@@ -354,6 +354,14 @@
     color: var(--danger);
 }
 
+.sound-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+}
+
 .pause-note {
     font-size: var(--font-s);
 }

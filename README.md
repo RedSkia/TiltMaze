@@ -28,6 +28,7 @@ Vælg Easy, Normal, Hard eller Expert på startsiden (valget huskes), og tryk de
 - Små huller kan man rulle forbi langs væggen. Store huller fylder hele gangen, men med (næsten) fuld fart og et lige tilløb kan man hoppe over dem. Tæt på et hul trækkes kuglen svagt ind mod det. Hard og Expert har flere huller, også på vejen. Der er altid en vej uden om de store huller.
 - På en lille skærm følger kameraet kuglen, og et minikort i hjørnet viser hele banen.
 - **Pausemenuen** (`Esc`, `P` eller menu-knappen) har Resume, Retry og Leave. Leave afslutter løbet uden flere spørgsmål.
+- **Lyd:** korte arkadelyde (mønt, fald, nedtælling, mål, ny rekord), lavet med Web Audio uden lydfiler. Slås til/fra i pausemenuen eller på Account.
 - **Mønter:** et par stykker pr. labyrint (flest på Expert), ofte uden for den korteste vej. Hver mønt giver 1 mønt første gang, at klare en labyrint giver 5-40 første gang, og en plads på top 10 / top 3 giver 25 / 50 én gang. Mønterne bruges i **Shop** til nye farver til kuglen.
 
 | Platform | Styring |

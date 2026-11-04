@@ -9,6 +9,7 @@ public partial class Account
     [Inject] private Auth auth { get; set; } = null!;
     [Inject] private Api api { get; set; } = null!;
     [Inject] private Biometrics biometrics { get; set; } = null!;
+    [Inject] private Sound sound { get; set; } = null!;
     [Inject] private RunQueue queue { get; set; } = null!;
     [Inject] private NavigationManager navigation { get; set; } = null!;
 
@@ -63,6 +64,11 @@ public partial class Account
         auth.Unlock();
         username = auth.Username;
         _ = queue.SendPending();
+    }
+
+    private void ToggleSound()
+    {
+        sound.Enabled = !sound.Enabled;
     }
 
     private async Task ToggleBiometrics()

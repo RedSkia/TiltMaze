@@ -95,6 +95,18 @@
                 <section aria-labelledby="settings-title">
                     <h2 class="section-label" id="settings-title">Settings</h2>
                     <div class="card rows">
+                        <div class="setting-row">
+                            <span class="row-icon">
+                                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" /><path d="M16 9a4 4 0 0 1 0 6" /></svg>
+                            </span>
+                            <div class="setting-text">
+                                <span class="setting-title" id="sound-title">Sound</span>
+                                <span class="setting-desc">Short game sounds. Also in the pause menu.</span>
+                            </div>
+                            <button type="button" class="switch" role="switch" aria-checked="@(sound.Enabled ? "true" : "false")"
+                                    aria-labelledby="sound-title" @onclick="ToggleSound"></button>
+                        </div>
+
                         @if (biometricAvailable || biometrics.Enabled)
                         {
                             <div class="setting-row">

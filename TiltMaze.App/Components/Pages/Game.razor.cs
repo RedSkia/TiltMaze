@@ -16,6 +16,7 @@ public partial class Game : IDisposable
 
     [Inject] private Scores scores { get; set; } = null!;
     [Inject] private Wallet wallet { get; set; } = null!;
+    [Inject] private Sound sound { get; set; } = null!;
     [Inject] private Api api { get; set; } = null!;
     [Inject] private Auth auth { get; set; } = null!;
     [Inject] private TiltSensor tilt { get; set; } = null!;
@@ -177,6 +178,7 @@ public partial class Game : IDisposable
         time = 0;
         steps = 0;
         countdown = Beat * 3;
+        sound.Countdown();   // bip for "3"
         falls = 0;
         paused = false;
         finished = false;
@@ -325,7 +327,13 @@ public partial class Game : IDisposable
         // Under nedtællingen står kuglen stille, og uret går ikke
         if (countdown > 0)
         {
+            int before = (int)Math.Ceiling(countdown / Beat);
             countdown -= seconds;
+            int after = (int)Math.Ceiling(countdown / Beat);
+            if (after <= 0)
+                sound.Go();
+            else if (after != before)
+                sound.Countdown();
             return;
         }
 
@@ -383,6 +391,7 @@ public partial class Game : IDisposable
                 continue;
 
             picked[i] = true;
+            sound.Coin();
             if (wallet.TakeCoin(maze.Difficulty, maze.Seed, i))
                 runCoins++;
             popX = maze.Coins[i].X + 0.5;
@@ -424,6 +433,7 @@ public partial class Game : IDisposable
     private void Fall()
     {
         falls++;
+        sound.Fall();
         ball.Reset(maze.Start.X + 0.5, maze.Start.Y + 0.5);
         if (Vibration.Default.IsSupported)
             Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(120));
@@ -437,6 +447,10 @@ public partial class Game : IDisposable
         newBest = scores.Save(maze.Difficulty, maze.Seed, time, recording.ToArray());
         best = scores.Best(maze.Difficulty, maze.Seed);
         completionReward = wallet.Complete(maze.Difficulty, maze.Seed);
+        if (newBest)
+            sound.Record();
+        else
+            sound.Finish();
         if (Vibration.Default.IsSupported)
             Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(40));
     }
@@ -497,6 +511,11 @@ public partial class Game : IDisposable
             focusDialog = true;
         else
             needFocus = true;
+    }
+
+    private void ToggleSound()
+    {
+        sound.Enabled = !sound.Enabled;
     }
 
     // Pausemenuen er den eneste menu: Resume, Retry eller Leave (Leave er selv bekræftelsen)

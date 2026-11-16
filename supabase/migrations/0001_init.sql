@@ -116,9 +116,12 @@ language sql stable security definer set search_path = '' as $$
        and not exists (select 1 from public.profiles where lower(username) = lower(p_username));
 $$;
 
--- Nyt navn. Login bruger e-mailen, så den skal følge med
+-- Nyt navn. Login bruger e-mailen, så den skal følge med.
+-- Auth ser også på e-mailen i identities, ellers kan det gamle navn aldrig oprettes igen
 create function public.set_username(p_username text) returns void
 language plpgsql security definer set search_path = '' as $$
+declare
+    v_email text := lower(p_username) || '@tiltmaze.invalid';
 begin
     if auth.uid() is null then
         raise exception 'Not signed in';
@@ -127,7 +130,9 @@ begin
         raise exception 'Invalid username';
     end if;
     update public.profiles set username = p_username where id = auth.uid();
-    update auth.users set email = lower(p_username) || '@tiltmaze.invalid' where id = auth.uid();
+    update auth.users set email = v_email where id = auth.uid();
+    update auth.identities set identity_data = identity_data || jsonb_build_object('email', v_email)
+    where user_id = auth.uid() and provider = 'email';
 exception
     when unique_violation then
         raise exception 'That username is taken';

@@ -5,8 +5,8 @@ namespace TiltMaze.App.Services;
 public static class ApiSettings
 {
     // Anon-nøglen er offentlig og sikker, fordi RLS i databasen styrer hvad man må
-    public const string SupabaseUrl = "https://YOUR-PROJECT.supabase.co";
-    public const string AnonKey = "YOUR-ANON-KEY";
+    public const string SupabaseUrl = "https://uieqaiauayzibatdngbe.supabase.co";
+    public const string AnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpZXFhaWF1YXl6aWJhdGRuZ2JlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ4NDg0NjUsImV4cCI6MjExMDQyNDQ2NX0.Ltmg5-oLlbZYQKleTuguAa1VOcOTDOujYLsFzQEmJH8";
 
     // E-mail til Supabase ud fra brugernavnet (brugeren ser aldrig en e-mail)
     public static string EmailOf(string username)

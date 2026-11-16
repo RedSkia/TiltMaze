@@ -561,12 +561,8 @@ public partial class Game : IDisposable
     // Vinduet blev skjult eller minimeret: pause og sluk for sensoren. Spillet fortsætter først, når man trykker Resume.
     private void OnWindowStopped(object? sender, EventArgs e)
     {
-        if (!finished && !paused)
-        {
-            paused = true;
-            focusDialog = true;
-            sound.Pause();
-        }
+        if (!paused)
+            TogglePause();   // gør ingenting, hvis løbet er slut
         tilt.Stop();
         InvokeAsync(StateHasChanged);
     }

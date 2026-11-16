@@ -10,6 +10,10 @@
                 <h1 id="hero-title">Today's maze</h1>
                 <p class="page-sub">The same maze for everyone. Roll fast to jump over holes.</p>
                 <span class="badge">New maze in @timeLeft</span>
+                @if (wallet.Streak > 0)
+                {
+                    <span class="badge gold">@wallet.Streak day streak</span>
+                }
             </div>
         </div>
         <div class="hero-play">
@@ -17,6 +21,7 @@
                 <div>
                     <span class="label">Your best today</span>
                     <span class="time">@TimeText(scores.Best(selected, dailySeed))</span>
+                    <span class="today-stars">@Stars(wallet.Stars(selected, dailySeed))</span>
                 </div>
                 <div>
                     <span class="label">Best on @selected</span>

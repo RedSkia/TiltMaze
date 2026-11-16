@@ -78,6 +78,8 @@ public partial class Game : IDisposable
     private bool[] picked = [];
     private int runCoins;
     private int completionReward;
+    private int stars, streakBonus;
+    private List<Achievement> unlocked = [];
     private BallColor ballColor = Rewards.BallColors[0];
 
     // Det man har valgt i butikken (kun udseende): mønster på kuglen, spor, effekt ved mål og bane-tema
@@ -506,6 +508,10 @@ public partial class Game : IDisposable
         newBest = scores.Save(maze.Difficulty, maze.Seed, time, recording.ToArray());
         best = scores.Best(maze.Difficulty, maze.Seed);
         completionReward = wallet.Complete(maze.Difficulty, maze.Seed);
+        stars = Rewards.Stars(maze, time);
+        wallet.SaveStars(maze.Difficulty, maze.Seed, stars);
+        streakBonus = wallet.UpdateStreak();
+        unlocked = wallet.Unlock(maze.Difficulty, stars, falls == 0);
         if (newBest)
             sound.Record();
         else

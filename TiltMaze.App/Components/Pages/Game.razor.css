@@ -292,6 +292,12 @@
 
 /* ---------- Dialoger: pause og bane klaret (Leave run? er ConfirmDialog) ---------- */
 
+.stars {
+    margin: 0;
+    font-size: 2rem;
+    color: var(--gold);
+}
+
 .result-time {
     font-size: 3.25rem;
     font-weight: 900;

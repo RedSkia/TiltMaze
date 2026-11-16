@@ -49,6 +49,67 @@ public class Wallet
         return reward;
     }
 
+    // Gemmer stjernerne, hvis det er flere end før
+    public void SaveStars(Difficulty difficulty, int seed, int stars)
+    {
+        var progress = database.GetProgress(difficulty, seed);
+        if (stars <= progress.Stars)
+            return;
+
+        progress.Stars = stars;
+        database.SaveProgress(progress, 0);
+    }
+
+    public int Stars(Difficulty difficulty, int seed)
+    {
+        return database.GetProgress(difficulty, seed).Stars;
+    }
+
+    // Streak: dage i træk med en klaret labyrint (UTC), gemt i Preferences
+    private static DateOnly Today => DateOnly.FromDateTime(DateTime.UtcNow);
+
+    private static DateOnly? LastDay =>
+        DateOnly.TryParseExact(Preferences.Get("streakDate", ""), "yyyy-MM-dd", out var day) ? day : null;
+
+    public int Streak => Rewards.ShownStreak(LastDay, Today, Preferences.Get("streak", 0));
+
+    // Kaldes når en labyrint er klaret. Giver mønter, hvis det er en ny dag i stribe (ellers 0).
+    public int UpdateStreak()
+    {
+        if (LastDay == Today)
+            return 0;
+
+        Preferences.Set("streak", Rewards.NextStreak(LastDay, Today, Preferences.Get("streak", 0)));
+        Preferences.Set("streakDate", Today.ToString("yyyy-MM-dd"));
+        var wallet = database.GetWallet();
+        wallet.Coins += Rewards.StreakBonus;
+        database.SaveWallet(wallet);
+        return Rewards.StreakBonus;
+    }
+
+    // Kaldes når en labyrint er klaret (efter UpdateStreak). Giver de nye præstationer og deres mønter.
+    public List<Achievement> Unlock(Difficulty difficulty, int stars, bool clean)
+    {
+        int cleanRuns = Preferences.Get("cleanRuns", 0) + (clean ? 1 : 0);
+        Preferences.Set("cleanRuns", cleanRuns);
+        var wallet = database.GetWallet();
+        var owned = wallet.Owned.Split(',').ToList();
+        var news = Rewards.Achieved(difficulty, stars, cleanRuns, Streak).Where(a => !owned.Contains("achievement:" + a.Id)).ToList();
+        foreach (var a in news)
+        {
+            owned.Add("achievement:" + a.Id);
+            wallet.Coins += a.Coins;
+        }
+        wallet.Owned = string.Join(",", owned.Where(o => o != ""));
+        database.SaveWallet(wallet);
+        return news;
+    }
+
+    public bool HasAchievement(Achievement a)
+    {
+        return database.GetWallet().Owned.Split(',').Contains("achievement:" + a.Id);
+    }
+
     // Serveren har svaret med pladsen på top-listen. Giver bonussen, der ikke allerede er givet.
     public int GiveRankBonus(Difficulty difficulty, int seed, int rank)
     {

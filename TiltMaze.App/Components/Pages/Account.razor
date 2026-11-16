@@ -166,6 +166,16 @@
                     </div>
                 </section>
 
+                <section class="card" aria-labelledby="achievements-title">
+                    <h2 class="section-label" id="achievements-title">Achievements</h2>
+                    <ul class="achievements">
+                        @foreach (var a in Rewards.Achievements)
+                        {
+                            <li>@(wallet.HasAchievement(a) ? "✓" : "○") @a.Name (+@a.Coins)</li>
+                        }
+                    </ul>
+                </section>
+
                 <section class="card danger-zone" aria-labelledby="danger">
                     <h2 class="section-label" id="danger">Danger zone</h2>
                     <p class="muted">Deletes your account, your times and your ghosts on the server. Times saved on this device stay. This cannot be undone.</p>

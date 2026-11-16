@@ -47,6 +47,7 @@ public class MazeProgress
     public int CoinMask { get; set; }     // bit i er 1, hvis mønt nummer i er samlet op
     public bool Completed { get; set; }   // belønningen for at klare labyrinten er givet
     public int RankBonusPaid { get; set; }   // 0, 25 eller 50 (se Rewards)
+    public int Stars { get; set; }           // flest stjerner (0 = ikke klaret). CreateTable tilføjer kolonnen i gamle databaser.
 }
 
 // Pungen: antal mønter og de ting man ejer (nøgler med komma imellem, se ShopItems.OwnedKey; farver er bare id'et).

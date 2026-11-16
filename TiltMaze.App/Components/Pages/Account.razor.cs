@@ -7,6 +7,7 @@ namespace TiltMaze.App.Components.Pages;
 public partial class Account
 {
     [Inject] private Auth auth { get; set; } = null!;
+    [Inject] private Wallet wallet { get; set; } = null!;
     [Inject] private Api api { get; set; } = null!;
     [Inject] private Biometrics biometrics { get; set; } = null!;
     [Inject] private Sound sound { get; set; } = null!;

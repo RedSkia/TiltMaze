@@ -319,3 +319,7 @@
     flex: 1;
     min-width: 0;
 }
+
+.today-stars {
+    color: var(--gold);
+}

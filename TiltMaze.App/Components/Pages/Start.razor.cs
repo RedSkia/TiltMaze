@@ -8,6 +8,7 @@ namespace TiltMaze.App.Components.Pages;
 public partial class Start
 {
     [Inject] private Scores scores { get; set; } = null!;
+    [Inject] private Wallet wallet { get; set; } = null!;
     [Inject] private NavigationManager navigation { get; set; } = null!;
 
     private readonly Difficulty[] difficulties = Enum.GetValues<Difficulty>();
@@ -61,6 +62,11 @@ public partial class Start
         DateTime now = DateTime.UtcNow;
         TimeSpan left = now.Date.AddDays(1) - now;
         return (int)left.TotalHours + "h " + left.Minutes + "m";
+    }
+
+    private static string Stars(int stars)
+    {
+        return stars == 0 ? "" : new string('★', stars);
     }
 
     private static string TimeText(double? seconds)

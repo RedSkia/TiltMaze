@@ -190,6 +190,7 @@
                     <div class="card dialog finish" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
                         <h2 id="dialog-title">Maze complete!</h2>
                         <p class="result-time">@Format.Time(time)</p>
+                        <p class="stars" aria-label="@stars of 3 stars">@(new string('★', stars))@(new string('☆', 3 - stars))</p>
                         @if (newBest)
                         {
                             <p><span class="badge gold record">New best time!</span></p>
@@ -205,7 +206,11 @@
                             <span class="coin-dot" aria-hidden="true"></span>
                             <span>+@(runCoins + completionReward) coins</span>
                         </p>
-                        <p class="muted">@runCoins from pickups · @completionReward for finishing</p>
+                        <p class="muted">@runCoins from pickups · @completionReward for finishing@(streakBonus > 0 ? $" · {streakBonus} daily streak" : "")</p>
+                        @foreach (var a in unlocked)
+                        {
+                            <p class="badge gold">Achievement: @a.Name (+@a.Coins)</p>
+                        }
                         <div class="dialog-buttons">
                             <button type="button" class="button primary big" @ref="dialogButton" @onclick="NewMaze">New maze</button>
                             <button type="button" class="button" @onclick="Retry">Retry</button>

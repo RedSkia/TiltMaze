@@ -308,3 +308,14 @@
         transform: none;
     }
 }
+
+/* Felt til en bestemt seed + Play-knap */
+.seed-row {
+    display: flex;
+    gap: 8px;
+}
+
+.seed-row input {
+    flex: 1;
+    min-width: 0;
+}

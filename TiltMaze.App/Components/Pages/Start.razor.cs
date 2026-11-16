@@ -19,6 +19,8 @@ public partial class Start
 
     // Den valgte sværhedsgrad huskes til næste gang
     private Difficulty selected = Difficulty.Normal;
+    private string seedText = "";
+    private bool seedError;
 
     protected override void OnInitialized()
     {
@@ -43,6 +45,15 @@ public partial class Start
     private void PlayRandom()
     {
         navigation.NavigateTo(Game.Address(selected, Course.NewSeed()));
+    }
+
+    // Spil en bestemt seed (heltal fra 0), fx en vens seed fra mål-dialogen
+    private void PlaySeed()
+    {
+        if (int.TryParse(seedText, out int seed) && seed >= 0)
+            navigation.NavigateTo(Game.Address(selected, seed));
+        else
+            seedError = true;
     }
 
     private static string TimeUntilNextDaily()

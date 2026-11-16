@@ -106,6 +106,15 @@
                     {
                         <TrailView Points="trail" Kind="@trailKind" />
                     }
+                    @if (FogRadius > 0)
+                    {
+                        <!-- Tåge: mørk over banen med et hul om kuglen (kun en gradient, ingen blur). Før kuglen, så den altid ses -->
+                        <radialGradient id="fog" gradientUnits="userSpaceOnUse" cx="@N(ball.X)" cy="@N(ball.Y)" r="@N(FogRadius)">
+                            <stop offset="0.6" stop-color="#05070f" stop-opacity="0" />
+                            <stop offset="1" stop-color="#05070f" stop-opacity="0.97" />
+                        </radialGradient>
+                        <rect x="@N(camera.Left)" y="@N(camera.Top)" width="@N(camera.ViewWidth)" height="@N(camera.ViewHeight)" fill="url(#fog)" pointer-events="none" />
+                    }
                     <circle class="ball-glow" cx="@N(ball.X)" cy="@N(ball.Y)" r="@N(Ball.Radius * 2)" />
                     <ellipse class="ball-shadow" cx="@N(ball.X + 0.06)" cy="@N(ball.Y + 0.09)" rx="@N(Ball.Radius)" ry="@N(Ball.Radius * 0.85)" />
                     <circle class="ball" cx="@N(ball.X)" cy="@N(ball.Y)" r="@N(Ball.Radius)" />
@@ -200,6 +209,7 @@
                         <div class="dialog-buttons">
                             <button type="button" class="button primary big" @ref="dialogButton" @onclick="NewMaze">New maze</button>
                             <button type="button" class="button" @onclick="Retry">Retry</button>
+                            <button type="button" class="button" @onclick="CopySeed">@(copied ? "Copied" : "Copy seed")</button>
                             <button type="button" class="button" @onclick="Leave">Menu</button>
                         </div>
                     </div>

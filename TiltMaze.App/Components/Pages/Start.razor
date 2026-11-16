@@ -34,6 +34,14 @@
                 </svg>
                 <span>Random maze</span>
             </button>
+            <div class="seed-row">
+                <input type="text" inputmode="numeric" placeholder="Enter a seed" aria-label="Seed" @bind="seedText" @bind:event="oninput" />
+                <button type="button" class="button" @onclick="PlaySeed">Play</button>
+            </div>
+            @if (seedError)
+            {
+                <span class="hint">A seed is a whole number from 0.</span>
+            }
         </div>
     </section>
 
@@ -61,7 +69,7 @@
                             }
                         </span>
                     </span>
-                    <span class="level-info">@settings.Width x @settings.Height · @(settings.SmallHoles + settings.BigHoles) holes</span>
+                    <span class="level-info">@settings.Width x @settings.Height · @(settings.SmallHoles + settings.BigHoles) holes@(settings.FogRadius > 0 ? " · Fog" : "")</span>
                     <span class="level-times">
                         <span><span class="label">Best</span> <span class="time">@TimeText(scores.BestOf(difficulty))</span></span>
                         <span><span class="label">Today</span> <span class="time">@TimeText(scores.Best(difficulty, dailySeed))</span></span>

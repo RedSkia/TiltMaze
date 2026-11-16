@@ -51,6 +51,7 @@ public partial class Game : IDisposable
     private bool paused;
     private bool finished;
     private bool newBest;
+    private bool copied;              // seed er kopieret i mål-dialogen
     private bool isDaily;
     private bool needFocus;           // banen skal have tastatur-fokus efter næste tegning
     private bool focusDialog;          // dialogens første knap skal have fokus efter næste tegning
@@ -132,6 +133,8 @@ public partial class Game : IDisposable
     private string[] EffectPieces => goalEffect == "fireworks" ? fireworks : confetti;
 
     // Udsnittet af banen, som SVG'en viser. Uden kamera er det hele banen.
+    private double FogRadius => DifficultySettings.For(maze.Difficulty).FogRadius;
+
     private string ViewBox => N(camera.Left) + " " + N(camera.Top) + " " + N(camera.ViewWidth) + " " + N(camera.ViewHeight);
 
     // To ens animationer med hver sit navn: når klassen skifter ved et nyt fald, starter rystelsen forfra
@@ -211,6 +214,7 @@ public partial class Game : IDisposable
         time = 0;
         steps = 0;
         lastBump = -1;
+        copied = false;
         countdown = Beat * 3;
         sound.Countdown();   // bip for "3"
         falls = 0;
@@ -398,7 +402,9 @@ public partial class Game : IDisposable
         if (ball.LastImpact > BumpMin && time - lastBump >= BumpPause)
         {
             lastBump = time;
-            sound.Bump(Math.Clamp(ball.LastImpact / Ball.MaxSpeed, 0.2, 1));
+            double strength = Math.Clamp(ball.LastImpact / Ball.MaxSpeed, 0.2, 1);
+            sound.Bump(strength);
+            Buzz((int)(10 + 15 * strength));
         }
 
         if (outcome == Outcome.Fell)
@@ -542,6 +548,13 @@ public partial class Game : IDisposable
     private void Leave()
     {
         navigation.NavigateTo("");
+    }
+
+    // Kopierer seed, så en ven kan skrive den på Start
+    private async Task CopySeed()
+    {
+        await Clipboard.Default.SetTextAsync(maze.Seed.ToString());
+        copied = true;
     }
 
     // Samme labyrint igen (samme seed)

@@ -63,3 +63,7 @@ Labyrintspil, .NET MAUI Blazor Hybrid (Android + Windows) + Supabase (Postgres, 
 - `feature/*` → `develop` → `main`, lineær historik (`--ff-only`), ingen AI-omtale i commits, korte beskeder i bydeform.
 
 - Windows: WebView2-data ligger i `%LOCALAPPDATA%\TiltMaze\WebView2` (sat i `Platforms/Windows/App.xaml.cs`), fordi Windows Defender (kontrolleret mappeadgang) blokerer mappen ved siden af .exe, når projektet ligger på Skrivebordet.
+
+## Spilfølelse
+- Vibration ved væg: samme `if` som `Bump`-lyden i Game (`Buzz` 10-25 ms efter styrke). Tåge: `DifficultySettings.FogRadius` (celler; Easy/Normal 0, Hard 4,5, Expert 2,5), tegnet som et `rect` med `radialGradient` om kuglen i Game-SVG'en, før kuglen. Kun visning.
+- Seed: Start har felt + Play (heltal ≥ 0, `Game.Address`); mål-dialogen har "Copy seed" (`Clipboard`).

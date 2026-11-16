@@ -4,6 +4,12 @@ namespace TiltMaze.Core;
 
 public static class Format
 {
+    // Tal til SVG skal have punktum, uanset sprog på computeren
+    public static string N(double number)
+    {
+        return number.ToString("0.###", CultureInfo.InvariantCulture);
+    }
+
     // 75,3 sekunder bliver til "1:15.3". Der rundes til 0,1 først, så 59,96 bliver "1:00.0" og ikke "0:60.0".
     public static string Time(double seconds)
     {

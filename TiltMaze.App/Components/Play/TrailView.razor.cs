@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using TiltMaze.Core;
 
@@ -11,10 +10,4 @@ public partial class TrailView
     [Parameter] public double Size { get; set; } = Ball.Radius;   // kuglens radius
 
     private string[] Colors => ShopItems.TrailColors(Kind);
-
-    // Tal til SVG skal have punktum, uanset sprog på computeren
-    private static string N(double number)
-    {
-        return number.ToString("0.###", CultureInfo.InvariantCulture);
-    }
 }

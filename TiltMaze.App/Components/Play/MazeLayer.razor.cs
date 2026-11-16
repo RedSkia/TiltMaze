@@ -1,7 +1,7 @@
-using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Components;
 using TiltMaze.Core;
+using static TiltMaze.Core.Format;
 
 namespace TiltMaze.App.Components.Play;
 
@@ -37,11 +37,5 @@ public partial class MazeLayer
         foreach (Segment wall in Maze.Segments)
             text.Append($"M{N(wall.X1)} {N(wall.Y1)}L{N(wall.X2)} {N(wall.Y2)}");
         return text.ToString();
-    }
-
-    // Tal til SVG skal have punktum, uanset sprog på computeren
-    private static string N(double number)
-    {
-        return number.ToString("0.###", CultureInfo.InvariantCulture);
     }
 }

@@ -1,11 +1,11 @@
 using System.Diagnostics;
-using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using TiltMaze.App.Components.Play;
 using TiltMaze.App.Services;
 using TiltMaze.Core;
+using static TiltMaze.Core.Format;
 
 namespace TiltMaze.App.Components.Pages;
 
@@ -261,12 +261,6 @@ public partial class Game : IDisposable
         {
             // Fx et ødelagt svar. Så kører man bare uden andres spøgelser
         }
-    }
-
-    // Tal til SVG skal have punktum, uanset sprog på computeren
-    private static string N(double number)
-    {
-        return number.ToString("0.###", CultureInfo.InvariantCulture);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

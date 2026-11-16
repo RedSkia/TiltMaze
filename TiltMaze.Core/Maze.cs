@@ -25,7 +25,7 @@ public static class MazeGenerator
             for (int y = 0; y < height; y++)
                 grid[x, y] = Wall.All;
 
-        var random = new Random(seed);   // samme seed = samme labyrint
+        var random = new Rng(seed);   // samme seed = samme labyrint
         var visited = new bool[width, height];
         var path = new Stack<Cell>();
         var options = new List<int>();
@@ -117,7 +117,7 @@ public static class MazeGenerator
     }
 
     // Fjerner de indre vægge i tilfældige 2x2-blokke. Fjerner kun vægge, så alt hænger stadig sammen.
-    static void CarveRooms(Wall[,] grid, Random random, int roomCount)
+    static void CarveRooms(Wall[,] grid, Rng random, int roomCount)
     {
         int width = grid.GetLength(0);
         int height = grid.GetLength(1);
@@ -135,7 +135,7 @@ public static class MazeGenerator
     }
 
     // Åbner en ekstra væg i nogle af blindgyderne, så labyrinten får løkker.
-    static void Braid(Wall[,] grid, Random random, double braidChance)
+    static void Braid(Wall[,] grid, Rng random, double braidChance)
     {
         var closed = new List<int>();
         for (int x = 0; x < grid.GetLength(0); x++)

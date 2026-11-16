@@ -55,7 +55,7 @@ public class Course
         Width = settings.Width;
         Height = settings.Height;
 
-        var random = new Random(seed);
+        var random = new Rng(seed);
         BuildMaze(settings, random);
         PlaceHoles(settings, random);
         PlaceCoins(settings, random);
@@ -108,7 +108,7 @@ public class Course
     }
 
     // Laver labyrinten. Er den for kedelig (næsten ingen kryds), prøver vi igen med det næste tal fra samme seed.
-    void BuildMaze(DifficultySettings settings, Random random)
+    void BuildMaze(DifficultySettings settings, Rng random)
     {
         for (int attempt = 0; attempt < 20; attempt++)
         {
@@ -143,7 +143,7 @@ public class Course
     // Store huller først, kun på den korteste vej, og kun hvis målet stadig kan nås uden om alle store huller
     // (der er altid en vej uden store huller, også hvis man ikke kan springe). Små huller kan ligge hvor som helst
     // (kuglen kan rulle forbi), bortset fra start og mål. Den første halvdel af de små ligger på vejen uden om de store huller.
-    void PlaceHoles(DifficultySettings settings, Random random)
+    void PlaceHoles(DifficultySettings settings, Rng random)
     {
         var used = new bool[Width, Height];
         used[Start.X, Start.Y] = true;
@@ -203,7 +203,7 @@ public class Course
 
     // Mønter i celler uden start, mål og huller. Celler uden for den korteste vej kommer først,
     // så det koster tid at samle dem. Samme (sværhedsgrad, seed) giver altid de samme mønter.
-    void PlaceCoins(DifficultySettings settings, Random random)
+    void PlaceCoins(DifficultySettings settings, Rng random)
     {
         var taken = new bool[Width, Height];
         taken[Start.X, Start.Y] = true;

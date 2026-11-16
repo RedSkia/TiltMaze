@@ -26,8 +26,8 @@ public class RunCheckerTests
 
     // Kører lige gennem hullerne med fuld fart: hoppet over et hul er en lovlig tur
     [Theory]
-    [InlineData(20)]
-    [InlineData(64)]
+    [InlineData(14)]
+    [InlineData(66)]
     public void RunThatJumpsOverHoles_IsAccepted(int seed)
     {
         var course = new Course(Difficulty.Easy, seed);

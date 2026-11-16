@@ -96,7 +96,7 @@ public class CourseTests
     [Fact]
     public void BallFallsInHoleAtLowSpeedButJumpsAtHighSpeed()
     {
-        var course = new Course(Difficulty.Hard, 1);
+        var course = new Course(Difficulty.Hard, 3);
         Hole big = course.Holes.First(h => h.IsBig);
         Hole small = course.Holes.First(h => !h.IsBig);
 

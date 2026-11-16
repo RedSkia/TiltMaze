@@ -36,18 +36,13 @@ public partial class Start
     // Dagens labyrint: ens for alle, fordi seed er datoen
     private void PlayDaily()
     {
-        Open(selected, dailySeed);
+        navigation.NavigateTo(Game.Address(selected, dailySeed));
     }
 
     // Ny tilfældig labyrint
     private void PlayRandom()
     {
-        Open(selected, Course.NewSeed());
-    }
-
-    private void Open(Difficulty difficulty, int seed)
-    {
-        navigation.NavigateTo("play/" + difficulty.ToString().ToLower() + "/" + seed);
+        navigation.NavigateTo(Game.Address(selected, Course.NewSeed()));
     }
 
     private static string TimeUntilNextDaily()

@@ -39,7 +39,7 @@
                     <dd>@maze.Seed</dd>
                 </div>
             </dl>
-            <p class="hint muted">@hint</p>
+            <p class="hint muted">@Hint</p>
             <div class="side-buttons">
                 <button type="button" class="button" data-no-click @onclick="TogglePause">Pause</button>
                 <button type="button" class="button" @onclick="Retry">Retry</button>
@@ -154,7 +154,7 @@
                         <div class="sound-row">
                             <span id="sound-title">Sound</span>
                             <button type="button" class="switch" role="switch" aria-checked="@(sound.Enabled ? "true" : "false")"
-                                    aria-labelledby="sound-title" @onclick="ToggleSound"></button>
+                                    aria-labelledby="sound-title" @onclick="() => sound.Enabled = !sound.Enabled"></button>
                         </div>
                         @if (tilt.IsSupported)
                         {

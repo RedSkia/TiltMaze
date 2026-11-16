@@ -104,7 +104,7 @@
                                 <span class="setting-desc">Short game sounds. Also in the pause menu.</span>
                             </div>
                             <button type="button" class="switch" role="switch" aria-checked="@(sound.Enabled ? "true" : "false")"
-                                    aria-labelledby="sound-title" @onclick="ToggleSound"></button>
+                                    aria-labelledby="sound-title" @onclick="() => sound.Enabled = !sound.Enabled"></button>
                         </div>
 
                         @if (tilt.IsSupported)
@@ -118,7 +118,7 @@
                                     <span class="setting-desc">On: tilt the phone. Off: joystick on the board. Never both.</span>
                                 </div>
                                 <button type="button" class="switch" role="switch" aria-checked="@(tilt.Enabled ? "true" : "false")"
-                                        aria-labelledby="tilt-title" @onclick="ToggleTilt"></button>
+                                        aria-labelledby="tilt-title" @onclick="() => tilt.Enabled = !tilt.Enabled"></button>
                             </div>
                         }
 
@@ -169,7 +169,7 @@
                 <section class="card danger-zone" aria-labelledby="danger">
                     <h2 class="section-label" id="danger">Danger zone</h2>
                     <p class="muted">Deletes your account, your times and your ghosts on the server. Times saved on this device stay. This cannot be undone.</p>
-                    <button type="button" class="button danger" @onclick="AskDelete" disabled="@busy">Delete account</button>
+                    <button type="button" class="button danger" @onclick="() => confirmDelete = true" disabled="@busy">Delete account</button>
                 </section>
             </div>
         </div>

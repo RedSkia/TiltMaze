@@ -67,17 +67,6 @@ public partial class Account
         _ = queue.SendPending();
     }
 
-    private void ToggleSound()
-    {
-        sound.Enabled = !sound.Enabled;
-    }
-
-    // Vip eller joystick. Game læser valget, når et løb starter
-    private void ToggleTilt()
-    {
-        tilt.Enabled = !tilt.Enabled;
-    }
-
     private async Task ToggleBiometrics()
     {
         error = "";
@@ -95,11 +84,6 @@ public partial class Account
     {
         auth.Logout();
         navigation.NavigateTo("login");
-    }
-
-    private void AskDelete()
-    {
-        confirmDelete = true;
     }
 
     private async Task DeleteAccount()

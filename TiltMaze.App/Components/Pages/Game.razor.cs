@@ -56,7 +56,6 @@ public partial class Game : IDisposable
     private bool focusDialog;          // dialogens første knap skal have fokus efter næste tegning
     private bool started;              // spil-løkken er sat i gang
     private bool disposed;
-    private string hint = "";
     private Outcome outcome;
 
     // Banens størrelse i pixels (fra JavaScript) og om kameraet følger kuglen
@@ -150,13 +149,9 @@ public partial class Game : IDisposable
         }
     }
 
-    // Kører når siden åbnes
-    protected override void OnInitialized()
-    {
-        hint = tilt.Enabled
-            ? "Tilt your phone to roll the ball. Holes pull the ball in; roll fast to jump them."
-            : "Drag anywhere on the board with a finger or the mouse. Holes pull the ball in; roll fast to jump them.";
-    }
+    // Hjælpeteksten passer til den valgte styring
+    private string Hint => (tilt.Enabled ? "Tilt your phone to roll the ball." : "Drag anywhere on the board with a finger or the mouse.")
+        + " Holes pull the ball in; roll fast to jump them.";
 
     // Skift mellem vip og joystick (kun på en telefon med sensor)
     private void ToggleTilt()
@@ -166,7 +161,6 @@ public partial class Game : IDisposable
             tilt.Start();
         else
             tilt.Stop();
-        OnInitialized();   // hjælpeteksten passer til den valgte styring
     }
 
     // Kører når siden åbnes og når adressen ændres (ny seed)
@@ -189,7 +183,7 @@ public partial class Game : IDisposable
             LoadMaze(difficulty, Seed.Value);
     }
 
-    private static string Address(Difficulty difficulty, int seed)
+    public static string Address(Difficulty difficulty, int seed)
     {
         return "play/" + difficulty.ToString().ToLower() + "/" + seed;
     }
@@ -451,9 +445,14 @@ public partial class Game : IDisposable
             popX = maze.Coins[i].X + 0.5;
             popY = maze.Coins[i].Y + 0.5;
             pops++;
-            if (Vibration.Default.IsSupported)
-                Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(15));
+            Buzz(15);
         }
+    }
+
+    private static void Buzz(int milliseconds)
+    {
+        if (Vibration.Default.IsSupported)
+            Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(milliseconds));
     }
 
     private bool IsOldCoin(int i)
@@ -490,8 +489,7 @@ public partial class Game : IDisposable
         sound.Fall();
         ball.Reset(maze.Start.X + 0.5, maze.Start.Y + 0.5);
         trail.Clear();
-        if (Vibration.Default.IsSupported)
-            Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(120));
+        Buzz(120);
     }
 
     private void Finish()
@@ -506,8 +504,7 @@ public partial class Game : IDisposable
             sound.Record();
         else
             sound.Finish();
-        if (Vibration.Default.IsSupported)
-            Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(40));
+        Buzz(40);
     }
 
     // Tastaturet styrer ikke kuglen (det er for nemt), det kan kun sætte på pause
@@ -539,11 +536,6 @@ public partial class Game : IDisposable
             needFocus = true;
             sound.Resume();
         }
-    }
-
-    private void ToggleSound()
-    {
-        sound.Enabled = !sound.Enabled;
     }
 
     // Pausemenuen er den eneste menu: Resume, Retry eller Leave (Leave er selv bekræftelsen)

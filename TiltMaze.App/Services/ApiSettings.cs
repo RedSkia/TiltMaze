@@ -1,4 +1,6 @@
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace TiltMaze.App.Services;
 
@@ -25,5 +27,35 @@ public static class ApiSettings
         http.DefaultRequestHeaders.Add("apikey", AnonKey);
         http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AnonKey);
         return http;
+    }
+
+    // Sender til serveren. Returnerer null, hvis der ikke er forbindelse
+    public static async Task<HttpResponseMessage?> TrySend(Func<Task<HttpResponseMessage>> send)
+    {
+        try
+        {
+            return await send();
+        }
+        catch (HttpRequestException)
+        {
+            return null;
+        }
+        catch (TaskCanceledException)
+        {
+            return null;
+        }
+    }
+
+    // Læser JSON fra svaret. Er svaret ikke JSON (fx fra en proxy), giver den null i stedet for en fejl
+    public static async Task<T?> ReadJson<T>(HttpResponseMessage response)
+    {
+        try
+        {
+            return await response.Content.ReadFromJsonAsync<T>();
+        }
+        catch (JsonException)
+        {
+            return default;
+        }
     }
 }

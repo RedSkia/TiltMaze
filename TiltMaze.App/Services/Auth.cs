@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Text.Json.Serialization;
+using static TiltMaze.App.Services.ApiSettings;
 
 namespace TiltMaze.App.Services;
 
@@ -104,7 +104,7 @@ public class Auth
     {
         username = username.Trim();
         var body = new { email = ApiSettings.EmailOf(username), password, data = new { username } };
-        using var response = await Send(() => http.PostAsJsonAsync("/auth/v1/signup", body));
+        using var response = await TrySend(() => http.PostAsJsonAsync("/auth/v1/signup", body));
         if (response == null)
             return NoConnection();
         if (!response.IsSuccessStatusCode)
@@ -117,7 +117,7 @@ public class Auth
     {
         username = username.Trim();
         var body = new { email = ApiSettings.EmailOf(username), password };
-        using var response = await Send(() => http.PostAsJsonAsync("/auth/v1/token?grant_type=password", body));
+        using var response = await TrySend(() => http.PostAsJsonAsync("/auth/v1/token?grant_type=password", body));
         if (response == null)
             return NoConnection();
         if (!response.IsSuccessStatusCode)
@@ -142,7 +142,7 @@ public class Auth
     // Er brugernavnet ledigt? null, hvis serveren ikke kunne spørges
     public async Task<bool?> IsAvailable(string username)
     {
-        using var response = await Send(() => http.PostAsJsonAsync("/rest/v1/rpc/username_available", new { p_username = username }));
+        using var response = await TrySend(() => http.PostAsJsonAsync("/rest/v1/rpc/username_available", new { p_username = username }));
         if (response == null || !response.IsSuccessStatusCode)
             return null;
         return await ReadJson<bool?>(response);
@@ -226,7 +226,7 @@ public class Auth
 
     private async Task<string?> Refresh()
     {
-        using var response = await Send(() => http.PostAsJsonAsync("/auth/v1/token?grant_type=refresh_token", new { refresh_token = refreshToken }));
+        using var response = await TrySend(() => http.PostAsJsonAsync("/auth/v1/token?grant_type=refresh_token", new { refresh_token = refreshToken }));
         if (response == null)
             return null; // Ingen net. Vi beholder login og prøver senere
 
@@ -260,36 +260,6 @@ public class Auth
         catch (Exception)
         {
             // Kan det ikke gemmes, er man logget ind, til appen lukkes
-        }
-    }
-
-    // Sender til serveren. Returnerer null, hvis der ikke er forbindelse
-    private static async Task<HttpResponseMessage?> Send(Func<Task<HttpResponseMessage>> send)
-    {
-        try
-        {
-            return await send();
-        }
-        catch (HttpRequestException)
-        {
-            return null;
-        }
-        catch (TaskCanceledException)
-        {
-            return null;
-        }
-    }
-
-    // Læser JSON fra svaret. Er svaret ikke JSON (fx fra en proxy), giver den null i stedet for en fejl
-    private static async Task<T?> ReadJson<T>(HttpResponseMessage response)
-    {
-        try
-        {
-            return await response.Content.ReadFromJsonAsync<T>();
-        }
-        catch (JsonException)
-        {
-            return default;
         }
     }
 

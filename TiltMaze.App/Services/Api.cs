@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using TiltMaze.Core;
+using static TiltMaze.App.Services.ApiSettings;
 
 namespace TiltMaze.App.Services;
 
@@ -124,9 +124,9 @@ public class Api
     // Sender med adgangstoken. Svarer serveren 401, fornyer vi tokenet og prøver én gang til.
     // Requesten laves af en funktion, fordi en request ikke kan sendes to gange.
     // Giver null, hvis der ikke er forbindelse
-    private async Task<HttpResponseMessage?> Send(Func<HttpRequestMessage> makeRequest)
+    private Task<HttpResponseMessage?> Send(Func<HttpRequestMessage> makeRequest)
     {
-        try
+        return TrySend(async () =>
         {
             var response = await SendOnce(makeRequest, false);
             if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -135,15 +135,7 @@ public class Api
                 response = await SendOnce(makeRequest, true);
             }
             return response;
-        }
-        catch (HttpRequestException)
-        {
-            return null;
-        }
-        catch (TaskCanceledException)
-        {
-            return null;
-        }
+        });
     }
 
     private async Task<HttpResponseMessage> SendOnce(Func<HttpRequestMessage> makeRequest, bool refreshFirst)
@@ -154,19 +146,6 @@ public class Api
         if (token != null)
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return await http.SendAsync(request);
-    }
-
-    // Læser JSON fra svaret. Er svaret ikke JSON (fx fra en proxy), giver den null i stedet for en fejl
-    private static async Task<T?> ReadJson<T>(HttpResponseMessage response)
-    {
-        try
-        {
-            return await response.Content.ReadFromJsonAsync<T>();
-        }
-        catch (JsonException)
-        {
-            return default;
-        }
     }
 
     // Fejlbesked ud fra svaret, eller "" hvis det lykkedes

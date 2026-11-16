@@ -65,6 +65,7 @@ Ingen egen server: appen taler direkte med Supabase (konti, tider, top-lister). 
 3. Udgiv funktionen: `npx supabase functions deploy submit-run`.
 4. Skriv projektets URL og den offentlige anon-nøgle i `TiltMaze.App/Services/ApiSettings.cs`. Anon-nøglen er offentlig og sikker, fordi tabellerne har RLS. Brug aldrig service-nøglen i appen.
 5. Test anti-snyd: `node --test supabase/functions/tests/check.test.ts`.
+6. Ende-til-ende-test (langsom, kræver Docker, kun før release): `npx supabase start`, så `node supabase/tests/e2e.mjs` (konto, login, tider, top-liste, spøgelser, RLS, navneskift, sletning mod den lokale Supabase), til sidst `npx supabase stop`. Ligger projektet på Skrivebordet, blokerer Windows Defender CLI'en i at skrive i `supabase/`: kopiér mappen udenfor og brug `--workdir <kopi>`.
 
 ### Drift
 

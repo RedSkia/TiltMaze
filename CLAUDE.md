@@ -14,11 +14,12 @@ Labyrintspil, .NET MAUI Blazor Hybrid (Android + Windows) + Supabase (Postgres, 
   - `Platforms/` Android- og Windows-indgang
 - `TiltMaze.Tests/` xUnit: alle sværhedsgrader x mange seeds (mål nås uden store huller, start/mål aldrig huller, samme seed = samme labyrint, små huller har en åbning), fald/hop over huller, træk mod hullet, kuglen går ikke gennem vægge, kamera, spøgelse, tidstekster, brugernavn, mønter (samme seed = samme mønter, aldrig på start/mål/huller, antal pr. sværhedsgrad, berøring) og belønninger (`Rewards`)
 - `supabase/functions/` TypeScript (Deno) udgave af anti-snyd: `_shared/maze.ts`, `course.ts`, `check.ts` (port af Maze, Course og RunChecker, ren TS), `submit-run/index.ts` (tjekker spøgelset, kalder RPC `submit_run`), `tests/check.test.ts` (`node --test`), `_shared/fixtures/course.json` (facit fra C#-testen `CourseFixtureTests`, skrives igen med `WRITE_FIXTURES=1`) og `runs.json` (rigtige ture lavet med `Player.cs`). Ændres labyrint eller RunChecker i C#, skal TS følge med.
+- `supabase/tests/e2e.mjs` langsom ende-til-ende-test mod lokal Supabase (node + fetch, ingen pakker): konto, login/refresh, submit-run, top-liste, spøgelser, RLS, `set_username`, `delete_me`; rydder selv op
 
 ## Backend (Supabase, ingen egen server)
 - Projekt-URL og offentlig anon-nøgle står i `ApiSettings.cs` (sikker pga. RLS; service-nøglen bruges kun i edge function). SQL: `supabase/migrations/0001_init.sql`, config: `supabase/config.toml`.
 - Konti: Supabase Auth. Brugernavn bliver til e-mail `lower(navn)@tiltmaze.invalid` (ingen bekræftelse). `profiles.username`: 3-16 tegn `[A-Za-z0-9_]`, unikt uden forskel på store/små. Login-fejl er altid "Wrong username or password". Ingen egen kontolås (Supabase har egne grænser).
-- Tabeller `profiles` og `runs` har RLS og ingen direkte adgang; alt går gennem RPC'er: `leaderboard(p_difficulty,p_seed,p_top)`, `get_ghost(p_run_id)`, `top_ghosts(p_difficulty,p_seed)` (top 3 andres), `username_available`, `set_username` (ændrer også login-e-mailen), `delete_me`; `submit_run` kun for service_role.
+- Tabeller `profiles` og `runs` har RLS og ingen direkte adgang; alt går gennem RPC'er: `leaderboard(p_difficulty,p_seed,p_top)`, `get_ghost(p_run_id)`, `top_ghosts(p_difficulty,p_seed)` (top 3 andres), `username_available`, `set_username` (ændrer også login-e-mailen i `auth.users` og `auth.identities`, så det gamle navn bliver ledigt), `delete_me`; `submit_run` kun for service_role.
 - Tid: appen kalder Edge Function `submit-run` `{difficulty, seed, timeMs, ghost(base64 float32 LE)}` med login. Den bygger `Course` i TypeScript (`_shared/maze.ts`, `course.ts`), tjekker spøgelset (`check.ts`, port af den gamle RunChecker) og kalder `submit_run`. Svar `{id, timeMs, isBest, rank}`; fejl 400 "Run could not be verified". Kun brugerens bedste tid pr. labyrint gemmes.
 - C# og TS skal bygge samme labyrint (`Rng` mulberry32 begge steder). Dagens seed er `Course.DailySeed()`, intet endpoint.
 - Ghost-kontrol: ændres labyrint eller reglerne, kør `dotnet test` (`CourseFixtureTests`) og `node --test supabase/functions/tests/check.test.ts`.
@@ -56,6 +57,7 @@ Labyrintspil, .NET MAUI Blazor Hybrid (Android + Windows) + Supabase (Postgres, 
 - Build: `dotnet build TiltMaze.App -c Release -f net10.0-windows10.0.19041.0` / `-f net10.0-android`
 - Kør: `dotnet run --project TiltMaze.App -f net10.0-windows10.0.19041.0`, telefon: `dotnet build TiltMaze.App -t:Run -f net10.0-android`
 - Test: `dotnet test` (Core) og `node --test supabase/functions/tests/check.test.ts` (anti-snyd i TS)
+- Langsom test (kun før release, kræver Docker): `npx supabase start` + `node supabase/tests/e2e.mjs` + `npx supabase stop`. Defender blokerer CLI'ens skrivning på Skrivebordet: kør fra en kopi uden for med `--workdir`
 
 ## Git
 - `feature/*` → `develop` → `main`, lineær historik (`--ff-only`), ingen AI-omtale i commits, korte beskeder i bydeform.

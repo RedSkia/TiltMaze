@@ -28,6 +28,10 @@ revoke all on public.profiles, public.runs from anon, authenticated;
 create function public.handle_new_user() returns trigger
 language plpgsql security definer set search_path = '' as $$
 begin
+    -- E-mailen skal høre til brugernavnet, ellers kan navne optages uden login
+    if new.email is distinct from lower(new.raw_user_meta_data->>'username') || '@tiltmaze.invalid' then
+        raise exception 'Invalid username';
+    end if;
     insert into public.profiles (id, username)
     values (new.id, new.raw_user_meta_data->>'username');
     return new;
@@ -60,7 +64,8 @@ begin
         insert into public.runs as r (user_id, difficulty, seed, time_ms, ghost)
         values (p_user, p_difficulty, p_seed, p_time_ms, decode(p_ghost, 'base64'))
         on conflict (user_id, difficulty, seed)
-        do update set time_ms = excluded.time_ms, ghost = excluded.ghost, created_at = now();
+        do update set time_ms = excluded.time_ms, ghost = excluded.ghost, created_at = now()
+        where excluded.time_ms < r.time_ms;   -- to samtidige ture må ikke give en dårligere tid
     end if;
 
     select r.id, r.time_ms into v_id, v_time from public.runs r
@@ -75,7 +80,7 @@ end $$;
 create function public.leaderboard(p_difficulty int, p_seed int, p_top int default 10)
 returns table (rank int, run_id bigint, username text, time_ms int, is_me boolean)
 language sql stable security definer set search_path = '' as $$
-    select rank() over (order by r.time_ms)::int, r.id, p.username, r.time_ms, r.user_id = auth.uid()
+    select rank() over (order by r.time_ms)::int, r.id, p.username, r.time_ms, coalesce(r.user_id = auth.uid(), false)
     from public.runs r join public.profiles p on p.id = r.user_id
     where r.difficulty = p_difficulty and r.seed = p_seed
     order by r.time_ms, r.id

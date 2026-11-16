@@ -61,7 +61,7 @@ public class Api
     // Sender en ny rekord. Ved Sent er Rank pladsen på top-listen (ellers 0)
     public async Task<(SendResult Result, int Rank)> SendRun(Difficulty difficulty, int seed, int timeMs, byte[] ghost)
     {
-        var body = new { difficulty = difficulty.ToString(), seed, timeMs, ghost = Convert.ToBase64String(ghost) };
+        var body = new { difficulty = (int)difficulty, seed, timeMs, ghost = Convert.ToBase64String(ghost) };
         using var response = await Post("/functions/v1/submit-run", body);
         if (response == null || response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.TooManyRequests)
             return (SendResult.TryLater, 0);
@@ -78,7 +78,7 @@ public class Api
     // Top-listen for en labyrint. Giver null, hvis den ikke kunne hentes (fx uden net)
     public async Task<List<LeaderboardRow>?> GetLeaderboard(Difficulty difficulty, int seed, int top = 10)
     {
-        var body = new { p_difficulty = difficulty.ToString(), p_seed = seed, p_top = top };
+        var body = new { p_difficulty = (int)difficulty, p_seed = seed, p_top = top };
         using var response = await Post("/rest/v1/rpc/leaderboard", body);
         if (response == null || !response.IsSuccessStatusCode)
             return null;
@@ -90,7 +90,7 @@ public class Api
     public async Task<List<GhostRace>> GetTopGhosts(Difficulty difficulty, int seed)
     {
         var races = new List<GhostRace>();
-        var body = new { p_difficulty = difficulty.ToString(), p_seed = seed };
+        var body = new { p_difficulty = (int)difficulty, p_seed = seed };
         using var response = await Post("/rest/v1/rpc/top_ghosts", body);
         if (response == null || !response.IsSuccessStatusCode)
             return races;

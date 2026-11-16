@@ -52,6 +52,6 @@ Deno.serve(async (request) => {
         return json({ title: "Could not save the run" }, 500);
     }
 
-    const run = result.data;
+    const run = result.data[0];   // rpc med tabel giver en liste
     return json({ id: run.id, timeMs: run.time_ms, isBest: run.is_best, rank: run.rank }, 200);
 });

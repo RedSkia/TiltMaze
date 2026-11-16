@@ -39,6 +39,7 @@ export function check(difficulty: number, seed: number, timeMs: number, ghostBas
 function readGhost(base64: string): number[] | null {
     let text: string;
     try {
+        if (base64.length % 4 !== 0) return null;   // Postgres kræver = til sidst
         text = atob(base64);
     } catch {
         return null;

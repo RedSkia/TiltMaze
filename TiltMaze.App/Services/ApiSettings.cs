@@ -1,29 +1,29 @@
+using System.Net.Http.Headers;
+
 namespace TiltMaze.App.Services;
 
 public static class ApiSettings
 {
-    // Docker-API på PC'en. Android når den via "adb reverse" (sættes op automatisk ved build)
-    public const string BaseUrl = "https://localhost:7065";
+    // Anon-nøglen er offentlig og sikker, fordi RLS i databasen styrer hvad man må
+    public const string SupabaseUrl = "https://YOUR-PROJECT.supabase.co";
+    public const string AnonKey = "YOUR-ANON-KEY";
 
-    // HttpClient til API'et. Bruges af både Auth og Api
-    public static HttpClient CreateHttpClient()
+    // E-mail til Supabase ud fra brugernavnet (brugeren ser aldrig en e-mail)
+    public static string EmailOf(string username)
     {
-        return new HttpClient(CreateHandler())
-        {
-            BaseAddress = new Uri(BaseUrl),
-            Timeout = TimeSpan.FromSeconds(30)
-        };
+        return username.Trim().ToLowerInvariant() + "@tiltmaze.invalid";
     }
 
-    private static HttpMessageHandler CreateHandler()
+    // HttpClient til Supabase. Bruges af både Auth og Api. Uden login sendes anon-nøglen som token
+    public static HttpClient CreateHttpClient()
     {
-        var handler = new HttpClientHandler();
-#if DEBUG && ANDROID
-        // Kun under udvikling: Android stoler ikke på PC'ens udviklingscertifikat.
-        // Vi godtager det kun for localhost, som via "adb reverse" peger på PC'ens Docker-API.
-        handler.ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) =>
-            errors == System.Net.Security.SslPolicyErrors.None || request.RequestUri?.IsLoopback == true;
-#endif
-        return handler;
+        var http = new HttpClient
+        {
+            BaseAddress = new Uri(SupabaseUrl),
+            Timeout = TimeSpan.FromSeconds(30)
+        };
+        http.DefaultRequestHeaders.Add("apikey", AnonKey);
+        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AnonKey);
+        return http;
     }
 }

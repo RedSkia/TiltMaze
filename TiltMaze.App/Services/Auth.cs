@@ -1,24 +1,27 @@
 using System.Globalization;
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace TiltMaze.App.Services;
 
-// Svar fra /api/auth/login og /api/auth/refresh
+// Svar fra Supabase ved opret, login og refresh
 public class TokenDto
 {
-    public string AccessToken { get; set; } = "";
-    public int ExpiresIn { get; set; } // sekunder
-    public string RefreshToken { get; set; } = "";
+    [JsonPropertyName("access_token")] public string AccessToken { get; set; } = "";
+    [JsonPropertyName("expires_in")] public int ExpiresIn { get; set; } // sekunder
+    [JsonPropertyName("refresh_token")] public string RefreshToken { get; set; } = "";
 }
 
-// Fejlsvar fra serveren: enten en titel eller en liste af valideringsfejl
-public class ProblemDto
+// Fejlsvar: Supabase auth bruger msg, PostgREST message og edge function'en title
+public class ErrorDto
 {
+    public string? Msg { get; set; }
+    public string? Message { get; set; }
     public string? Title { get; set; }
-    public Dictionary<string, string[]>? Errors { get; set; }
+
+    public string Text => Msg ?? Message ?? Title ?? "";
 }
 
 public class AuthResult
@@ -32,7 +35,7 @@ public class AuthResult
 // Er fingeraftryk slået til (Biometrics), starter appen låst, til fingeraftrykket eller kodeordet låser login op.
 public class Auth
 {
-    private const int RefreshDays = 14; // samme som RefreshTokenExpiration på serveren
+    private const int RefreshDays = 14; // så længe gemmer vi refresh-tokenet på enheden
 
     private readonly HttpClient http = ApiSettings.CreateHttpClient();
     private readonly SemaphoreSlim refreshLock = new(1);
@@ -96,59 +99,53 @@ public class Auth
         locked = false;
     }
 
-    // Opretter kontoen og logger ind med det samme
+    // Opretter kontoen. Supabase logger ind med det samme (e-mailbekræftelse er slået fra)
     public async Task<AuthResult> Register(string username, string password)
     {
-        using var response = await Send(() => http.PostAsJsonAsync("/api/account", new { username, password }));
+        username = username.Trim();
+        var body = new { email = ApiSettings.EmailOf(username), password, data = new { username } };
+        using var response = await Send(() => http.PostAsJsonAsync("/auth/v1/signup", body));
         if (response == null)
             return NoConnection();
         if (!response.IsSuccessStatusCode)
-            return new AuthResult { Error = await ReadError(response) };
+            return new AuthResult { Error = await ReadError(response, false) };
 
-        return await Login(username, password);
+        return await TakeLogin(response, username);
     }
 
     public async Task<AuthResult> Login(string username, string password)
     {
-        using var response = await Send(() => http.PostAsJsonAsync("/api/auth/login", new { username, password }));
+        username = username.Trim();
+        var body = new { email = ApiSettings.EmailOf(username), password };
+        using var response = await Send(() => http.PostAsJsonAsync("/auth/v1/token?grant_type=password", body));
         if (response == null)
             return NoConnection();
         if (!response.IsSuccessStatusCode)
-            return new AuthResult { Error = await ReadError(response) };
+            return new AuthResult { Error = await ReadError(response, true) };
 
+        return await TakeLogin(response, username);
+    }
+
+    // Gemmer tokens og brugernavn fra et godkendt svar
+    private async Task<AuthResult> TakeLogin(HttpResponseMessage response, string username)
+    {
         var tokens = await ReadJson<TokenDto>(response);
         if (tokens == null)
             return new AuthResult { Error = "The server sent an invalid response." };
 
         locked = false; // kodeordet er lige skrevet, så det nye login er låst op
         await SaveTokens(tokens);
-        await SetUsername(username.Trim());
-        await LoadUsername();
+        await SetUsername(username);
         return new AuthResult { Ok = true };
-    }
-
-    // Brugernavnet, som det er stavet på serveren (man kan logge ind med "marcus" på kontoen "Marcus")
-    private async Task LoadUsername()
-    {
-        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/account");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        using var response = await Send(() => http.SendAsync(request));
-        if (response == null || !response.IsSuccessStatusCode)
-            return;
-
-        var account = await ReadJson<Dictionary<string, string>>(response);
-        if (account != null && account.TryGetValue("username", out var name))
-            await SetUsername(name);
     }
 
     // Er brugernavnet ledigt? null, hvis serveren ikke kunne spørges
     public async Task<bool?> IsAvailable(string username)
     {
-        using var response = await Send(() => http.GetAsync("/api/account/available?username=" + Uri.EscapeDataString(username)));
+        using var response = await Send(() => http.PostAsJsonAsync("/rest/v1/rpc/username_available", new { p_username = username }));
         if (response == null || !response.IsSuccessStatusCode)
             return null;
-        var answer = await ReadJson<Dictionary<string, bool>>(response);
-        return answer != null && answer.TryGetValue("available", out bool available) ? available : null;
+        return await ReadJson<bool?>(response);
     }
 
     // Navnet er skiftet på serveren: flyt ventende rekorder med over på det nye navn, og gem det
@@ -229,11 +226,11 @@ public class Auth
 
     private async Task<string?> Refresh()
     {
-        using var response = await Send(() => http.PostAsJsonAsync("/api/auth/refresh", new { refreshToken }));
+        using var response = await Send(() => http.PostAsJsonAsync("/auth/v1/token?grant_type=refresh_token", new { refresh_token = refreshToken }));
         if (response == null)
             return null; // Ingen net. Vi beholder login og prøver senere
 
-        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        if (response.StatusCode == HttpStatusCode.BadRequest || response.StatusCode == HttpStatusCode.Unauthorized)
         {
             // Refresh-tokenet er ugyldigt eller udløbet: brugeren skal logge ind igen
             ClearLogin();
@@ -301,33 +298,33 @@ public class Auth
         return new AuthResult { Error = "Could not reach the server." };
     }
 
-    // Laver serverens fejlsvar om til en besked
-    private static async Task<string> ReadError(HttpResponseMessage response)
+    // Laver serverens fejlsvar om til en besked. Ved login er alle fejl ens (ingen afsløring af navne)
+    private static async Task<string> ReadError(HttpResponseMessage response, bool isLogin)
     {
         if (response.StatusCode == HttpStatusCode.TooManyRequests)
             return "Too many attempts. Try again in a moment.";
 
-        // Serveren siger det samme ved ukendt navn, forkert kodeord og låst konto
-        if (response.StatusCode == HttpStatusCode.Unauthorized)
-            return "Wrong username or password. After 5 wrong tries, wait 5 minutes.";
+        if (isLogin && (int)response.StatusCode < 500)
+            return "Wrong username or password";
 
-        ProblemDto? problem = null;
+        ErrorDto? error = null;
         try
         {
-            problem = await response.Content.ReadFromJsonAsync<ProblemDto>();
+            error = await response.Content.ReadFromJsonAsync<ErrorDto>();
         }
         catch (Exception)
         {
             // Svaret var ikke JSON. Vi bruger standardbeskeden nedenfor
         }
+        var text = error?.Text ?? "";
 
-        // Valideringsfejl (fx for kort kodeord): vis alle beskeder efter hinanden
-        if (problem?.Errors != null && problem.Errors.Count > 0)
-            return string.Join(". ", problem.Errors.Values.SelectMany(messages => messages));
+        // Dobbelt navn giver en fejl, hvor teksten har "taken" eller "already"
+        if (text.Contains("taken", StringComparison.OrdinalIgnoreCase) || text.Contains("already", StringComparison.OrdinalIgnoreCase))
+            return "That username is taken";
 
-        // Serverens egne tekster, fx "That username is taken"
-        if ((response.StatusCode == HttpStatusCode.BadRequest || response.StatusCode == HttpStatusCode.Conflict) && !string.IsNullOrWhiteSpace(problem?.Title))
-            return problem.Title;
+        // Fx et for kort kodeord
+        if (response.StatusCode == HttpStatusCode.UnprocessableEntity && text != "")
+            return text;
 
         return "Something went wrong on the server. Try again later.";
     }

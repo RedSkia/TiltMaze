@@ -5,7 +5,7 @@
 - [ ] Prøv fingeraftryk på telefonen og Windows Hello på PC (start låst, annuller = gæst, Unlock på Account)
 - [ ] Opret Supabase-projektet, udfyld URL + anon-nøgle i `ApiSettings.cs`, kør migreringen, udgiv `submit-run` (se README). SQL og edge function er endnu ikke kørt
 - [ ] Mål billedhastighed på telefon med 2.5D-banen og kamera (kameraet ændrer `viewBox` hvert billede; plan B: `<canvas>`)
-- [ ] Indtast eller del en seed (nu kun via adressen `/play/{sværhedsgrad}/{seed}`)
+- [ ] Prøv fog (Hard/Expert), stjernegrænser (`Rewards.Stars`) og achievements på telefon; justér tallene, hvis det er for let eller svært
 - [ ] Broer med touch/mus (Must i kravspec)
 - [ ] Hent egen bedste tur fra serveren ved ny telefon/ominstallation (nu kun lokalt spøgelse)
 - [ ] Prøv online-flowet på rigtig telefon (kø uden net, andres spøgelser i banen)

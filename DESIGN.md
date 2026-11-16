@@ -37,7 +37,7 @@ Et mørkt arkadespil: natblå baggrund med et svagt blåt lys fra toppen, turkis
 └────────────────────────────────────────┘
 ```
 
-Serveren (`TiltMaze.Api`, Docker) har konti, top-lister og spøgelser og tjekker hver tid mod den samme labyrint og fysik (anti-snyd). Appen sender tider, når der er net (`RunQueue`).
+Supabase har konti, top-lister og spøgelser (Postgres + RLS + RPC'er), og Edge Function `submit-run` (TypeScript) tjekker hver tid mod den samme labyrint (anti-snyd). Appen sender tider, når der er net (`RunQueue`).
 
 ## Hvordan appen er native
 

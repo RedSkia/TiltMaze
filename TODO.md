@@ -3,12 +3,12 @@
 - [ ] Aflever `docs/TiltMaze-kravspec.pdf`
 - [ ] Prøv på rigtig telefon (OnePlus 6): retning og følsomhed af vip, landskab, hop over huller og trækket mod hullerne (er Hard/Expert fair?), flydende joystick og kamera
 - [ ] Prøv fingeraftryk på telefonen og Windows Hello på PC (start låst, annuller = gæst, Unlock på Account)
-- [ ] Slet den gamle API-database med e-mail-konti før næste test: `docker compose down -v` (konti er nu brugernavn + kodeord)
+- [ ] Opret Supabase-projektet, udfyld URL + anon-nøgle i `ApiSettings.cs`, kør migreringen, udgiv `submit-run` (se README). SQL og edge function er endnu ikke kørt
 - [ ] Mål billedhastighed på telefon med 2.5D-banen og kamera (kameraet ændrer `viewBox` hvert billede; plan B: `<canvas>`)
 - [ ] Indtast eller del en seed (nu kun via adressen `/play/{sværhedsgrad}/{seed}`)
 - [ ] Broer med touch/mus (Must i kravspec)
 - [ ] Hent egen bedste tur fra serveren ved ny telefon/ominstallation (nu kun lokalt spøgelse)
-- [ ] Prøv online-flowet på rigtig telefon (cert, `adb reverse`, kø uden net, andres spøgelser i banen)
+- [ ] Prøv online-flowet på rigtig telefon (kø uden net, andres spøgelser i banen)
 - [ ] Rekorder i køen hører til enheden, ikke kontoen: skifter man konto, sendes de til den nye (overvej at rydde køen ved log ud)
 - [ ] Kalibrering af vip
 - [ ] Vibration ved væg, stjerner på banen

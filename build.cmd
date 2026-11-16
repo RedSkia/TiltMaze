@@ -1,10 +1,10 @@
 @echo off
 chcp 65001 >nul
-rem Bygger og tester hele projektet: tests (Core + API), og appen til Windows og Android i Release.
+rem Bygger og tester hele projektet: tests, og appen til Windows og Android i Release.
 rem Brug: dobbeltklik, eller skriv "build" i en terminal i projektmappen.
 cd /d "%~dp0"
 
-echo === Tests (Core og API) ===
+echo === Tests ===
 dotnet test || goto fejl
 
 echo === App til Windows (Release) ===

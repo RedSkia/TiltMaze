@@ -2,7 +2,7 @@
 
 Labyrintspil: styr en kugle ved at vippe telefonen (Android), ved at trække hvor som helst på banen (touch eller mus). Undgå hullerne og nå målet så hurtigt som muligt. Rul hurtigt, så kan kuglen hoppe over hullerne.
 
-Skoleprojekt i App-programmering 2026 (.NET MAUI Blazor Hybrid). Med API, konti og top-lister (Docker). Senere: broer med touch.
+Skoleprojekt i App-programmering 2026 (.NET MAUI Blazor Hybrid). Med konti og top-lister i Supabase. Senere: broer med touch.
 
 - Plan og kravspec: `docs/plan.md`, wireframes: `docs/wireframes.html`, PDF: `docs/TiltMaze-kravspec.pdf`
 - Opbygning: `DESIGN.md`
@@ -15,8 +15,8 @@ Nemmest (dobbeltklik eller skriv i en terminal i projektmappen):
 
 ```
 build              # tests + appen til Windows og Android (Release)
-deploy             # API i Docker + appen på telefonen (USB, USB-fejlfinding slået til)
-deploy windows     # API i Docker + Windows-appen
+deploy             # appen på telefonen (USB, USB-fejlfinding slået til)
+deploy windows     # Windows-appen
 ```
 
 Det samme med kommandoerne direkte:
@@ -24,7 +24,7 @@ Det samme med kommandoerne direkte:
 ```
 dotnet run --project TiltMaze.App -f net10.0-windows10.0.19041.0     # Windows
 dotnet build TiltMaze.App -t:Run -f net10.0-android                    # Android (telefon eller emulator)
-dotnet test                                                            # tests af labyrint, fysik og API
+dotnet test                                                            # tests af labyrint, fysik og anti-snyd
 ```
 
 Telefon første gang: Indstillinger → Om telefonen → tryk 7 gange på Build-nummer, slå USB-fejlfinding til i Udviklerindstillinger, vælg "Filoverførsel" ved USB og tryk "Tillad" på telefonen.
@@ -56,20 +56,18 @@ Design: "Neon Arcade" (natblå, turkis, orange kugle, guld mål). Lavet af RedSk
 
 Spillet virker helt uden net. Med en konto (brugernavn og kodeord, ingen e-mail; brugernavnet står på top-listen og skal være ledigt) sendes dine rekorder til serveren, der viser en top 10 pr. labyrint (`/leaderboard`: vælg sværhedsgrad og dagens labyrint eller en seed). Serveren afspiller hver tur mod samme labyrint og fysik og afviser snyd ("Run could not be verified"). Rekorder sat uden net eller login venter i en kø og sendes automatisk senere. Skift brugernavn, lås op med fingeraftryk/Windows Hello, log ud og slet konto ligger under `/account`. Efter første login spørger appen én gang, om den skal låses op med fingeraftryk næste gang.
 
-### Kør API'et lokalt
+### Supabase (backend)
 
-Krav: Docker og et udviklingscertifikat til HTTPS.
+Ingen egen server: appen taler direkte med Supabase (konti, tider, top-lister). Kun anti-snyd kører som Edge Function (`supabase/functions/submit-run`, TypeScript).
 
-1. Lav certifikatet (vælg et kodeord): `dotnet dev-certs https -ep "$env:USERPROFILE\.aspnet\https\tiltmaze.pfx" -p <kodeord> --trust`
-2. Kopiér `.env.example` til `.env` og skriv kodeordet: `CERT_PASSWORD=<kodeord>`. `.env` ligger ikke i git. Ligger `.pfx`-filen et andet sted, sæt `CERT_DIR=<mappen>` i `.env`.
-3. Start: `docker compose up -d --build` (API på `https://localhost:7065`, data i volumen `tiltmaze-data`).
-4. Stop: `docker compose down` (data bliver). Test uden Docker: `dotnet test`.
-
-Android-telefonen når API'et via `adb reverse tcp:7065 tcp:7065`, som et Debug-build sætter op (det starter også `docker compose up`). Ændr `ApiSettings.BaseUrl`, når API'et kører på en rigtig server.
+1. Opret et projekt på supabase.com. Under Authentication: slå e-mailbekræftelse fra og sæt mindste kodeord til 8 (står også i `supabase/config.toml`).
+2. Kør `supabase/migrations/0001_init.sql` i SQL Editor (eller `npx supabase db push`).
+3. Udgiv funktionen: `npx supabase functions deploy submit-run`.
+4. Skriv projektets URL og den offentlige anon-nøgle i `TiltMaze.App/Services/ApiSettings.cs`. Anon-nøglen er offentlig og sikker, fordi tabellerne har RLS. Brug aldrig service-nøglen i appen.
+5. Test anti-snyd: `node --test supabase/functions/tests/check.test.ts`.
 
 ### Drift
 
-- Databasen (`tiltmaze.db`) og nøglerne til login-tokens (`keys`) ligger i volumen `tiltmaze-data`. Backup: kopiér volumen.
-- Rate limits: 20 tider i minuttet pr. bruger, 60 opslag i minuttet, 20 logins/oprettelser og 30 navne-tjek i minuttet pr. IP. 5 forkerte kodeord låser kontoen i 5 minutter.
-- Konti er nu brugernavn + kodeord. En gammel database fra før (konti med e-mail som brugernavn) skal slettes: `docker compose down -v`.
-- Slet en bruger: `DELETE /api/account` (fra appen) fjerner konto, tider og spøgelser.
+- Gratis-projekter pauses efter ca. en uge uden brug: åbn dem i dashboardet før en fremvisning.
+- Slet en bruger: fra appen (`delete_me`), eller i Authentication i dashboardet. Det fjerner også tider og spøgelser.
+- Ændres labyrint eller `RunChecker`-reglerne i C#, skal TypeScript i `supabase/functions/_shared` følge med (`CourseFixtureTests` og `check.test.ts` viser, om de er ens).

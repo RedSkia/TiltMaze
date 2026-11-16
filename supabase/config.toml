@@ -1,2 +1,13 @@
+project_id = "tiltmaze"
+
+[auth]
+# Samme regel som det gamle API
+minimum_password_length = 8
+
+[auth.email]
+# Brugernavn bliver til en falsk e-mail, så der kan ikke bekræftes
+enable_signup = true
+enable_confirmations = false
+
 [functions.submit-run]
 verify_jwt = true

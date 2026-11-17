@@ -56,6 +56,8 @@ public class ProgressTests
         Assert.DoesNotContain(Rewards.Achieved(Difficulty.Hard, 2, 0, 1), a => a.Id == "hard3");
         Assert.Contains(Rewards.Achieved(Difficulty.Easy, 1, 10, 1), a => a.Id == "clean10");
         Assert.Contains(Rewards.Achieved(Difficulty.Easy, 1, 0, 7), a => a.Id == "streak7");
-        Assert.True(Rewards.Achievements.Length <= 5);
+        Assert.Contains(Rewards.Achieved(Difficulty.Normal, 1, 0, 1), a => a.Id == "normal");
+        Assert.Contains(Rewards.Achieved(Difficulty.Expert, 3, 25, 30), a => a.Id == "expert3");
+        Assert.Equal(Rewards.Achievements.Length, Rewards.Achievements.Select(a => a.Id).Distinct().Count());
     }
 }

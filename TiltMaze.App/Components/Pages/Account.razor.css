@@ -171,30 +171,33 @@
 }
 
 
-/* Præstationer: ring med hak, navn og mønter. Låste er dæmpede */
+/* Præstationer: gitter af felter (ring med hak, navn, mønter). Låste er dæmpede */
 .achievements {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
     gap: var(--space-1);
 }
 
 .achievements li {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: var(--space-2);
-    min-height: var(--touch);
-    padding: 0 var(--space-2);
+    justify-content: center;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-1);
     border-radius: var(--radius-s);
+    border: 1px solid var(--border);
     background: var(--surface-2);
     color: var(--muted);
+    text-align: center;
 }
 
 .achievements .mark {
-    flex: none;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     display: grid;
     place-items: center;
     border-radius: 50%;
@@ -202,18 +205,13 @@
     font-weight: 700;
 }
 
-.achievements .name {
-    flex: 1;
-    min-width: 0;
-}
-
 .achievements .reward {
     font-weight: 700;
-    color: var(--muted);
 }
 
 .achievements .done {
     color: var(--text);
+    border-color: var(--accent);
 }
 
 .achievements .done .mark {

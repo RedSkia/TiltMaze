@@ -53,20 +53,34 @@ public static class Rewards
     public static readonly Achievement[] Achievements =
     [
         new("first", "Clear a maze", 10),
+        new("normal", "Clear Normal", 20),
+        new("hard", "Clear Hard", 50),
         new("expert", "Clear Expert", 100),
-        new("clean10", "10 runs without falling", 50),
+        new("stars3", "Get 3 stars", 30),
         new("hard3", "Get 3 stars on Hard", 75),
+        new("expert3", "Get 3 stars on Expert", 150),
+        new("clean10", "10 runs without falling", 50),
+        new("clean25", "25 runs without falling", 100),
+        new("streak3", "3 day streak", 15),
         new("streak7", "7 day streak", 40),
+        new("streak30", "30 day streak", 150),
     ];
 
     // De præstationer der er opfyldt lige nu (kalderen giver kun dem, man ikke har)
     public static List<Achievement> Achieved(Difficulty difficulty, int stars, int cleanRuns, int streak)
     {
         var done = new List<string> { "first" };
+        if (difficulty == Difficulty.Normal) done.Add("normal");
+        if (difficulty == Difficulty.Hard) done.Add("hard");
         if (difficulty == Difficulty.Expert) done.Add("expert");
-        if (cleanRuns >= 10) done.Add("clean10");
+        if (stars == 3) done.Add("stars3");
         if (difficulty == Difficulty.Hard && stars == 3) done.Add("hard3");
+        if (difficulty == Difficulty.Expert && stars == 3) done.Add("expert3");
+        if (cleanRuns >= 10) done.Add("clean10");
+        if (cleanRuns >= 25) done.Add("clean25");
+        if (streak >= 3) done.Add("streak3");
         if (streak >= 7) done.Add("streak7");
+        if (streak >= 30) done.Add("streak30");
         return Achievements.Where(a => done.Contains(a.Id)).ToList();
     }
 

@@ -28,10 +28,10 @@ function headers(token) {
 }
 
 // POST med JSON. Hostet har Auth en grænse pr. IP: pause før hvert /auth/-kald, og ét 429 prøves igen efter 30 s
-async function post(path, body, token = null) {
+async function post(path, body, token = null, method = "POST") {
     if (HOSTED && path.startsWith("/auth/")) await sleep(3000);
     const send = () => fetch(URL + path, {
-        method: "POST",
+        method,
         headers: headers(token),
         body: typeof body == "string" ? body : JSON.stringify(body),
     });
@@ -57,6 +57,7 @@ async function get(path, token = null) {
 const email = (name) => name.toLowerCase() + "@tiltmaze.invalid";
 const signup = (name, mail = email(name)) => post("/auth/v1/signup", { email: mail, password: PASSWORD, data: { username: name } });
 const login = (name, password = PASSWORD) => post("/auth/v1/token?grant_type=password", { email: email(name), password });
+const put = (path, body, token) => post(path, body, token, "PUT");
 const rpc = (name, body, token) => post("/rest/v1/rpc/" + name, body, token);
 const submit = (run, token) => post("/functions/v1/submit-run", { difficulty: run.difficulty, seed: run.seed, timeMs: run.timeMs, ghost: run.ghost }, token);
 
@@ -215,6 +216,23 @@ try {
     ok(r.status == 400, "login med gammelt navn virker ikke", r);
     r = await rpc("leaderboard", board);
     ok(r.json?.some((row) => row.username == newA) && !r.json?.some((row) => row.username == nameA), "top-listen viser det nye navn", r);
+    // --- E-mailskift (0004_email_guard.sql): kun til e-mailen for eget brugernavn ---
+    r = await put("/auth/v1/user", { email: email("e2e" + id + "y") }, tokens[newA]);
+    ok(r.status >= 400, "e-mailskift til et andet navn afvises", r);
+    r = await rpc("username_available", { p_username: "e2e" + id + "y" });
+    ok(r.json === true, "afvist e-mailskift optager ikke navnet", r);
+    r = await put("/auth/v1/user", { email: email(newA) }, tokens[newA]);
+    ok(r.status == 200, "e-mail for eget navn er ok", r);
+    r = await login(newA);
+    ok(r.status == 200 && isTokens(r.json), "login virker efter e-mailtjek", r);
+
+    // --- Log ud (Auth.Logout): refresh-tokenet virker ikke bagefter ---
+    const session = r.json ?? {};
+    r = await post("/auth/v1/logout?scope=local", {}, session.access_token);
+    ok(r.status == 204, "logout lykkes", r);
+    r = await post("/auth/v1/token?grant_type=refresh_token", { refresh_token: session.refresh_token });
+    ok(r.status >= 400, "refresh virker ikke efter logout", r);
+
     r = await signup(nameA);
     ok(r.status == 200, "det gamle navn kan tages af en ny bruger", r);
     tokens[nameA] = r.json?.access_token;

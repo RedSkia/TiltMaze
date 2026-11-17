@@ -70,7 +70,7 @@ Spillet virker helt uden net. Med en konto (brugernavn og kodeord, ingen e-mail,
 Ingen egen server: appen taler direkte med Supabase (konti, tider, top-lister). Kun anti-snyd kører som Edge Function (`supabase/functions/submit-run`, TypeScript).
 
 1. Opret et projekt på supabase.com. Under Authentication: slå e-mailbekræftelse fra og sæt mindste kodeord til 8 (står også i `supabase/config.toml`).
-2. Kør migrationerne i `supabase/migrations/` i rækkefølge (0001, 0002, 0003) i SQL Editor, eller uden DB-kodeord med `npx supabase db query --remote=<ref> -f <fil> --yes` og bagefter `npx supabase migration repair 0001 0002 0003 --status applied --remote=<ref> --yes`.
+2. Kør migrationerne i `supabase/migrations/` i rækkefølge (0001-0004) i SQL Editor, eller uden DB-kodeord med `npx supabase db query --remote=<ref> -f <fil> --yes` og bagefter `npx supabase migration repair 0001 0002 0003 0004 --status applied --remote=<ref> --yes`.
 3. Udgiv funktionen: `npx supabase functions deploy submit-run`.
 4. Skriv projektets URL og den offentlige publishable key (`sb_publishable_...`, Settings → API Keys) i `TiltMaze.App/Services/ApiSettings.cs`. Den er offentlig og sikker, fordi tabellerne har RLS og kun RPC'er giver adgang. Appen sender den kun i headeren `apikey`; `Authorization: Bearer` kun med brugerens eget token. Brug aldrig service-/secret-nøglen eller et adgangstoken (PAT) i appen; PAT bruges kun af CLI'en til deploy.
 5. Test anti-snyd: `node --test supabase/functions/tests/check.test.ts`.
@@ -78,7 +78,7 @@ Ingen egen server: appen taler direkte med Supabase (konti, tider, top-lister). 
 
 ### Google-login (Android)
 
-På Android kan man også trykke "Continue with Google" på Login. Login sker i en Custom Tab (Chrome), aldrig i appens eget vindue, og Supabase sender tokens tilbage til `com.redskia.tiltmaze://login-callback`. En ny Google-bruger får brugernavnet `p_` + 12 tegn og kan skifte det på Account. Google-brugere har intet kodeord. På Windows er knappen skjult (WebAuthenticator virker ikke i en Windows-app uden pakke), der bruges brugernavn og kodeord.
+På Android kan man også trykke "Continue with Google" på Login. Login sker i en Custom Tab (Chrome), aldrig i appens eget vindue, og Supabase sender en engangskode tilbage til `com.redskia.tiltmaze://login-callback`, som appen bytter til tokens (PKCE). En ny Google-bruger får brugernavnet `p_` + 12 tegn og kan skifte det på Account. Google-brugere har intet kodeord. På Windows er knappen skjult (WebAuthenticator virker ikke i en Windows-app uden pakke), der bruges brugernavn og kodeord.
 
 1. Google Cloud Console → APIs & Services → OAuth consent screen: app-navn TiltMaze, scopes `email`, `profile`, `openid`.
 2. Credentials → Create credentials → OAuth client ID → type **Web application**. Authorized redirect URI: `https://<ref>.supabase.co/auth/v1/callback`. Kopiér Client ID og Client Secret.
@@ -88,6 +88,7 @@ På Android kan man også trykke "Continue with Google" på Login. Login sker i 
 ### Sikkerhed
 
 - Appen har kun den offentlige publishable key; RLS og RPC-rettigheder bestemmer, hvad man må. `runs` kan kun nås via RPC'er, og en bruger kan kun læse sin egen række i `profiles`.
+- Login-e-mailen kan ikke ændres til et andet brugernavns e-mail (trigger i `0004_email_guard.sql`). Log ud ugyldiggør også login'et på serveren.
 - Android: kun launcheren (`MainActivity`) og Google-callback (`WebAuthenticationCallbackActivity`) er `exported=true`; alt andet i det samlede manifest er `false` (bibliotekets `ProfileInstallReceiver` kræver `android.permission.DUMP`, dvs. kun adb). `allowBackup=false`.
 
 ### Drift

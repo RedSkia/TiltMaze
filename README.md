@@ -29,6 +29,8 @@ dotnet test                                                            # tests a
 
 Telefon første gang: Indstillinger → Om telefonen → tryk 7 gange på Build-nummer, slå USB-fejlfinding til i Udviklerindstillinger, vælg "Filoverførsel" ved USB og tryk "Tillad" på telefonen.
 
+Vis telefonen på PC (fx til fremvisning): `winget install Genymobile.scrcpy`, sæt telefonen i med USB (USB-fejlfinding slået til) og skriv `scrcpy`.
+
 ## Spillet
 
 Vælg Easy, Normal, Hard eller Expert på startsiden (valget huskes), og tryk den store **Play daily** eller **Random maze**. Sværhedsgraden bestemmer størrelse, antal løkker (alternative veje) og antal og størrelse af huller.
@@ -57,18 +59,32 @@ Design: "Neon Arcade" (natblå, turkis, orange kugle, guld mål). Lavet af RedSk
 
 ## Online: konto, top-liste og spøgelser
 
-Spillet virker helt uden net. Med en konto (brugernavn og kodeord, ingen e-mail; brugernavnet står på top-listen og skal være ledigt) sendes dine rekorder til serveren, der viser en top 10 pr. labyrint (`/leaderboard`: vælg sværhedsgrad og dagens labyrint eller en seed). Serveren afspiller hver tur mod samme labyrint og fysik og afviser snyd ("Run could not be verified"). Rekorder sat uden net eller login venter i en kø og sendes automatisk senere. Skift brugernavn, lås op med fingeraftryk/Windows Hello, log ud og slet konto ligger under `/account`. Efter første login spørger appen én gang, om den skal låses op med fingeraftryk næste gang.
+Spillet virker helt uden net. Med en konto (brugernavn og kodeord, ingen e-mail, eller Google på Android; brugernavnet står på top-listen og skal være ledigt) sendes dine rekorder til serveren, der viser en top 10 pr. labyrint (`/leaderboard`: vælg sværhedsgrad og dagens labyrint eller en seed). Serveren afspiller hver tur mod samme labyrint og fysik og afviser snyd ("Run could not be verified"). Rekorder sat uden net eller login venter i en kø og sendes automatisk senere. Skift brugernavn, lås op med fingeraftryk/Windows Hello, log ud og slet konto ligger under `/account`. Efter første login spørger appen én gang, om den skal låses op med fingeraftryk næste gang.
 
 ### Supabase (backend)
 
 Ingen egen server: appen taler direkte med Supabase (konti, tider, top-lister). Kun anti-snyd kører som Edge Function (`supabase/functions/submit-run`, TypeScript).
 
 1. Opret et projekt på supabase.com. Under Authentication: slå e-mailbekræftelse fra og sæt mindste kodeord til 8 (står også i `supabase/config.toml`).
-2. Kør `supabase/migrations/0001_init.sql` i SQL Editor (eller `npx supabase db push`).
+2. Kør migrationerne i `supabase/migrations/` i rækkefølge (0001, 0002, 0003) i SQL Editor, eller uden DB-kodeord med `npx supabase db query --remote=<ref> -f <fil> --yes` og bagefter `npx supabase migration repair 0001 0002 0003 --status applied --remote=<ref> --yes`.
 3. Udgiv funktionen: `npx supabase functions deploy submit-run`.
-4. Skriv projektets URL og den offentlige anon-nøgle i `TiltMaze.App/Services/ApiSettings.cs`. Anon-nøglen er offentlig og sikker, fordi tabellerne har RLS. Brug aldrig service-nøglen i appen.
+4. Skriv projektets URL og den offentlige publishable key (`sb_publishable_...`, Settings → API Keys) i `TiltMaze.App/Services/ApiSettings.cs`. Den er offentlig og sikker, fordi tabellerne har RLS og kun RPC'er giver adgang. Appen sender den kun i headeren `apikey`; `Authorization: Bearer` kun med brugerens eget token. Brug aldrig service-/secret-nøglen eller et adgangstoken (PAT) i appen; PAT bruges kun af CLI'en til deploy.
 5. Test anti-snyd: `node --test supabase/functions/tests/check.test.ts`.
-6. Ende-til-ende-test (langsom, kræver Docker, kun før release): `npx supabase start`, så `node supabase/tests/e2e.mjs` (konto, login, tider, top-liste, spøgelser, RLS, navneskift, sletning mod den lokale Supabase), til sidst `npx supabase stop`. Ligger projektet på Skrivebordet, blokerer Windows Defender CLI'en i at skrive i `supabase/`: kopiér mappen udenfor og brug `--workdir <kopi>`.
+6. Ende-til-ende-test (langsom, kun før release): lokalt (kræver Docker) `npx supabase start`, så `node supabase/tests/e2e.mjs` (konto, login, tider, top-liste, spøgelser, RLS, navneskift, sletning), til sidst `npx supabase stop`. Mod det hostede projekt: sæt `SUPABASE_URL` og `SUPABASE_ANON_KEY` (publishable key) og kør samme fil (tager et par minutter pga. Auths grænser). Ligger projektet på Skrivebordet, blokerer Windows Defender CLI'en i at skrive i `supabase/`: kopiér mappen udenfor og brug `--workdir <kopi>`.
+
+### Google-login (Android)
+
+På Android kan man også trykke "Continue with Google" på Login. Login sker i en Custom Tab (Chrome), aldrig i appens eget vindue, og Supabase sender tokens tilbage til `com.redskia.tiltmaze://login-callback`. En ny Google-bruger får brugernavnet `p_` + 12 tegn og kan skifte det på Account. Google-brugere har intet kodeord. På Windows er knappen skjult (WebAuthenticator virker ikke i en Windows-app uden pakke), der bruges brugernavn og kodeord.
+
+1. Google Cloud Console → APIs & Services → OAuth consent screen: app-navn TiltMaze, scopes `email`, `profile`, `openid`.
+2. Credentials → Create credentials → OAuth client ID → type **Web application**. Authorized redirect URI: `https://<ref>.supabase.co/auth/v1/callback`. Kopiér Client ID og Client Secret.
+3. Supabase → Authentication → Sign In / Providers → Google: slå til, indsæt Client ID og Secret, gem.
+4. Supabase → Authentication → URL Configuration: Redirect URLs skal have `com.redskia.tiltmaze://login-callback` (står i `supabase/config.toml`; lægges på med `npx supabase config push`, der kun ændrer det, filen nævner; se `npx supabase config diff` først).
+
+### Sikkerhed
+
+- Appen har kun den offentlige publishable key; RLS og RPC-rettigheder bestemmer, hvad man må. `runs` kan kun nås via RPC'er, og en bruger kan kun læse sin egen række i `profiles`.
+- Android: kun launcheren (`MainActivity`) og Google-callback (`WebAuthenticationCallbackActivity`) er `exported=true`; alt andet i det samlede manifest er `false` (bibliotekets `ProfileInstallReceiver` kræver `android.permission.DUMP`, dvs. kun adb). `allowBackup=false`.
 
 ### Drift
 

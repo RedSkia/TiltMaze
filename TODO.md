@@ -3,7 +3,9 @@
 - [ ] Aflever `docs/TiltMaze-kravspec.pdf`
 - [ ] Prøv på rigtig telefon (OnePlus 6): retning og følsomhed af vip, landskab, hop over huller og trækket mod hullerne (er Hard/Expert fair?), flydende joystick og kamera
 - [ ] Prøv fingeraftryk på telefonen og Windows Hello på PC (start låst, annuller = gæst, Unlock på Account)
-- [ ] Opret Supabase-projektet, udfyld URL + anon-nøgle i `ApiSettings.cs`, kør migreringen, udgiv `submit-run` (se README). SQL og edge function er endnu ikke kørt
+- [ ] Google-login: opret OAuth-klient i Google Cloud og slå Google til i Supabase (Authentication → Sign In / Providers → Google, Client ID + Secret; se README). Migrationer 0002/0003 og redirect-URL er allerede lagt på det hostede projekt
+- [ ] Prøv Google-login på telefonen: ny bruger får `p_...`-navn, skift navn på Account, log ud, log ind igen, slet konto, annuller Google-vinduet (pæn besked)
+- [ ] Slet Supabase-adgangstokenet (PAT) i dashboardet (Account → Access Tokens) efter sidste deploy
 - [ ] Mål billedhastighed på telefon med 2.5D-banen og kamera (kameraet ændrer `viewBox` hvert billede; plan B: `<canvas>`)
 - [ ] Prøv fog (Hard/Expert), stjernegrænser (`Rewards.Stars`) og achievements på telefon; justér tallene, hvis det er for let eller svært
 - [ ] Broer med touch/mus (Must i kravspec)

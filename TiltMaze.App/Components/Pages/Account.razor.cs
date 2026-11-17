@@ -81,9 +81,9 @@ public partial class Account
         biometrics.Enabled = !biometrics.Enabled;
     }
 
-    private void Logout()
+    private async Task Logout()
     {
-        auth.Logout();
+        await auth.Logout();
         navigation.NavigateTo("login");
     }
 
@@ -102,7 +102,7 @@ public partial class Account
             // Valget om fingeraftryk hører til kontoen, så det ryddes også
             biometrics.Enabled = false;
             biometrics.Asked = false;
-            auth.Logout();
+            await auth.Logout();
             navigation.NavigateTo("login");
         }
     }

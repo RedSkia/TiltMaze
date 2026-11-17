@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json.Serialization;
 using static TiltMaze.App.Services.ApiSettings;
 
@@ -138,14 +140,18 @@ public class Auth
     }
 
     // Login med Google (kun Android). WebAuthenticator åbner en Custom Tab, aldrig appens eget WebView,
-    // så appen ser aldrig Google-kodeordet. Supabase sender tokens tilbage i adressens fragment (#access_token=...)
+    // så appen ser aldrig Google-kodeordet. PKCE: vi sender et hash af en hemmelig kode med, Supabase sender en
+    // engangskode tilbage, og kun den, der kender den hemmelige kode, kan bytte engangskoden til tokens
     public async Task<AuthResult> LoginWithGoogle()
     {
+        var verifier = Base64Url(RandomNumberGenerator.GetBytes(32));
+        var challenge = Base64Url(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)));
+
         WebAuthenticatorResult result;
         try
         {
             result = await WebAuthenticator.Default.AuthenticateAsync(
-                new Uri($"{SupabaseUrl}/auth/v1/authorize?provider=google&redirect_to={GoogleCallback}"),
+                new Uri($"{SupabaseUrl}/auth/v1/authorize?provider=google&redirect_to={GoogleCallback}&code_challenge={challenge}&code_challenge_method=s256"),
                 new Uri(GoogleCallback));
         }
         catch (TaskCanceledException)
@@ -157,14 +163,17 @@ public class Auth
             return new AuthResult { Error = "Could not sign in with Google. Try again." };
         }
 
-        var tokens = new TokenDto
-        {
-            AccessToken = result.Get("access_token") ?? "",
-            RefreshToken = result.Get("refresh_token") ?? "",
-            ExpiresIn = int.TryParse(result.Get("expires_in"), out int seconds) ? seconds : 0
-        };
-        // Afviser man adgangen, kommer der en fejl tilbage i stedet for tokens
-        if (tokens.AccessToken == "" || tokens.RefreshToken == "")
+        // Afviser man adgangen, kommer der en fejl tilbage i stedet for en kode
+        var code = result.Get("code");
+        if (string.IsNullOrEmpty(code))
+            return new AuthResult { Error = "Could not sign in with Google. Try again." };
+
+        using var tokenResponse = await TrySend(() =>
+            http.PostAsJsonAsync("/auth/v1/token?grant_type=pkce", new { auth_code = code, code_verifier = verifier }));
+        if (tokenResponse == null)
+            return NoConnection();
+        var tokens = tokenResponse.IsSuccessStatusCode ? await ReadJson<TokenDto>(tokenResponse) : null;
+        if (tokens == null || tokens.AccessToken == "" || tokens.RefreshToken == "")
             return new AuthResult { Error = "Could not sign in with Google. Try again." };
 
         // Brugernavnet står i profilen. RLS giver kun ens egen række
@@ -236,9 +245,21 @@ public class Auth
 
     // Brugeren logger selv ud (eller sletter kontoen): ventende rekorder hører til den bruger og slettes,
     // så de ikke sendes under den næste, der logger ind
-    public void Logout()
+    public async Task Logout()
     {
         database.ClearPending();
+
+        // Beder serveren glemme login'et på denne enhed (scope=local). Uden net sker det kun lokalt
+        var token = await GetAccessToken();
+        if (token != null)
+        {
+            using var response = await TrySend(() =>
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, "/auth/v1/logout?scope=local");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                return http.SendAsync(request);
+            });
+        }
         ClearLogin();
     }
 
@@ -328,6 +349,12 @@ public class Auth
         {
             // Kan det ikke gemmes, er man logget ind, til appen lukkes
         }
+    }
+
+    // Base64 uden + / = (til PKCE)
+    private static string Base64Url(byte[] bytes)
+    {
+        return Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
     }
 
     private static AuthResult NoConnection()

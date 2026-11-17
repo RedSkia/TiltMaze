@@ -171,7 +171,12 @@
                     <ul class="achievements">
                         @foreach (var a in Rewards.Achievements)
                         {
-                            <li>@(wallet.HasAchievement(a) ? "✓" : "○") @a.Name (+@a.Coins)</li>
+                            var done = wallet.HasAchievement(a);
+                            <li class="@(done ? "done" : "")">
+                                <span class="mark" aria-hidden="true">@(done ? "✓" : "")</span>
+                                <span class="name">@a.Name<span class="sr-only">@(done ? " (done)" : " (not yet)")</span></span>
+                                <span class="reward">+@a.Coins</span>
+                            </li>
                         }
                     </ul>
                 </section>

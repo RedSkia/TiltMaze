@@ -4,7 +4,7 @@ project_id = "tiltmaze"
 # Samme regel som det gamle API
 minimum_password_length = 8
 # Google-login sender tokens tilbage til appen her (WebAuthenticator på Android)
-additional_redirect_urls = ["com.redskia.tiltmaze://login-callback"]
+additional_redirect_urls = ["com.redskia.tiltmaze://login-callback", "http://127.0.0.1:53682/"]
 
 [auth.email]
 # Brugernavn bliver til en falsk e-mail, så der kan ikke bekræftes

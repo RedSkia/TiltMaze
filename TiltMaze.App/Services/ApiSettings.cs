@@ -13,6 +13,8 @@ public static class ApiSettings
 
     // Google sender login tilbage til appen på denne adresse (står også i Supabase og i Android-manifestet)
     public const string GoogleCallback = "com.redskia.tiltmaze://login-callback";
+    // På Windows kommer koden til en lytter på pc'en i stedet (adressen skal også stå i Supabase)
+    public const string GoogleWindowsCallback = "http://127.0.0.1:53682/";
 
     // E-mail til Supabase ud fra brugernavnet (brugeren ser aldrig en e-mail)
     public static string EmailOf(string username)

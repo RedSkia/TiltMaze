@@ -139,7 +139,7 @@ public class Auth
         return await TakeLogin(await ReadJson<TokenDto>(response), username, false);
     }
 
-    // Login med Google (kun Android). WebAuthenticator åbner en Custom Tab, aldrig appens eget WebView,
+    // Login med Google. WebAuthenticator åbner en Custom Tab, aldrig appens eget WebView,
     // så appen ser aldrig Google-kodeordet. PKCE: vi sender et hash af en hemmelig kode med, Supabase sender en
     // engangskode tilbage, og kun den, der kender den hemmelige kode, kan bytte engangskoden til tokens
     public async Task<AuthResult> LoginWithGoogle()
@@ -147,12 +147,10 @@ public class Auth
         var verifier = Base64Url(RandomNumberGenerator.GetBytes(32));
         var challenge = Base64Url(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)));
 
-        WebAuthenticatorResult result;
+        string? code;
         try
         {
-            result = await WebAuthenticator.Default.AuthenticateAsync(
-                new Uri($"{SupabaseUrl}/auth/v1/authorize?provider=google&redirect_to={GoogleCallback}&code_challenge={challenge}&code_challenge_method=s256"),
-                new Uri(GoogleCallback));
+            code = await GetGoogleCode(challenge);
         }
         catch (TaskCanceledException)
         {
@@ -164,7 +162,6 @@ public class Auth
         }
 
         // Afviser man adgangen, kommer der en fejl tilbage i stedet for en kode
-        var code = result.Get("code");
         if (string.IsNullOrEmpty(code))
             return new AuthResult { Error = "Could not sign in with Google. Try again." };
 
@@ -190,6 +187,34 @@ public class Auth
             return new AuthResult { Error = "Could not sign in with Google. Try again." };
 
         return await TakeLogin(tokens, profiles[0].Username, true);
+    }
+
+    // Åbner Google-login og giver engangskoden tilbage
+    private static async Task<string?> GetGoogleCode(string challenge)
+    {
+        var windows = DeviceInfo.Platform == DevicePlatform.WinUI;
+        var callback = windows ? GoogleWindowsCallback : GoogleCallback;
+        var url = new Uri($"{SupabaseUrl}/auth/v1/authorize?provider=google&redirect_to={callback}&code_challenge={challenge}&code_challenge_method=s256");
+        if (!windows)
+            return (await WebAuthenticator.Default.AuthenticateAsync(url, new Uri(callback))).Get("code");
+
+        // Windows: browseren sender koden til en lille lytter på pc'en (kun denne ene adresse, kun lokalt)
+        using var listener = new HttpListener();
+        listener.Prefixes.Add(callback);
+        listener.Start();
+        await Launcher.Default.OpenAsync(url);
+        while (true)
+        {
+            var context = await listener.GetContextAsync().WaitAsync(TimeSpan.FromMinutes(2));
+            var code = context.Request.QueryString["code"];
+            var page = Encoding.UTF8.GetBytes("<p>You can close this tab and go back to TiltMaze.</p>");
+            context.Response.ContentType = "text/html";
+            await context.Response.OutputStream.WriteAsync(page);
+            context.Response.Close();
+            // Andre kald (fx favicon) har ingen kode eller fejl: vent videre
+            if (code != null || context.Request.QueryString["error"] != null)
+                return code;
+        }
     }
 
     // Gemmer tokens og brugernavn fra et godkendt login

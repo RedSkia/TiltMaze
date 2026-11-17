@@ -170,3 +170,58 @@
     gap: var(--space-1);
 }
 
+
+/* Præstationer: ring med hak, navn og mønter. Låste er dæmpede */
+.achievements {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-1);
+}
+
+.achievements li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--touch);
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-s);
+    background: var(--surface-2);
+    color: var(--muted);
+}
+
+.achievements .mark {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    font-weight: 700;
+}
+
+.achievements .name {
+    flex: 1;
+    min-width: 0;
+}
+
+.achievements .reward {
+    font-weight: 700;
+    color: var(--muted);
+}
+
+.achievements .done {
+    color: var(--text);
+}
+
+.achievements .done .mark {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+}
+
+.achievements .done .reward {
+    color: var(--gold);
+}

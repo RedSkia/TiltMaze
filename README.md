@@ -45,7 +45,7 @@ Vælg Easy, Normal, Hard eller Expert på startsiden (valget huskes), og tryk de
 - Bedste tid gemmes pr. labyrint (sværhedsgrad + seed) og pr. sværhedsgrad. Dit bedste løb vises som et spøgelse næste gang, og under tiden ser du, om du er foran (grøn, minus) eller bagud (rød, plus). Er du logget ind, ræser du også mod de 3 bedste andre (halvgennemsigtige kugler med brugernavn).
 - Små huller kan man rulle forbi langs væggen. Store huller fylder hele gangen, men med (næsten) fuld fart og et lige tilløb kan man hoppe over dem. Tæt på et hul trækkes kuglen svagt ind mod det. Hard og Expert har flere huller, også på vejen. Der er altid en vej uden om de store huller.
 - På en lille skærm følger kameraet kuglen.
-- **Stjerner (1-3)** efter hver labyrint ud fra tiden mod korteste vej, **dagsstreak** (dage i træk, +5 mønter) og **achievements** med mønter (liste under Account).
+- **Stjerner (1-3)** efter hver labyrint ud fra tiden mod korteste vej, **dagsstreak** (dage i træk, +5 mønter) og 12 **achievements** med mønter (gitter under Account).
 - **Fog:** på Hard ser man kun et stykke omkring kuglen, på Expert endnu mindre. Kuglen vibrerer, når den rammer en væg.
 - **Seed:** skriv en seed på startsiden for at spille en bestemt labyrint, og tryk "Copy seed" efter målet for at dele den.
 - **Pausemenuen** (`Esc`, `P` eller menu-knappen) har Resume, Retry og Leave. Leave afslutter løbet uden flere spørgsmål.
@@ -63,7 +63,7 @@ Design: "Neon Arcade" (natblå, turkis, orange kugle, guld mål). Lavet af RedSk
 
 ## Online: konto, top-liste og spøgelser
 
-Spillet virker helt uden net. Med en konto (brugernavn og kodeord, ingen e-mail, eller Google på Android; brugernavnet står på top-listen og skal være ledigt) sendes dine rekorder til serveren, der viser en top 10 pr. labyrint (`/leaderboard`: vælg sværhedsgrad og dagens labyrint eller en seed). Serveren afspiller hver tur mod samme labyrint og fysik og afviser snyd ("Run could not be verified"). Rekorder sat uden net eller login venter i en kø og sendes automatisk senere. Skift brugernavn, lås op med fingeraftryk/Windows Hello, log ud og slet konto ligger under `/account`. Efter første login spørger appen én gang, om den skal låses op med fingeraftryk næste gang.
+Spillet virker helt uden net. Med en konto (brugernavn og kodeord, ingen e-mail, eller Google; brugernavnet står på top-listen og skal være ledigt) sendes dine rekorder til serveren, der viser en top 10 pr. labyrint (`/leaderboard`: vælg sværhedsgrad og dagens labyrint eller en seed). Serveren afspiller hver tur mod samme labyrint og fysik og afviser snyd ("Run could not be verified"). Rekorder sat uden net eller login venter i en kø og sendes automatisk senere. Skift brugernavn, lås op med fingeraftryk/Windows Hello, log ud og slet konto ligger under `/account`. Efter første login spørger appen én gang, om den skal låses op med fingeraftryk næste gang.
 
 ### Supabase (backend)
 
@@ -76,14 +76,14 @@ Ingen egen server: appen taler direkte med Supabase (konti, tider, top-lister). 
 5. Test anti-snyd: `node --test supabase/functions/tests/check.test.ts`.
 6. Ende-til-ende-test (langsom, kun før release): lokalt (kræver Docker) `npx supabase start`, så `node supabase/tests/e2e.mjs` (konto, login, tider, top-liste, spøgelser, RLS, navneskift, sletning), til sidst `npx supabase stop`. Mod det hostede projekt: sæt `SUPABASE_URL` og `SUPABASE_ANON_KEY` (publishable key) og kør samme fil (tager et par minutter pga. Auths grænser). Ligger projektet på Skrivebordet, blokerer Windows Defender CLI'en i at skrive i `supabase/`: kopiér mappen udenfor og brug `--workdir <kopi>`.
 
-### Google-login (Android)
+### Google-login (Android og Windows)
 
-På Android kan man også trykke "Continue with Google" på Login. Login sker i en Custom Tab (Chrome), aldrig i appens eget vindue, og Supabase sender en engangskode tilbage til `com.redskia.tiltmaze://login-callback`, som appen bytter til tokens (PKCE). En ny Google-bruger får brugernavnet `p_` + 12 tegn og kan skifte det på Account. Google-brugere har intet kodeord. På Windows er knappen skjult (WebAuthenticator virker ikke i en Windows-app uden pakke), der bruges brugernavn og kodeord.
+Man kan også trykke "Continue with Google" på Login. På Android sker login i en Custom Tab (Chrome), aldrig i appens eget vindue, og Supabase sender en engangskode tilbage til `com.redskia.tiltmaze://login-callback`. På Windows åbnes den almindelige browser, og appen lytter kort på `http://127.0.0.1:53682/` efter koden (WebAuthenticator virker ikke i en Windows-app uden pakke). Begge steder bytter appen koden til tokens (PKCE). En ny Google-bruger får brugernavnet fra Gmail-adressen (det før @, kun bogstaver, tal og `_`, højst 16; er det for kort eller optaget, får det `_` + 4 tegn bagpå) og kan skifte det på Account. Google-brugere har intet kodeord.
 
 1. Google Cloud Console → APIs & Services → OAuth consent screen: app-navn TiltMaze, scopes `email`, `profile`, `openid`.
 2. Credentials → Create credentials → OAuth client ID → type **Web application**. Authorized redirect URI: `https://<ref>.supabase.co/auth/v1/callback`. Kopiér Client ID og Client Secret.
 3. Supabase → Authentication → Sign In / Providers → Google: slå til, indsæt Client ID og Secret, gem.
-4. Supabase → Authentication → URL Configuration: Redirect URLs skal have `com.redskia.tiltmaze://login-callback` (står i `supabase/config.toml`; lægges på med `npx supabase config push`, der kun ændrer det, filen nævner; se `npx supabase config diff` først).
+4. Supabase → Authentication → URL Configuration: Redirect URLs skal have `com.redskia.tiltmaze://login-callback` og `http://127.0.0.1:53682/` (står i `supabase/config.toml`; lægges på med `npx supabase config push`, der kun ændrer det, filen nævner; se `npx supabase config diff` først).
 
 ### Sikkerhed
 

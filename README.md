@@ -31,6 +31,10 @@ Telefon første gang: Indstillinger → Om telefonen → tryk 7 gange på Build-
 
 Vis telefonen på PC (fx til fremvisning): `winget install Genymobile.scrcpy`, sæt telefonen i med USB (USB-fejlfinding slået til) og skriv `scrcpy`.
 
+## Præsentation
+
+`docs/TiltMaze.pptx` (10 slides, dansk, med talenoter). Til fremvisning på telefonen: se slide 9 (scrcpy).
+
 ## Spillet
 
 Vælg Easy, Normal, Hard eller Expert på startsiden (valget huskes), og tryk den store **Play daily** eller **Random maze**. Sværhedsgraden bestemmer størrelse, antal løkker (alternative veje) og antal og størrelse af huller.

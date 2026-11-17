@@ -2,13 +2,17 @@
 //   npx supabase start
 //   node supabase/tests/e2e.mjs
 // Kalder Auth, RPC'er og edge function'en submit-run præcis som appen (Auth.cs og Api.cs).
-// Adresse og anon-nøgle er standardværdierne fra `npx supabase status` (kan ændres med SUPABASE_URL og SUPABASE_ANON_KEY).
+// Adresse og nøgle er standardværdierne fra `npx supabase status` (kan ændres med SUPABASE_URL og SUPABASE_ANON_KEY,
+// fx den hostede adresse og publishable key).
 import runs from "../functions/_shared/fixtures/runs.json" with { type: "json" };
 
 const URL = process.env.SUPABASE_URL ?? "http://127.0.0.1:54321";
 const ANON = process.env.SUPABASE_ANON_KEY ??
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
 const PASSWORD = "e2e-password-123";
+const HOSTED = !URL.includes("127.0.0.1");
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 let failed = 0;
 function ok(condition, name, detail) {
@@ -16,22 +20,38 @@ function ok(condition, name, detail) {
     if (!condition) failed++;
 }
 
-// POST med JSON som appen: apikey altid, Bearer = brugerens token eller anon-nøglen
-async function post(path, body, token = ANON) {
-    const response = await fetch(URL + path, {
+// Headers som appen: apikey altid, Bearer kun med brugerens token (publishable key er ingen JWT)
+function headers(token) {
+    const result = { apikey: ANON, "Content-Type": "application/json" };
+    if (token) result.Authorization = "Bearer " + token;
+    return result;
+}
+
+// POST med JSON. Hostet har Auth en grænse pr. IP: pause før hvert /auth/-kald, og ét 429 prøves igen efter 30 s
+async function post(path, body, token = null) {
+    if (HOSTED && path.startsWith("/auth/")) await sleep(3000);
+    const send = () => fetch(URL + path, {
         method: "POST",
-        headers: { apikey: ANON, Authorization: "Bearer " + token, "Content-Type": "application/json" },
+        headers: headers(token),
         body: typeof body == "string" ? body : JSON.stringify(body),
     });
+    let response = await send();
+    if (response.status == 429) {
+        await sleep(30000);
+        response = await send();
+    }
     const text = await response.text();
     let json = null;
     try { json = JSON.parse(text); } catch { /* ikke JSON */ }
     return { status: response.status, json, text };
 }
 
-async function get(path, token = ANON) {
-    const response = await fetch(URL + path, { headers: { apikey: ANON, Authorization: "Bearer " + token } });
-    return { status: response.status, text: await response.text() };
+async function get(path, token = null) {
+    const response = await fetch(URL + path, { headers: headers(token) });
+    const text = await response.text();
+    let json = null;
+    try { json = JSON.parse(text); } catch { /* ikke JSON */ }
+    return { status: response.status, json, text };
 }
 
 const email = (name) => name.toLowerCase() + "@tiltmaze.invalid";
@@ -87,7 +107,7 @@ try {
     ok(r.status == 200 && r.json === false, "username_available: ugyldigt navn = false", r);
 
     // --- Tider (submit-run) ---
-    r = await submit(fast, ANON);
+    r = await submit(fast, null);
     ok(r.status == 401, "submit-run uden login afvises", r);
     r = await submit(fast, "not-a-jwt");
     ok(r.status == 401, "submit-run med falsk token afvises", r);
@@ -157,12 +177,16 @@ try {
     r = await rpc("get_ghost", { p_run_id: runB }, tokens[nameB]);
     ok(r.json?.length == 1, "get_ghost: eget løb uden for top 10", r);
 
-    // --- Ingen direkte adgang til tabellerne ---
-    for (const [label, token] of [["anon", ANON], ["bruger", tokens[nameA]]]) {
+    // --- Ingen direkte adgang til runs; profiles kun egen række (0002_rls_policies.sql) ---
+    r = await get("/rest/v1/profiles?select=*");
+    ok(r.status >= 400, "anon kan ikke læse profiles", r);
+    r = await get("/rest/v1/profiles?select=*", tokens[nameA]);
+    ok(r.status == 200 && r.json?.length == 1 && r.json[0].username == nameA, "bruger læser kun sin egen profil", r);
+    r = await get("/rest/v1/profiles?select=username&username=eq." + nameB, tokens[nameA]);
+    ok(r.status == 200 && r.json?.length == 0, "bruger kan ikke læse andres profil", r);
+    for (const [label, token] of [["anon", null], ["bruger", tokens[nameA]]]) {
         r = await get("/rest/v1/runs?select=*", token);
         ok(r.status >= 400, `${label} kan ikke læse runs`, r);
-        r = await get("/rest/v1/profiles?select=*", token);
-        ok(r.status >= 400, `${label} kan ikke læse profiles`, r);
         r = await post("/rest/v1/runs", { user_id: "00000000-0000-0000-0000-000000000000", difficulty: 0, seed: 3, time_ms: 1, ghost: "\\x00" }, token);
         ok(r.status >= 400, `${label} kan ikke indsætte i runs`, r);
         r = await post("/rest/v1/profiles", { id: "00000000-0000-0000-0000-000000000000", username: "hacker" }, token);

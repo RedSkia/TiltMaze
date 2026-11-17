@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -6,9 +5,14 @@ namespace TiltMaze.App.Services;
 
 public static class ApiSettings
 {
-    // Anon-nøglen er offentlig og sikker, fordi RLS i databasen styrer hvad man må
+    // Publishable key er offentlig og sikker, fordi RLS og RPC-rettigheder i databasen styrer hvad man må.
+    // Den sendes kun i headeren apikey (den er ingen JWT). Supabase-adgangstokenet (PAT) bruges aldrig af appen,
+    // kun af CLI'en til deploy
     public const string SupabaseUrl = "https://uieqaiauayzibatdngbe.supabase.co";
-    public const string AnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpZXFhaWF1YXl6aWJhdGRuZ2JlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ4NDg0NjUsImV4cCI6MjExMDQyNDQ2NX0.Ltmg5-oLlbZYQKleTuguAa1VOcOTDOujYLsFzQEmJH8";
+    public const string PublishableKey = "sb_publishable_suS99ziw0TxH6QGfrajPPw_fYi2WzWr";
+
+    // Google sender login tilbage til appen på denne adresse (står også i Supabase og i Android-manifestet)
+    public const string GoogleCallback = "com.redskia.tiltmaze://login-callback";
 
     // E-mail til Supabase ud fra brugernavnet (brugeren ser aldrig en e-mail)
     public static string EmailOf(string username)
@@ -16,7 +20,7 @@ public static class ApiSettings
         return username.Trim().ToLowerInvariant() + "@tiltmaze.invalid";
     }
 
-    // HttpClient til Supabase. Bruges af både Auth og Api. Uden login sendes anon-nøglen som token
+    // HttpClient til Supabase. Bruges af både Auth og Api. Bearer sættes kun på kald med brugerens token
     public static HttpClient CreateHttpClient()
     {
         var http = new HttpClient
@@ -24,8 +28,7 @@ public static class ApiSettings
             BaseAddress = new Uri(SupabaseUrl),
             Timeout = TimeSpan.FromSeconds(30)
         };
-        http.DefaultRequestHeaders.Add("apikey", AnonKey);
-        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AnonKey);
+        http.DefaultRequestHeaders.Add("apikey", PublishableKey);
         return http;
     }
 

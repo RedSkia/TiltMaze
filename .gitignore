@@ -489,3 +489,5 @@ TiltMaze.Api/keys/
 
 # Midlertidige worktrees
 .claude/worktrees/
+# Supabase CLI-cache
+supabase/.temp/

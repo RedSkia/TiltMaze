@@ -142,7 +142,7 @@ public class Api
     {
         var token = await auth.GetAccessToken(refreshFirst);
         using var request = makeRequest();
-        // Uden login bliver anon-nøglen sendt som token (står i HttpClient'ens standard-headers)
+        // Uden login sendes kun apikey (fx top-listen som gæst)
         if (token != null)
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return await http.SendAsync(request);

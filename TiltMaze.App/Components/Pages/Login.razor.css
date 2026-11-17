@@ -8,6 +8,16 @@
     gap: var(--space-4);
 }
 
+/* "or" og Google-knappen under formularen (kun Android) */
+.or {
+    text-align: center;
+    margin: var(--space-4) 0;
+}
+
+.google {
+    width: 100%;
+}
+
 /* Er brugernavnet ledigt? Farve og tekst, så farven ikke står alene */
 .availability {
     font-size: var(--font-s);

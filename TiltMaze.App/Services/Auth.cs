@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using static TiltMaze.App.Services.ApiSettings;
@@ -22,6 +23,12 @@ public class ErrorDto
     public string? Title { get; set; }
 
     public string Text => Msg ?? Message ?? Title ?? "";
+}
+
+// Egen række fra profiles (efter Google-login)
+public class ProfileDto
+{
+    public string Username { get; set; } = "";
 }
 
 public class AuthResult
@@ -58,6 +65,9 @@ public class Auth
     // Brugernavnet er også navnet på top-listen
     public string Username { get; private set; } = "";
 
+    // Logget ind med Google: kontoen har intet kodeord, og man logger ikke ind med brugernavnet
+    public bool IsGoogle { get; private set; }
+
     // Logget ind = vi har et refresh-token, der ikke er udløbet, og det er ikke låst. Kræver ikke net
     public bool IsLoggedIn => !locked && HasSavedLogin;
 
@@ -80,6 +90,7 @@ public class Auth
             refreshToken = await SecureStorage.Default.GetAsync("refreshToken");
             var expires = await SecureStorage.Default.GetAsync("refreshExpires");
             Username = await SecureStorage.Default.GetAsync("username") ?? "";
+            IsGoogle = await SecureStorage.Default.GetAsync("google") == "1";
             if (!DateTime.TryParse(expires, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out refreshExpires))
                 refreshToken = null;
 
@@ -110,7 +121,7 @@ public class Auth
         if (!response.IsSuccessStatusCode)
             return new AuthResult { Error = await ReadError(response, false) };
 
-        return await TakeLogin(response, username);
+        return await TakeLogin(await ReadJson<TokenDto>(response), username, false);
     }
 
     public async Task<AuthResult> Login(string username, string password)
@@ -123,19 +134,73 @@ public class Auth
         if (!response.IsSuccessStatusCode)
             return new AuthResult { Error = await ReadError(response, true) };
 
-        return await TakeLogin(response, username);
+        return await TakeLogin(await ReadJson<TokenDto>(response), username, false);
     }
 
-    // Gemmer tokens og brugernavn fra et godkendt svar
-    private async Task<AuthResult> TakeLogin(HttpResponseMessage response, string username)
+    // Login med Google (kun Android). WebAuthenticator åbner en Custom Tab, aldrig appens eget WebView,
+    // så appen ser aldrig Google-kodeordet. Supabase sender tokens tilbage i adressens fragment (#access_token=...)
+    public async Task<AuthResult> LoginWithGoogle()
     {
-        var tokens = await ReadJson<TokenDto>(response);
+        WebAuthenticatorResult result;
+        try
+        {
+            result = await WebAuthenticator.Default.AuthenticateAsync(
+                new Uri($"{SupabaseUrl}/auth/v1/authorize?provider=google&redirect_to={GoogleCallback}"),
+                new Uri(GoogleCallback));
+        }
+        catch (TaskCanceledException)
+        {
+            return new AuthResult { Error = "Sign-in was cancelled." };
+        }
+        catch (Exception)
+        {
+            return new AuthResult { Error = "Could not sign in with Google. Try again." };
+        }
+
+        var tokens = new TokenDto
+        {
+            AccessToken = result.Get("access_token") ?? "",
+            RefreshToken = result.Get("refresh_token") ?? "",
+            ExpiresIn = int.TryParse(result.Get("expires_in"), out int seconds) ? seconds : 0
+        };
+        // Afviser man adgangen, kommer der en fejl tilbage i stedet for tokens
+        if (tokens.AccessToken == "" || tokens.RefreshToken == "")
+            return new AuthResult { Error = "Could not sign in with Google. Try again." };
+
+        // Brugernavnet står i profilen. RLS giver kun ens egen række
+        using var response = await TrySend(() =>
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/rest/v1/profiles?select=username");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
+            return http.SendAsync(request);
+        });
+        if (response == null)
+            return NoConnection();
+        var profiles = response.IsSuccessStatusCode ? await ReadJson<List<ProfileDto>>(response) : null;
+        if (profiles == null || profiles.Count == 0)
+            return new AuthResult { Error = "Could not sign in with Google. Try again." };
+
+        return await TakeLogin(tokens, profiles[0].Username, true);
+    }
+
+    // Gemmer tokens og brugernavn fra et godkendt login
+    private async Task<AuthResult> TakeLogin(TokenDto? tokens, string username, bool google)
+    {
         if (tokens == null)
             return new AuthResult { Error = "The server sent an invalid response." };
 
-        locked = false; // kodeordet er lige skrevet, så det nye login er låst op
+        locked = false; // brugeren har lige logget ind, så det nye login er låst op
+        IsGoogle = google;
         await SaveTokens(tokens);
         await SetUsername(username);
+        try
+        {
+            await SecureStorage.Default.SetAsync("google", google ? "1" : "0");
+        }
+        catch (Exception)
+        {
+            // Gemmes igen ved næste login
+        }
         return new AuthResult { Ok = true };
     }
 
@@ -184,11 +249,13 @@ public class Auth
         refreshToken = null;
         locked = false;
         Username = "";
+        IsGoogle = false;
         try
         {
             SecureStorage.Default.Remove("refreshToken");
             SecureStorage.Default.Remove("refreshExpires");
             SecureStorage.Default.Remove("username");
+            SecureStorage.Default.Remove("google");
         }
         catch (Exception)
         {

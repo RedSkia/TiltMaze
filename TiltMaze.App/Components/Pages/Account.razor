@@ -32,10 +32,10 @@
     @if (auth.IsLocked)
     {
         <section class="card locked">
-            <p>Your account is locked on this device. Unlock it with your fingerprint or Windows Hello, or sign in with your password.</p>
+            <p>Your account is locked on this device. Unlock it with your fingerprint or Windows Hello, or sign in again.</p>
             <div class="actions">
                 <button type="button" class="button primary" @onclick="Unlock" disabled="@busy">Unlock</button>
-                <a class="button" href="login">Use password</a>
+                <a class="button" href="login">@(auth.IsGoogle ? "Sign in with Google" : "Use password")</a>
             </div>
         </section>
     }
@@ -144,7 +144,7 @@
                                 </span>
                                 <label class="setting-text" for="new-username">
                                     <span class="setting-title">Change username</span>
-                                    <span class="setting-desc" id="username-hint">3-16 letters, digits or underscores. You sign in with the new name.</span>
+                                    <span class="setting-desc" id="username-hint">3-16 letters, digits or underscores.@(auth.IsGoogle ? " You keep signing in with Google." : " You sign in with the new name.")</span>
                                 </label>
                             </div>
                             <div class="username-row">

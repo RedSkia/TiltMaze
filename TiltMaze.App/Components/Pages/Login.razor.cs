@@ -18,6 +18,9 @@ public partial class Login : IDisposable
     private bool busy;
     private bool showPassword;   // true = kodeordet vises som tekst
 
+    // WebAuthenticator virker ikke i en Windows-app uden pakke, så Google-knappen er kun på Android
+    private static bool GoogleAvailable => DeviceInfo.Platform == DevicePlatform.Android;
+
     // Er navnet ledigt? "" (intet at vise), "checking", "available", "taken", "invalid" eller "unknown" (uden net)
     private string availability = "";
     private CancellationTokenSource? typing;
@@ -105,8 +108,21 @@ public partial class Login : IDisposable
 
         busy = true;
         var result = creating ? await auth.Register(username, password) : await auth.Login(username, password);
-        busy = false;
+        await Finish(result);
+    }
 
+    // Google-login i en Custom Tab (knappen findes kun på Android)
+    private async Task LoginWithGoogle()
+    {
+        error = "";
+        busy = true;
+        await Finish(await auth.LoginWithGoogle());
+    }
+
+    // Fælles for begge måder at logge ind: vis fejlen, eller send ventende rekorder og gå videre
+    private async Task Finish(AuthResult result)
+    {
+        busy = false;
         if (!result.Ok)
         {
             error = result.Error;

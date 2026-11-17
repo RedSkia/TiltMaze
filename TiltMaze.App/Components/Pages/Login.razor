@@ -45,6 +45,12 @@
         <button type="submit" class="button primary" disabled="@(busy || (creating && availability == "taken"))">@(creating ? "Create account" : "Sign in")</button>
     </form>
 
+    @if (GoogleAvailable)
+    {
+        <p class="or muted">or</p>
+        <button type="button" class="button google" @onclick="LoginWithGoogle" disabled="@busy">Continue with Google</button>
+    }
+
     @if (busy)
     {
         <div class="loading" role="status">

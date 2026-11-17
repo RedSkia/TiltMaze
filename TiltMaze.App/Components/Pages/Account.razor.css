@@ -4,14 +4,14 @@
 .account-grid, .account-main {
     display: flex;
     flex-direction: column;
-    gap: var(--space-5);
+    gap: var(--space-3);
 }
 
 .card {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-3);
+    gap: var(--space-1);
 }
 
 .card p {
@@ -32,7 +32,7 @@
 .actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-3);
+    gap: var(--space-1);
 }
 
 /* ---------- Profil ---------- */
@@ -41,7 +41,7 @@
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
-    column-gap: var(--space-4);
+    column-gap: var(--space-2);
 }
 
 .profile p {
@@ -79,9 +79,9 @@
 .status {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-1);
     color: var(--ok);
-    font-size: var(--font-s);
+    font-size: var(--font-m);
     font-weight: 750;
 }
 
@@ -119,21 +119,21 @@
 .username-form {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
-    padding: var(--space-4);
+    gap: var(--space-1);
+    padding: var(--space-2);
 }
 
 .username-head {
     display: flex;
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-2);
 }
 
 /* Felt og knap på en række, så længe der er plads */
 .username-row {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-3);
+    gap: var(--space-1);
 }
 
 .username-row input {
@@ -158,7 +158,7 @@
 .benefits {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-1);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -167,6 +167,6 @@
 .benefits li {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-1);
 }
 

@@ -31,13 +31,11 @@
     --ok: #4ade80;
     --danger: #ff5d73;
 
-    /* Afstande */
-    --space-1: 0.25rem;
-    --space-2: 0.5rem;
-    --space-3: 0.75rem;
-    --space-4: 1rem;
-    --space-5: 1.5rem;
-    --space-6: 2rem;
+    /* Afstande: 8-punkts skala. Mellem to trykflader er der mindst --space-1 */
+    --space-1: 8px;
+    --space-2: 16px;
+    --space-3: 24px;
+    --space-4: 32px;
 
     /* Runding */
     --radius-s: 10px;
@@ -55,8 +53,8 @@
     --shadow-glow: 0 0 28px rgba(45, 226, 200, 0.3);
     --edge: #070d1d;
 
-    /* Mindste trykflade og animation */
-    --touch: 44px;
+    /* Mindste trykflade (Material 48 px) og animation */
+    --touch: 48px;
     --ease: 140ms ease;
 }
 
@@ -157,10 +155,10 @@ button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-2);
+    gap: var(--space-1);
     max-width: 100%;   /* aldrig bredere end sin plads; lang tekst brydes i stedet */
-    min-height: 48px;
-    padding: 0 var(--space-5);
+    min-height: var(--touch);
+    padding: 0 var(--space-3);
     border: 1px solid var(--border);
     border-radius: var(--radius-m);
     background: var(--surface-2);
@@ -184,7 +182,7 @@ button {
 /* Stor knap til hovedhandlingen (fx "Play daily") */
 .button.big {
     min-height: 64px;
-    padding: 0 var(--space-6);
+    padding: 0 var(--space-4);
     border-radius: var(--radius-l);
     font-size: var(--font-l);
     font-weight: 800;
@@ -238,12 +236,17 @@ button:disabled {
     box-shadow: 0 1px 0 var(--edge);
 }
 
+/* Valgknap: giver svar ved tryk (aktiv har allerede farve) */
+.segmented button:active:not(.active) {
+    background: var(--surface-3);
+}
+
 /* ---------- Felter ---------- */
 
 input[type=text], input[type=search], input[type=email], input[type=password] {
     width: 100%;
-    min-height: 48px;
-    padding: 0 var(--space-4);
+    min-height: var(--touch);
+    padding: 0 var(--space-2);
     border: 1px solid var(--border);
     border-radius: var(--radius-m);
     background: var(--surface);
@@ -264,7 +267,7 @@ input:disabled {
 /* Kodeordsfelt med knap til at vise/skjule kodeordet */
 .password-row {
     display: flex;
-    gap: var(--space-2);
+    gap: var(--space-1);
 }
 
 .password-row input {
@@ -275,7 +278,7 @@ input:disabled {
 /* Lille hjælpetekst under et felt */
 .hint {
     font-weight: 400;
-    font-size: var(--font-s);
+    font-size: var(--font-m);
 }
 
 input::placeholder {
@@ -285,7 +288,7 @@ input::placeholder {
 .field {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--space-1);
     font-weight: 600;
 }
 
@@ -294,8 +297,8 @@ input::placeholder {
 .loading {
     display: flex;
     align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-4);
+    gap: var(--space-2);
+    padding: var(--space-2);
     border-radius: var(--radius-m);
     background: var(--surface);
     border: 1px solid var(--border);
@@ -335,7 +338,7 @@ input::placeholder {
     color: var(--muted);
     font-weight: 700;
     min-width: 0;
-    padding: 0 var(--space-2);
+    padding: 0 var(--space-1);
 }
 
 .segmented button.active {
@@ -348,11 +351,11 @@ input::placeholder {
 .alert {
     display: flex;
     align-items: flex-start;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-2);
     border-radius: var(--radius-m);
     border: 1px solid;
-    font-size: 0.95rem;
+    font-size: var(--font-m);
 }
 
 .alert .icon {
@@ -383,7 +386,7 @@ input::placeholder {
 .brand {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-1);
 }
 
 .wordmark {
@@ -407,7 +410,7 @@ input::placeholder {
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: var(--space-5);
+    gap: var(--space-3);
 }
 
 .page-wide {
@@ -420,7 +423,7 @@ input::placeholder {
     flex-wrap: wrap;
     align-items: flex-start;
     justify-content: space-between;
-    gap: var(--space-3);
+    gap: var(--space-1);
 }
 
 .page-head > div {
@@ -435,7 +438,7 @@ input::placeholder {
 
 /* Kort: den fælles boks til indhold */
 .card {
-    padding: var(--space-4);
+    padding: var(--space-2);
     border-radius: var(--radius-l);
     background: linear-gradient(180deg, var(--surface-2), var(--surface));
     border: 1px solid var(--border);
@@ -445,7 +448,7 @@ input::placeholder {
 /* Lille overskrift over en gruppe */
 .section-label {
     display: block;
-    margin: 0 0 var(--space-2) var(--space-1);
+    margin: 0 0 var(--space-1) var(--space-1);
     color: var(--muted);
     font-size: var(--font-s);
     font-weight: 750;
@@ -461,10 +464,10 @@ input::placeholder {
 .setting-row {
     display: flex;
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-2);
     width: 100%;
     min-height: 64px;
-    padding: var(--space-4);
+    padding: var(--space-2);
     border: none;
     background: transparent;
     color: var(--text);
@@ -490,7 +493,7 @@ input::placeholder {
 
 .setting-desc {
     color: var(--muted);
-    font-size: var(--font-s);
+    font-size: var(--font-m);
 }
 
 button.setting-row {
@@ -499,7 +502,7 @@ button.setting-row {
     transition: background var(--ease);
 }
 
-/* Til/fra-kontakt. Trykfladen er 44 px, selvom kontakten tegnes mindre */
+/* Til/fra-kontakt. Trykfladen er 48 px høj, selvom kontakten tegnes mindre */
 .switch {
     position: relative;
     flex: none;
@@ -515,7 +518,7 @@ button.setting-row {
 .switch::before {
     content: "";
     position: absolute;
-    inset: -6px;
+    inset: -8px -4px;
 }
 
 .switch::after {
@@ -544,10 +547,10 @@ button.setting-row {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-1);
     max-width: 24rem;
     margin: 0 auto;
-    padding: var(--space-6) var(--space-4);
+    padding: var(--space-4) var(--space-2);
     text-align: center;
 }
 
@@ -573,7 +576,7 @@ button.setting-row {
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-3);
+    gap: var(--space-1);
 }
 
 .cta p {
@@ -643,6 +646,10 @@ button.setting-row {
         background: var(--surface-2);
     }
 
+    .segmented button:hover:not(.active) {
+        color: var(--text);
+    }
+
     .switch:hover:not(:disabled) {
         filter: brightness(1.12);
     }
@@ -659,7 +666,7 @@ input[type=text]:focus-visible, input[type=search]:focus-visible, input[type=ema
     inset: 0;
     display: grid;
     place-items: center;
-    padding: var(--space-3);
+    padding: var(--space-2);
     border-radius: var(--radius-l);
     background: rgba(5, 8, 20, 0.72);
     animation: fade-in 160ms ease-out;
@@ -669,9 +676,10 @@ input[type=text]:focus-visible, input[type=search]:focus-visible, input[type=ema
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: var(--space-3);
+    gap: var(--space-1);
     width: min(360px, 100%);
     max-height: 100%;
+    overflow-x: hidden;   /* kun lodret rul, hvis dialogen er højere end skærmen */
     overflow-y: auto;
     text-align: center;
     border-color: rgba(45, 226, 200, 0.35);
@@ -685,7 +693,7 @@ input[type=text]:focus-visible, input[type=search]:focus-visible, input[type=ema
 .dialog-buttons {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-1);
 }
 
 .overlay.fixed {

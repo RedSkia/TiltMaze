@@ -11,15 +11,17 @@
     grid-area: header;
     display: flex;
     align-items: center;
-    padding: var(--space-3) max(var(--space-4), env(safe-area-inset-right)) var(--space-3) max(var(--space-4), env(safe-area-inset-left));
+    padding: var(--space-2) max(var(--space-2), env(safe-area-inset-right)) var(--space-2) max(var(--space-2), env(safe-area-inset-left));
     border-bottom: 1px solid var(--border);
     background: rgba(15, 24, 48, 0.92);
 }
 
 main {
     grid-area: main;
+    overflow-x: hidden;   /* aldrig vandret rul */
     overflow-y: auto;
-    padding: var(--space-4) max(var(--space-4), env(safe-area-inset-right)) var(--space-5) max(var(--space-4), env(safe-area-inset-left));
+    scrollbar-width: none;   /* telefon: man rører og rul, ingen scrollbar i kanten */
+    padding: var(--space-2) max(var(--space-2), env(safe-area-inset-right)) var(--space-3) max(var(--space-2), env(safe-area-inset-left));
 }
 
 /* Spil-siden: ingen top og ingen menu, banen får hele skærmen (spillet har selv en menu-knap) */
@@ -51,7 +53,8 @@ main {
     }
 
     main {
-        padding: var(--space-5) var(--space-6);
+        padding: var(--space-3) var(--space-4);
+        scrollbar-width: thin;   /* mus: tynd scrollbar viser, at der er mere */
     }
 }
 
@@ -62,7 +65,7 @@ main {
     }
 
     main {
-        padding: var(--space-5);
+        padding: var(--space-3);
     }
 }
 
@@ -85,7 +88,7 @@ main {
     }
 
     main {
-        padding-top: var(--space-3);
-        padding-bottom: var(--space-3);
+        padding-top: var(--space-2);
+        padding-bottom: var(--space-2);
     }
 }

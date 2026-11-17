@@ -5,13 +5,13 @@
 .login-form {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-2);
 }
 
 /* "or" og Google-knappen under formularen (kun Android) */
 .or {
     text-align: center;
-    margin: var(--space-4) 0;
+    margin: var(--space-2) 0;
 }
 
 .google {
@@ -20,7 +20,7 @@
 
 /* Er brugernavnet ledigt? Farve og tekst, så farven ikke står alene */
 .availability {
-    font-size: var(--font-s);
+    font-size: var(--font-m);
     font-weight: 700;
     color: var(--muted);
 }

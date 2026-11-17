@@ -1,7 +1,7 @@
 /* Om TiltMaze. Sideramme og kort står i app.css */
 
 .about-page {
-    gap: var(--space-4);
+    gap: var(--space-2);
 }
 
 .hero {
@@ -9,12 +9,12 @@
     flex-direction: column;
     align-items: center;
     gap: var(--space-1);
-    padding: var(--space-4) 0 var(--space-2);
+    padding: var(--space-2) 0 var(--space-1);
     text-align: center;
 }
 
 .hero h1 {
-    margin: var(--space-2) 0 0;
+    margin: var(--space-1) 0 0;
 }
 
 .tagline {
@@ -23,7 +23,7 @@
 }
 
 .version {
-    margin-top: var(--space-2);
+    margin-top: var(--space-1);
     padding: 2px 10px;
     border-radius: 999px;
     background: var(--surface-2);
@@ -34,7 +34,7 @@
 .card {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-1);
 }
 
 .card p {
@@ -55,7 +55,7 @@
 .maker-head {
     display: flex;
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-2);
 }
 
 .maker-head div {
@@ -77,7 +77,7 @@
 .links {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-3);
+    gap: var(--space-1);
 }
 
 /* RedSkia-knap: rød arkade-knap med mørkerød kant */
@@ -106,7 +106,7 @@
 .how {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-    gap: var(--space-3);
+    gap: var(--space-1);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -114,7 +114,7 @@
 
 .how .card {
     align-items: flex-start;
-    gap: var(--space-2);
+    gap: var(--space-1);
 }
 
 .how-icon {
@@ -132,7 +132,7 @@
 .facts {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-1);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -141,7 +141,7 @@
 .facts li {
     display: flex;
     align-items: flex-start;
-    gap: var(--space-3);
+    gap: var(--space-1);
 }
 
 .facts .icon {

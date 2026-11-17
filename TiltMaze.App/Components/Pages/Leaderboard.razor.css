@@ -3,7 +3,7 @@
 .results {
     display: flex;
     flex-direction: column;
-    gap: var(--space-5);
+    gap: var(--space-3);
 }
 
 /* ---------- Valg ---------- */
@@ -13,7 +13,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-1);
 }
 
 /* Sværhedsgraderne: fire lige brede felter (.segmented har to kolonner som standard) */
@@ -35,7 +35,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
-    gap: var(--space-3);
+    gap: var(--space-1);
 }
 
 .seed-form .field {
@@ -60,7 +60,7 @@
 
 .board th,
 .board td {
-    padding: 0 var(--space-3);
+    padding: 0 var(--space-2);
     text-align: left;
 }
 
@@ -114,7 +114,7 @@
 .name {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-1);
     min-width: 0;
 }
 

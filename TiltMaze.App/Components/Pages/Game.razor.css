@@ -5,8 +5,8 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: max(var(--space-3), env(safe-area-inset-top)) max(var(--space-3), env(safe-area-inset-right)) max(var(--space-3), env(safe-area-inset-bottom)) max(var(--space-3), env(safe-area-inset-left));
-    gap: var(--space-3);
+    padding: max(var(--space-2), env(safe-area-inset-top)) max(var(--space-2), env(safe-area-inset-right)) max(var(--space-2), env(safe-area-inset-bottom)) max(var(--space-2), env(safe-area-inset-left));
+    gap: var(--space-1);
 }
 
 /* ---------- HUD ---------- */
@@ -18,7 +18,7 @@
         "pause clock"
         "stats stats";
     align-items: center;
-    gap: var(--space-2) var(--space-3);
+    gap: var(--space-1);
 }
 
 .hud-pause {
@@ -73,7 +73,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: var(--space-2);
+    gap: var(--space-1);
     margin: 0;
 }
 
@@ -317,7 +317,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-2);
+    gap: var(--space-1);
     font-size: var(--font-l);
     font-weight: 800;
     color: var(--gold);
@@ -453,8 +453,8 @@
         display: flex;
         flex-direction: column;
         align-items: stretch;
-        gap: var(--space-3);
-        padding: var(--space-4);
+        gap: var(--space-1);
+        padding: var(--space-2);
         border-radius: var(--radius-l);
         background: linear-gradient(180deg, var(--surface-2), var(--surface));
         border: 1px solid var(--border);
@@ -467,7 +467,7 @@
 
     .clock {
         align-items: flex-start;
-        padding-bottom: var(--space-3);
+        padding-bottom: var(--space-2);
         border-bottom: 1px solid var(--border);
     }
 
@@ -497,7 +497,7 @@
 
     .side-buttons {
         display: grid;
-        gap: var(--space-3);
+        gap: var(--space-1);
         margin-top: auto;
     }
 }
@@ -506,12 +506,12 @@
 @media (orientation: landscape) and (max-height: 499px) {
     .hud {
         width: 190px;
-        padding: var(--space-3);
-        gap: var(--space-2);
+        padding: var(--space-2);
+        gap: var(--space-1);
     }
 
     .clock {
-        padding-bottom: var(--space-2);
+        padding-bottom: var(--space-1);
     }
 
     .clock-time {
@@ -528,11 +528,7 @@
     }
 
     .side-buttons {
-        gap: var(--space-2);
-    }
-
-    .side-buttons .button {
-        min-height: 44px;
+        gap: var(--space-1);
     }
 }
 

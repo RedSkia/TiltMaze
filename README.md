@@ -33,7 +33,7 @@ Vis telefonen på PC (fx til fremvisning): `winget install Genymobile.scrcpy`, s
 
 ## Præsentation
 
-`docs/TiltMaze.pptx` (20 slides, dansk, med talenoter på hvert slide). Til fremvisning på telefonen: se scrcpy ovenfor.
+`docs/TiltMaze.pptx` (19 slides, dansk, med talenoter på hvert slide). Til fremvisning på telefonen: se scrcpy ovenfor.
 
 ## Spillet
 

@@ -1,6 +1,6 @@
 # TODO
 - [x] DESIGN.md omskrevet (letlæseligt, alt relevant)
-- [x] docs/TiltMaze.pptx omskrevet (20 slides: seed, fysik, spøgelse og løb forklaret trin for trin, talenoter)
+- [x] docs/TiltMaze.pptx omskrevet (19 slides: seed, fysik, spøgelse og løb forklaret trin for trin, talenoter)
 - [x] Dokumentation (docs/TiltMaze-dokumentation.pdf) og studieguide (docs/TiltMaze-teknik-forklaret.pdf) lavet; TiltMaze-kravspec.pdf er beholdt men forældet (eget API/Docker)
 - [ ] Aflever dagen før: Git-link (inviter læreren), README, dokumentation-PDF, slides.
 - [ ] Mangler mod kravene: lyst tema, kontrast 4,5:1 og 200 % tekst, gitleaks/CI, skærmlæser-test, brugertest med én person mere (far har testet), rotér service_role

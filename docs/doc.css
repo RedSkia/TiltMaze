@@ -1,0 +1,29 @@
+/* Fælles stil til dokumentation.html og teknik.html (print til PDF fra Edge) */
+@page { size: A4; margin: 14mm 14mm 16mm 14mm; }
+* { box-sizing: border-box; }
+body { font-family: "Segoe UI", Calibri, Arial, sans-serif; font-size: 10pt; line-height: 1.4; color: #1a2238; margin: 0; }
+h1 { font-size: 22pt; margin: 0 0 2mm; color: #0b8a7b; }
+h2 { font-size: 14pt; margin: 6mm 0 2mm; color: #0f1830; border-bottom: 1.5px solid #2de2c8; padding-bottom: 1mm; page-break-after: avoid; }
+h3 { font-size: 11pt; margin: 4mm 0 1mm; color: #0b8a7b; page-break-after: avoid; }
+p { margin: 1.5mm 0; }
+ul, ol { margin: 1mm 0 2mm; padding-left: 5.5mm; }
+li { margin: 0.6mm 0; }
+.sub { color: #5b6784; margin: 0 0 3mm; }
+.pb { page-break-before: always; }
+.nobreak { page-break-inside: avoid; }
+table { border-collapse: collapse; width: 100%; margin: 2mm 0; font-size: 9pt; page-break-inside: auto; }
+tr { page-break-inside: avoid; }
+th { background: #0f1830; color: #fff; text-align: left; padding: 1.5mm 2mm; }
+td { border: 1px solid #d3d9e8; padding: 1.2mm 2mm; vertical-align: top; }
+tr:nth-child(even) td { background: #f4f7fc; }
+code, pre { font-family: Consolas, "Courier New", monospace; font-size: 8.5pt; }
+code { background: #eef2fa; padding: 0 1mm; border-radius: 1mm; }
+pre { background: #0f1830; color: #eaf1ff; padding: 2.5mm 3mm; border-radius: 2mm; margin: 2mm 0; white-space: pre-wrap; page-break-inside: avoid; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+.card { border: 1px solid #d3d9e8; border-radius: 2mm; padding: 2.5mm 3mm; background: #f9fbff; page-break-inside: avoid; }
+.card b.t { color: #0b8a7b; display: block; margin-bottom: 0.5mm; }
+.note { border-left: 3px solid #ff8a3d; background: #fff6ee; padding: 1.5mm 3mm; margin: 2mm 0; }
+.ok { color: #0b8a7b; font-weight: 600; }
+.todo { color: #c2410c; font-weight: 600; }
+svg { max-width: 100%; height: auto; display: block; margin: 2mm auto; }
+.small { font-size: 8.5pt; color: #5b6784; }

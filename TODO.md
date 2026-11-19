@@ -1,6 +1,11 @@
 # TODO
+- [x] DESIGN.md omskrevet (letlæseligt, alt relevant)
+- [x] docs/TiltMaze.pptx omskrevet (20 slides: seed, fysik, spøgelse og løb forklaret trin for trin, talenoter)
+- [x] Dokumentation (docs/TiltMaze-dokumentation.pdf) og studieguide (docs/TiltMaze-teknik-forklaret.pdf) lavet; TiltMaze-kravspec.pdf er beholdt men forældet (eget API/Docker)
+- [ ] Aflever dagen før: Git-link (inviter læreren), README, dokumentation-PDF, slides.
+- [ ] Mangler mod kravene: lyst tema, kontrast 4,5:1 og 200 % tekst, gitleaks/CI, skærmlæser-test, brugertest med én person mere (far har testet), rotér service_role
 
-- [ ] Aflever `docs/TiltMaze-kravspec.pdf`
+
 - [ ] Prøv på rigtig telefon (OnePlus 6): retning og følsomhed af vip, landskab, hop over huller og trækket mod hullerne (er Hard/Expert fair?), flydende joystick og kamera
 - [ ] Prøv fingeraftryk på telefonen og Windows Hello på PC (start låst, annuller = gæst, Unlock på Account)
 - [ ] Prøv Google-login på telefonen (virker på Windows): ny bruger får Gmail-navnet, skift navn på Account, log ud, log ind igen, slet konto, annuller Google-vinduet (pæn besked)

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<title>TiltMaze – teknik forklaret</title>
+<link rel="stylesheet" href="doc.css">
+</head>
+<body>
+
+<h1>TiltMaze – teknik forklaret</h1>
+<p class="sub">Studieguide til at kunne forklare hele projektet: .NET MAUI, kode, database, Supabase, login og sikkerhed. Hver del har en boks “Sig det sådan”, som du kan sige højt.</p>
+
+<h2>1. Appen på ét minut</h2>
+<div class="note"><b>Sig det sådan:</b> “TiltMaze er et labyrintspil til Android og Windows. Man styrer en kugle ved at vippe telefonen og skal undgå huller. Alt spillet kører lokalt i appen, også uden net. Hvis man har en konto, sendes ens bedste tider til en server (Supabase), som viser top-lister. Fordi folk kan snyde, sender appen hele turen med, og serveren afspiller den og tjekker, at den er mulig, før tiden gemmes.”</div>
+<table>
+<tr><th style="width:24%">Del</th><th>Hvad den gør</th></tr>
+<tr><td><b>TiltMaze.Core</b></td><td>Al matematik: bygger labyrinten, regner fysik, afspiller spøgelser, udregner belønninger. Ingen MAUI. Testet.</td></tr>
+<tr><td><b>TiltMaze.App</b></td><td>Selve appen: sider (UI), services (login, database, netværk, sensorer) og platformskode til Android/Windows.</td></tr>
+<tr><td><b>TiltMaze.Tests</b></td><td>103 tests af Core.</td></tr>
+<tr><td><b>supabase/</b></td><td>Databasens opsætning (SQL), den lille server-funktion <code>submit-run</code> (TypeScript) og tests.</td></tr>
+</table>
+
+<h2>2. .NET MAUI og Blazor Hybrid</h2>
+<h3>Hvad er .NET MAUI?</h3>
+<p>.NET MAUI er Microsofts værktøj til at lave apps til flere styresystemer fra <b>én C#-kodebase</b>. Man skriver koden én gang, og MAUI bygger en rigtig Android-app (<code>.apk</code>) og en Windows-app. Derfor kan jeg bruge samme kode på telefon og PC.</p>
+<h3>Hvad er Blazor Hybrid?</h3>
+<p>Normalt tegner MAUI knapper og felter med native kontroller. Her tegner vi i stedet <b>hele UI’et som en hjemmeside</b> (HTML, CSS, SVG) inde i appen. MAUI-appen har kun én skærm, <code>MainPage.xaml</code>, som indeholder en <b><code>BlazorWebView</code></b> – en indbygget browser. Den viser vores <code>.razor</code>-sider.</p>
+<p>Det smarte: koden bag siderne (<code>.razor.cs</code>) kører som <b>almindelig C# inde i appen</b> (ikke på en server og ikke som JavaScript). Derfor kan siderne direkte bruge telefonens funktioner: accelerometer, vibration, SecureStorage, fingeraftryk.</p>
+<pre>Start: MauiProgram.cs  → registrerer services (Auth, Api, Scores ...)
+       App.xaml        → vindue
+       MainPage.xaml   → én skærm med BlazorWebView
+       Routes.razor    → vælger side ud fra adressen (/, /play/..., /shop ...)
+       MainLayout      → fælles ramme (menu) + tjekker login og fingeraftryk ved start</pre>
+<div class="note"><b>Sig det sådan:</b> “Jeg bruger .NET MAUI Blazor Hybrid. MAUI giver en rigtig app til Android og Windows, og selve skærmene er Blazor-sider i en WebView. Så kan jeg lave layoutet med HTML og CSS, og stadig bruge telefonens sensorer direkte fra C#.”</div>
+<h3>Begreber der bliver spurgt om</h3>
+<ul>
+<li><b>Razor-komponent (<code>.razor</code>):</b> en side/del af en side, blandet HTML og C#. Ved siden af ligger <code>.razor.cs</code> (koden) og <code>.razor.css</code> (stilen).</li>
+<li><b>Services og <code>@inject</code>:</b> klasser som <code>Auth</code> og <code>Api</code> oprettes én gang i <code>MauiProgram.cs</code> (<i>dependency injection</i>), og siderne får dem ved at skrive <code>@inject</code>. Så deler hele appen samme login og samme database.</li>
+<li><b>Platformsforskelle:</b> vip (accelerometer) findes kun på telefon; Windows bruger joystick med mus. Google-login åbner en Custom Tab på Android og browseren på Windows.</li>
+<li><b>JavaScript:</b> kun lidt (<code>wwwroot/js/game.js</code>): måler banens størrelse, fanger pointer til joysticket og laver lyde med Web Audio.</li>
+</ul>
+
+<h2>3. Hvor er hvad (mappekort)</h2>
+<table>
+<tr><th style="width:36%">Sti</th><th>Indhold</th></tr>
+<tr><td><code>TiltMaze.Core/Maze.cs, Course.cs</code></td><td>Labyrint-generator og “bane” (huller, mål, mønter) ud fra sværhedsgrad + seed</td></tr>
+<tr><td><code>TiltMaze.Core/Ball.cs</code></td><td>Fysik: fart, friktion, kollision med vægge, fast tidsskridt 1/120 s</td></tr>
+<tr><td><code>TiltMaze.Core/Ghost.cs, Camera.cs, Rewards.cs, ShopItems.cs</code></td><td>Spøgelse (optag/afspil), kamera, mønter og stjerner, butikkens katalog</td></tr>
+<tr><td><code>TiltMaze.Core/Rng.cs</code></td><td>Seedet tilfældighedstal (mulberry32) – samme i C# og TypeScript</td></tr>
+<tr><td><code>TiltMaze.App/Components/Pages</code></td><td>Start, Game, Leaderboard, Shop, Account, Login, About</td></tr>
+<tr><td><code>TiltMaze.App/Components/Play</code></td><td>Tegning af banen (MazeLayer), kugle-mønstre, spor, joystick, spøgelses-kugle</td></tr>
+<tr><td><code>TiltMaze.App/Services/Auth.cs</code></td><td>Login, tokens, log ud, Google (PKCE)</td></tr>
+<tr><td><code>TiltMaze.App/Services/Api.cs, RunQueue.cs</code></td><td>Kald til Supabase; kø der sender rekorder</td></tr>
+<tr><td><code>TiltMaze.App/Services/GameDatabase.cs, Scores.cs, Wallet.cs</code></td><td>SQLite: tider, spøgelser, kø, mønter og køb</td></tr>
+<tr><td><code>TiltMaze.App/wwwroot/app.css</code></td><td>Design-tokens (farver, afstande) og fælles stil</td></tr>
+<tr><td><code>supabase/migrations/0001-0005.sql</code></td><td>Tabeller, rettigheder (RLS), funktioner (RPC), triggers</td></tr>
+<tr><td><code>supabase/functions/submit-run</code> + <code>_shared/</code></td><td>Anti-snyd: bygger labyrinten i TypeScript og tjekker turen</td></tr>
+<tr><td><code>supabase/tests/e2e.mjs</code></td><td>Test mod rigtig Supabase (konto, RLS, top-liste, sletning)</td></tr>
+</table>
+
+<h2 class="pb">4. Core: sådan virker spillet</h2>
+<h3>Labyrinten (<code>Maze</code>, <code>Course</code>, <code>Rng</code>)</h3>
+<ol>
+<li>En labyrint er altid <b>(sværhedsgrad, seed)</b>. Seed er bare et heltal. “Dagens labyrint” bruger datoen (<code>20261119</code>) som seed, så alle får samme.</li>
+<li><code>Rng</code> er en lille tilfældighedsgenerator, der giver <b>samme talrække for samme seed</b> (algoritmen hedder mulberry32). Den bruges i stedet for <code>System.Random</code>, fordi den også findes i TypeScript – så serveren kan bygge præcis samme labyrint.</li>
+<li><b>DFS (dybde-først):</b> start i en celle, gå tilfældigt til en ubesøgt nabo og fjern væggen imellem; gå tilbage, når man sidder fast. Det giver en labyrint, hvor alle celler hænger sammen.</li>
+<li>Så åbnes nogle 2x2-rum og en del blindgyder fjernes (<i>braiding</i>), så der er løkker og flere veje.</li>
+<li><b>Start</b> i et hjørne, <b>mål</b> blandt de fjerneste celler (bredde-først afstand).</li>
+<li><code>Course</code> lægger <b>huller</b> (små og store) og <b>mønter</b> ovenpå, ud fra samme Rng. Store huller ligger kun på den korteste vej, og målet kan altid nås uden om dem.</li>
+</ol>
+<h3>Fysik (<code>Ball</code>)</h3>
+<ul>
+<li>Køres i <b>faste skridt på 1/120 sekund</b>, uanset hvor hurtigt telefonen tegner. Hvert skridt: læg vip/joystick til farten, træk friktion fra, begræns maks-fart, flyt kuglen, og skub den ud af vægge (kuglen er en cirkel, væggene er linjestykker).</li>
+<li>Efter hvert skridt tjekkes: <b>mønt, hul, mål</b>. Tæt på et hul trækkes kuglen svagt mod midten.</li>
+<li><b>Fald:</b> kuglens midte er i hullet og farten er under 75 % af maks, eller den har været over hullet i mere end 0,19 s. Med fart ruller man altså over små huller.</li>
+<li><b>Tid = antal skridt × 1/120 s.</b> Derfor er tiden ens uanset telefonens hastighed, og serveren kan regne den samme tid ud.</li>
+</ul>
+<h3>Spøgelset (<code>Ghost</code>)</h3>
+<p>Mens man spiller, gemmes kuglens x og y <b>30 gange i sekundet</b> som en liste af tal. Ved ny rekord gemmes listen i SQLite og sendes til serveren (som bytes). Næste gang afspilles listen som en halvgennemsigtig kugle i takt med uret. Man kan også se de 3 bedste <i>andres</i> spøgelser.</p>
+<h3>Spil-løkken og tegning</h3>
+<p>En <code>PeriodicTimer</code> (16 ms) i <code>Game.razor.cs</code> kører løkken: tag input → fysik-skridt (flere hvis der er gået tid) → opdatér kamera og spøgelser → <code>StateHasChanged</code> (Blazor tegner igen). Banen er <b>ét SVG</b>; den faste del (vægge, huller, mål) tegnes kun, når labyrinten skifter, så kun kugle, spøgelser, kamera og HUD ændres pr. billede.</p>
+<h3>Belønninger og butik</h3>
+<p>Mønter, stjerner, streak og præstationer regnes i <code>Rewards</code> og gemmes <b>lokalt</b> (SQLite). Butikken ændrer kun udseende, aldrig fysik eller tid – så den kan ikke bruges til at snyde.</p>
+
+<h2>5. Lokal database (SQLite) og kø</h2>
+<table>
+<tr><th style="width:22%">Tabel</th><th>Indhold</th></tr>
+<tr><td><code>BestRun</code></td><td>Bedste tid og spøgelse pr. (sværhedsgrad, seed)</td></tr>
+<tr><td><code>PendingRun</code></td><td>Kø af rekorder, der endnu ikke er sendt (med brugernavnet der satte dem; tom = gæst)</td></tr>
+<tr><td><code>MazeProgress</code></td><td>Hvilke mønter der er samlet, stjerner, udbetalte bonusser pr. labyrint</td></tr>
+<tr><td><code>WalletRow</code></td><td>Mønter og ejede ting</td></tr>
+</table>
+<ul>
+<li><code>Scores.Save</code> gemmer tid + spøgelse <b>og</b> lægger rekorden i køen i én transaktion – så intet går tabt, hvis appen lukkes midt i.</li>
+<li><code>RunQueue</code> sender køen ved start, efter login, ved ny rekord og når nettet kommer tilbage. Den sender kun gæsterekorder og den indloggede brugers egne.</li>
+<li>Indstillinger (valgt farve, lyd, vip) ligger i <code>Preferences</code>; login-tokens i <code>SecureStorage</code>.</li>
+</ul>
+<div class="note"><b>Sig det sådan:</b> “Spillet er offline-først. En ny rekord gemmes i SQLite med det samme og lægges i en kø. Når der er net og login, sender køen den til serveren, som tjekker den.”</div>
+
+<h2 class="pb">6. Supabase: hvad er det, og hvordan er det sat op</h2>
+<p><b>Supabase</b> er en færdig backend bygget på <b>Postgres</b>. Jeg har ingen egen server. Jeg bruger fire dele:</p>
+<table>
+<tr><th style="width:22%">Del</th><th>Hvad den gør hos mig</th></tr>
+<tr><td><b>Auth</b></td><td>Konti og login. Gemmer kodeord som hash, udsteder tokens (JWT) og refresh-tokens</td></tr>
+<tr><td><b>Postgres</b></td><td>Tabellerne <code>profiles</code> (brugernavne) og <code>runs</code> (bedste tid + spøgelse)</td></tr>
+<tr><td><b>RLS + RPC</b></td><td>Regler for, hvem der må hvad, og funktioner i databasen, som appen kalder</td></tr>
+<tr><td><b>Edge Function</b></td><td><code>submit-run</code>: min egen TypeScript-kode, der tjekker en tid, før den gemmes</td></tr>
+</table>
+<h3>Opsætning trin for trin</h3>
+<ol>
+<li>Opret et projekt på supabase.com. Under Authentication: slå e-mailbekræftelse fra, mindste kodeord 8.</li>
+<li>Kør migrationerne <code>supabase/migrations/0001…0005.sql</code> i rækkefølge (SQL Editor eller <code>npx supabase db query</code>). De opretter tabeller, rettigheder, RLS, RPC’er og triggers.</li>
+<li>Udgiv funktionen: <code>npx supabase functions deploy submit-run</code>.</li>
+<li>Skriv projektets URL og den <b>offentlige publishable key</b> i <code>ApiSettings.cs</code>. Service-nøglen (hemmelig) bruges aldrig i appen.</li>
+<li>Google-login: opret en OAuth-klient hos Google, indsæt Client ID/Secret i Supabase, og tilføj redirect-adresserne (<code>com.redskia.tiltmaze://login-callback</code> og <code>http://127.0.0.1:53682/</code>).</li>
+<li>Test: <code>dotnet test</code>, <code>node --test supabase/functions/tests/check.test.ts</code>, og e2e-testen før udgivelse.</li>
+</ol>
+<h3>RLS og RPC (kernen i sikkerheden)</h3>
+<ul>
+<li><b>RLS (Row Level Security):</b> databasen filtrerer selv rækker efter, hvem der spørger. Min regel for <code>profiles</code>: du må kun læse rækken, hvor <code>id = auth.uid()</code> (dit eget id fra dit token).</li>
+<li><code>runs</code> har <b>ingen</b> politik og ingen rettigheder. Ingen kan læse eller skrive den direkte, hverken andre brugere eller appen.</li>
+<li><b>RPC</b> er funktioner i databasen: <code>leaderboard</code>, <code>top_ghosts</code>, <code>get_ghost</code>, <code>username_available</code>, <code>set_username</code>, <code>delete_me</code>. De er de eneste døre ind, og de bruger <code>auth.uid()</code> – <i>ikke</i> et id sendt fra klienten.</li>
+<li><code>submit_run</code> kan kun kaldes af <code>service_role</code> (kun Edge Function har den nøgle).</li>
+</ul>
+<div class="note"><b>Sig det sådan:</b> “Jeg stoler ikke på appen. Alle regler ligger i databasen: RLS og funktioner, der selv slår op, hvem brugeren er. Hvis en bruger ændrer et id i et kald, bliver det ignoreret eller afvist.”</div>
+
+<h2 class="pb">7. Login og tokens trin for trin</h2>
+<h3>Opret konto og log ind med brugernavn</h3>
+<ol>
+<li>Brugeren skriver brugernavn og kodeord (3-16 tegn <code>A-Z a-z 0-9 _</code>). Mens man skriver, spørger appen <code>username_available</code>.</li>
+<li>Appen laver e-mailen <code>navn@tiltmaze.invalid</code> (en falsk adresse, ingen bekræftelse) og kalder Supabase Auth <code>/auth/v1/signup</code>.</li>
+<li>Supabase gemmer kodeordet som <b>bcrypt-hash</b>. En trigger i databasen opretter rækken i <code>profiles</code> og tjekker, at e-mailen passer til navnet.</li>
+<li>Login: <code>/auth/v1/token?grant_type=password</code>. Svar: <b>adgangstoken</b> (JWT, kortlivet) og <b>refresh-token</b>.</li>
+<li>Fejl er altid “Wrong username or password”, så man ikke kan gætte, hvilke navne der findes.</li>
+</ol>
+<h3>Tokens</h3>
+<table>
+<tr><th style="width:24%">Token</th><th>Levetid og placering</th></tr>
+<tr><td>Adgangstoken (JWT)</td><td>Kortlivet (Supabase-standard 1 time). Sendes som <code>Authorization: Bearer …</code>. Holdes i hukommelsen. Indeholder brugerens id, som databasen bruger til RLS</td></tr>
+<tr><td>Refresh-token</td><td>Gemmes i <b>SecureStorage</b> (Android Keystore / Windows) med en udløbsdato på <b>14 dage</b> (<code>RefreshDays</code> i <code>Auth.cs</code>). Bruges til at få nyt adgangstoken (<code>grant_type=refresh_token</code>)</td></tr>
+<tr><td>Publishable key</td><td>Offentlig, i appen, sendes som <code>apikey</code>. Giver kun det, som RLS og rettigheder tillader</td></tr>
+</table>
+<h3>Google-login (OAuth 2.0 + PKCE)</h3>
+<ol>
+<li>Appen laver en tilfældig <b>code verifier</b> (32 bytes) og udregner <b>challenge = base64url(SHA-256(verifier))</b>.</li>
+<li>Den åbner <code>/auth/v1/authorize?provider=google&amp;code_challenge=…</code> i en <b>Custom Tab</b> (Android) eller browseren (Windows) – <i>aldrig</i> i appens egen WebView, så appen ikke kan se Google-kodeordet.</li>
+<li>Efter login sender Google brugeren tilbage til appen (<code>com.redskia.tiltmaze://login-callback</code>; på Windows lytter appen på <code>http://127.0.0.1:53682/</code>) med en <b>engangskode</b>.</li>
+<li>Appen bytter koden og verifieren til tokens (<code>grant_type=pkce</code>). En, der opsnapper koden, kan ikke bruge den uden verifieren.</li>
+<li>Ny Google-bruger får brugernavn fra Gmail-adressen (det før @) og kan skifte det.</li>
+</ol>
+<h3>Fingeraftryk, log ud og slet konto</h3>
+<ul>
+<li><b>Fingeraftryk/Windows Hello</b> er valgfrit. Appen starter låst, og <code>MainLayout</code> beder om fingeraftryk, som låser det <i>allerede gemte</i> login op. Annullerer man, spiller man som gæst. Intet biometrisk sendes til serveren.</li>
+<li><b>Log ud:</b> <code>/auth/v1/logout?scope=local</code> (gør tokenet ugyldigt på serveren), derefter ryddes SecureStorage.</li>
+<li><b>Slet konto:</b> RPC <code>delete_me</code> fjerner brugeren, tider og spøgelser; appen logger ud.</li>
+</ul>
+<div class="note"><b>Sig det sådan:</b> “Kodeord hashes af Supabase, jeg ser dem aldrig. Google bruger PKCE, så en stjålet kode ikke kan bruges. Adgangstoken er kortlivet, og refresh-token ligger i SecureStorage (Android Keystore), så andre apps ikke kan læse det.”</div>
+
+<h2 class="pb">8. Anti-snyd trin for trin</h2>
+<p><b>Problemet:</b> appen kører på brugerens telefon. Man kunne skrive en falsk tid (“0,1 sekund”) og sende den.</p>
+<ol>
+<li>Appen sender <code>{ sværhedsgrad, seed, tid, spøgelse }</code> til Edge Function <code>submit-run</code> (kræver login, <code>verify_jwt = true</code>). Spøgelset er kuglens position 30 gange i sekundet.</li>
+<li>Funktionen bygger <b>samme labyrint</b> i TypeScript (samme <code>Rng</code>, samme regler) ud fra sværhedsgrad og seed.</li>
+<li>Den <b>afspiller turen</b> (<code>check.ts</code>, en port af <code>RunChecker</code>): starter turen i start, går kuglen gennem en væg? er farten urealistisk? ligger kuglen i et hul? nås målet? passer tiden med antallet af positioner?</li>
+<li>Består den, kalder funktionen databasen (<code>submit_run</code> med service-nøglen), som gemmer <b>kun den bedste tid</b> pr. bruger og labyrint. Svar: <code>{ id, timeMs, isBest, rank }</code>.</li>
+<li>Består den ikke: <b>400 “Run could not be verified”</b>.</li>
+</ol>
+<p><b>Hvordan ved vi, at C# og TypeScript bygger det samme?</b> C#-testen <code>CourseFixtureTests</code> skriver et facit (<code>course.json</code>). TypeScript-testen <code>check.test.ts</code> sammenligner mod det og afspiller rigtige ture (<code>runs.json</code>) lavet af en robot.</p>
+<div class="note"><b>Sig det sådan:</b> “En top-liste er værdiløs, hvis man kan snyde. Derfor stoler serveren ikke på tiden, men afspiller hele turen på sin egen labyrint og tjekker reglerne. Kun så gemmes tiden.”</div>
+
+<h2>9. Svar på de fem spørgsmål</h2>
+<table>
+<tr><th style="width:26%">Spørgsmål</th><th>Svar</th></tr>
+<tr><td>Hvad sker der, hvis en bruger ændrer et ID i en request?</td><td>Intet farligt. Serveren stoler ikke på id’er fra klienten. RLS og RPC’er bruger <code>auth.uid()</code> fra tokenet. <code>profiles</code> viser kun egen række, <code>runs</code> kan slet ikke tilgås direkte, og <code>set_username</code>/<code>delete_me</code> virker kun på ens egen konto. Testet i e2e (egen profil ja, andres nej).</td></tr>
+<tr><td>Hvor gemmer appen tokens, og hvor længe er de gyldige?</td><td>Refresh-token i SecureStorage (Android Keystore/Windows), med udløb efter 14 dage på enheden. Adgangstoken er kortlivet (Supabase-standard 1 time) og fornyes med refresh-tokenet. Log ud gør det ugyldigt på serveren. Appen har <code>allowBackup=false</code>.</td></tr>
+<tr><td>Hvordan ser appen ud på en tablet i landskab – og hvorfor?</td><td>Sidemenu i stedet for bundmenu (fra 768 px), og hele banen vises i midten med et sidepanel (tid, Pause, Retry), fordi der er plads, og tommelfingeren ikke behøver nå en bundmenu. Siderne bruger to kolonner fra 900 px. Trykmål er stadig mindst 48 px.</td></tr>
+<tr><td>Største trussel og hvad er gjort?</td><td>Snyd med falske tider (Tampering). Serveren bygger samme labyrint, afspiller turen og tjekker den; <code>submit_run</code> kan kun kaldes af serveren; kun bedste tid gemmes.</td></tr>
+<tr><td>Kan du forklare al afleveret kode?</td><td>Ja. Jeg har valgt idé, design og sikkerhedsprincipper og forklarer koden ud fra denne guide, <code>DESIGN.md</code> og slides: Core (labyrint, fysik, spøgelse), services (login, database, kø) og Supabase-reglerne.</td></tr>
+</table>
+
+<h3>Andre spørgsmål, du kan få</h3>
+<ul>
+<li><b>Hvorfor er den offentlige nøgle i appen okay?</b> Den giver kun adgang til det, RLS og rettigheder tillader. Service-nøglen (hemmelig) er kun i Edge Function.</li>
+<li><b>Hvorfor Supabase i stedet for eget API?</b> Jeg slipper for at drive og sikre en server. Sikkerheden ligger i databasen, og anti-snyd er stadig egen kode.</li>
+<li><b>Hvorfor ingen admin?</b> Det er et spil: reglerne håndhæves automatisk for alle. Den privilegerede funktion (<code>submit_run</code>) afvises for almindelige brugere.</li>
+<li><b>Hvad hvis nettet forsvinder?</b> Spillet virker. Rekorder ligger i køen og sendes senere.</li>
+<li><b>Hvorfor ikke passkeys?</b> WebAuthn virker ikke i Android WebView uden meget native kode; fingeraftryk låser i stedet det gemte login op.</li>
+<li><b>Hvad mangler?</b> Lyst tema, kontrast-/200 %-test, skærmlæser-test, CI med secret-scanning, brugertest, rotering af service-nøglen.</li>
+</ul>
+
+<h2>10. Ordliste</h2>
+<table>
+<tr><td style="width:20%"><b>JWT</b></td><td>Et signeret token med brugerens id og udløbstid. Serveren stoler på det, fordi signaturen kan tjekkes.</td></tr>
+<tr><td><b>Hash (bcrypt)</b></td><td>En envejs-udregning af kodeordet. Man kan ikke regne tilbage, kun sammenligne.</td></tr>
+<tr><td><b>OAuth 2.0 / PKCE</b></td><td>Standard til “log ind med Google”. PKCE binder engangskoden til en hemmelig verifier, så en stjålet kode er værdiløs.</td></tr>
+<tr><td><b>RLS</b></td><td>Row Level Security: databasen filtrerer rækker efter, hvem der spørger.</td></tr>
+<tr><td><b>RPC</b></td><td>En funktion i databasen, som appen kan kalde (her de eneste døre til tider og spøgelser).</td></tr>
+<tr><td><b>Edge Function</b></td><td>Lille serverkode (her TypeScript) hos Supabase.</td></tr>
+<tr><td><b>SecureStorage</b></td><td>Krypteret lager i Android Keystore/Windows til hemmeligheder som tokens.</td></tr>
+<tr><td><b>SQLite</b></td><td>Lille database i en fil på enheden.</td></tr>
+<tr><td><b>Seed</b></td><td>Et tal, der bestemmer en labyrint; samme seed giver altid samme labyrint.</td></tr>
+<tr><td><b>STRIDE</b></td><td>Trusselskategorier: Spoofing, Tampering, Repudiation, Information disclosure, Denial of service, Elevation of privilege.</td></tr>
+<tr><td><b>OWASP Top 10</b></td><td>Liste over de mest almindelige sikkerhedsfejl (fx A01 Broken access control).</td></tr>
+<tr><td><b>Blazor / WebView</b></td><td>Blazor laver UI med C# og HTML; WebView er den indbyggede browser, der viser det i appen.</td></tr>
+</table>
+
+<h2>11. Demo-tjekliste</h2>
+<ul>
+<li>Åbn Supabase-dashboardet før demoen (gratis projekter pauses efter en uges inaktivitet).</li>
+<li>Telefon (scrcpy til PC): vip, hul, mål, spøgelse, mønter, butik. Log ind og vis top-listen. Sæt telefonen i flytilstand, slå en rekord og vis, at den sendes, når nettet er tilbage.</li>
+<li>PC/tablet: vis sidemenuen og layoutet ved forskellig bredde, joystick med mus.</li>
+<li>Sikkerhedskode at vise: RLS-politikken (<code>0002_rls_policies.sql</code>) eller anti-snyd-tjekket (<code>check.ts</code>).</li>
+<li>Vis ingen rigtige nøgler eller persondata på skærmen.</li>
+</ul>
+
+</body>
+</html>

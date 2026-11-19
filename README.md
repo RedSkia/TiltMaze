@@ -4,7 +4,7 @@ Labyrintspil: styr en kugle ved at vippe telefonen (Android), ved at trække hvo
 
 Skoleprojekt i App-programmering 2026 (.NET MAUI Blazor Hybrid). Med konti og top-lister i Supabase. Senere: broer med touch.
 
-- Plan og kravspec: `docs/plan.md`, wireframes: `docs/wireframes.html`, PDF: `docs/TiltMaze-kravspec.pdf`
+- Dokumentation: `docs/TiltMaze-dokumentation.pdf` (kilde `docs/dokumentation.html`, kravspec lite som bilag), studieguide `docs/TiltMaze-teknik-forklaret.pdf`, wireframes `docs/wireframes.html`, plan `docs/plan.md`
 - Opbygning: `DESIGN.md`
 
 ## Kom i gang
@@ -33,7 +33,7 @@ Vis telefonen på PC (fx til fremvisning): `winget install Genymobile.scrcpy`, s
 
 ## Præsentation
 
-`docs/TiltMaze.pptx` (10 slides, dansk, med talenoter). Til fremvisning på telefonen: se slide 9 (scrcpy).
+`docs/TiltMaze.pptx` (20 slides, dansk, med talenoter på hvert slide). Til fremvisning på telefonen: se scrcpy ovenfor.
 
 ## Spillet
 

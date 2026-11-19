@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<title>TiltMaze – projektdokumentation</title>
+<link rel="stylesheet" href="doc.css">
+</head>
+<body>
+
+<h1>TiltMaze – projektdokumentation</h1>
+<p class="sub">App-programmering – Cross-platform App Development 2026 · Marcus (enkeltvis) · .NET MAUI Blazor Hybrid + Supabase · Kode: se Git-repository</p>
+
+<h2>1. Problem og brugergruppe</h2>
+<p><b>Problem:</b> Korte pauser i hverdagen mangler et hurtigt færdighedsspil, der bruger telefonens sensorer, og som er sjovere, når man kan måle sig mod andre. Top-lister i simple spil bliver hurtigt værdiløse, hvis nogen kan sende falske tider.</p>
+<p><b>Løsning:</b> TiltMaze er et labyrintspil set ovenfra. Man styrer en kugle ved at <b>vippe telefonen</b> eller trække en finger/mus på banen, undgår huller og når målet så hurtigt som muligt. Hver labyrint laves ud fra en sværhedsgrad og et <i>seed</i>, så “dagens labyrint” er ens for alle. Man ræser mod sit eget og andres bedste løb som <i>spøgelser</i>, samler mønter og køber udseende i en butik.</p>
+<p><b>Brugergruppe:</b> unge og voksne, der kan lide hurtige spil og at konkurrere. <b>Platforme:</b> Android (primær) og Windows.</p>
+
+<h3>Brugerkonti, data og roller</h3>
+<p>Hver spiller har en konto (brugernavn + kodeord, eller Google). Kontoen ejer sin profil og sine tider/spøgelser. Spillet virker også helt uden konto og uden net.</p>
+<table>
+<tr><th style="width:22%">Rolle</th><th>Hvad må rollen</th><th style="width:30%">Hvordan håndhæves det</th></tr>
+<tr><td><b>Gæst</b> (ikke logget ind)</td><td>Spille alt lokalt, se top-lister, tjekke om et brugernavn er ledigt</td><td>Databasens rettigheder: kun <code>leaderboard</code> og <code>username_available</code></td></tr>
+<tr><td><b>Bruger</b> (logget ind)</td><td>Alt for gæster + sende tider, se top-3 spøgelser, læse egen profil, skifte brugernavn, slette egen konto</td><td>Token (JWT) + RLS + RPC’er der bruger <code>auth.uid()</code></td></tr>
+<tr><td><b>Server</b> (<code>service_role</code>)</td><td>Gemme en godkendt tid (<code>submit_run</code>) – den “admin-funktion”, der findes</td><td>Kun Edge Function har nøglen. Gæster og brugere afvises af databasen (testet)</td></tr>
+</table>
+<p class="small">Der er bevidst ingen menneskelig administrator: det er et spil, hvor reglerne håndhæves automatisk af serveren for alle.</p>
+
+<h3>CRUD på egne data via API</h3>
+<table>
+<tr><th style="width:14%">Handling</th><th>Hvad</th><th style="width:36%">API</th></tr>
+<tr><td>Create</td><td>Opret konto; send en tid</td><td><code>/auth/v1/signup</code>; Edge Function <code>submit-run</code></td></tr>
+<tr><td>Read</td><td>Egen profil; top-liste; spøgelser</td><td><code>/rest/v1/profiles</code> (kun egen række); RPC <code>leaderboard</code>, <code>top_ghosts</code>, <code>get_ghost</code></td></tr>
+<tr><td>Update</td><td>Skift brugernavn</td><td>RPC <code>set_username</code></td></tr>
+<tr><td>Delete</td><td>Slet konto, tider og spøgelser</td><td>RPC <code>delete_me</code></td></tr>
+</table>
+
+<h2>2. Design: skitser, navigation, theme, thumb zones, tilgængelighed</h2>
+<svg viewBox="0 0 640 215" width="560" role="img" aria-label="Skitser af telefon og tablet/PC">
+  <rect x="10" y="10" width="140" height="180" rx="14" fill="#0f1830" stroke="#2de2c8" stroke-width="2"/>
+  <text x="80" y="32" fill="#eaf1ff" font-size="11" text-anchor="middle">HUD: pause · tid · fald</text>
+  <rect x="24" y="42" width="112" height="100" rx="6" fill="#16264a"/>
+  <circle cx="50" cy="70" r="8" fill="#ff8a3d"/><circle cx="110" cy="120" r="7" fill="#ffc857"/>
+  <text x="80" y="95" fill="#9aa8c8" font-size="10" text-anchor="middle">bane (SVG)</text>
+  <rect x="24" y="156" width="112" height="26" rx="8" fill="#2de2c8"/>
+  <text x="80" y="173" fill="#03161a" font-size="11" text-anchor="middle">bundmenu</text>
+  <text x="80" y="205" fill="#1a2238" font-size="11" text-anchor="middle">Compact: telefon</text>
+  <rect x="180" y="10" width="450" height="180" rx="10" fill="#0f1830" stroke="#2de2c8" stroke-width="2"/>
+  <rect x="190" y="20" width="70" height="160" rx="6" fill="#2de2c8"/>
+  <text x="225" y="104" fill="#03161a" font-size="11" text-anchor="middle">sidemenu</text>
+  <rect x="270" y="20" width="230" height="160" rx="6" fill="#16264a"/>
+  <text x="385" y="104" fill="#eaf1ff" font-size="11" text-anchor="middle">hele banen</text>
+  <rect x="510" y="20" width="110" height="160" rx="6" fill="#16264a"/>
+  <text x="565" y="94" fill="#eaf1ff" font-size="11" text-anchor="middle">sidepanel:</text>
+  <text x="565" y="110" fill="#9aa8c8" font-size="10" text-anchor="middle">tid · Pause · Retry</text>
+  <text x="405" y="205" fill="#1a2238" font-size="11" text-anchor="middle">Expanded: tablet/PC (fra 768 px)</text>
+</svg>
+<ul>
+<li><b>Layout:</b> telefon i højformat: HUD øverst, banen fylder resten, <i>bundmenu</i>. Fra 768 px bredde skifter navigationen til en <i>sidemenu</i>, og siderne bruger to kolonner (fra 900 px). På tablet i landskab vises hele banen med sidepanel, fordi der er plads; kan banen ikke vises med mindst 40 px pr. celle, følger kameraet kuglen. Testet ved 390, 900 og 1400 px uden overlap.</li>
+<li><b>Thumb zone:</b> menuen ligger nederst; joysticket er <i>flydende</i> og kommer frem, hvor tommelfingeren trykker. Primære knapper (Play, Resume) er store og placeret nederst/centralt.</li>
+<li><b>Trykmål:</b> alt der kan trykkes er mindst <b>48 px</b> (<code>--touch</code>) med mindst 8 px mellem naboer; afstande kun fra en 8-skala.</li>
+<li><b>Theme via farvetokens:</b> alle farver og afstande er CSS-variabler i <code>app.css</code> (<code>--bg</code>, <code>--accent</code>, <code>--ball</code>, <code>--gold</code>, <code>--danger</code> …). Designet er “Neon Arcade” (mørkt). Butikken har fire bane-temaer (Neon, Lava, Ice, Retro) der kun skifter variabler. <span class="todo">Et lyst tema er ikke lavet endnu.</span></li>
+<li><b>Tilgængelighed:</b> fokus-ring på alt, dialoger med fokus på den sikre knap og <code>Esc</code>, resten af skærmen er <code>inert</code>; <code>prefers-reduced-motion</code> slår rystelse, konfetti og puls fra; fejl vises som tekst (ikke kun farve). <span class="todo">Kontrast (4,5:1) og 200 % skriftstørrelse er ikke målt; skærmlæser-test er ikke lavet.</span></li>
+</ul>
+
+<h2>3. Arkitektur</h2>
+<svg viewBox="0 0 640 230" width="600" role="img" aria-label="Arkitekturdiagram">
+  <rect x="10" y="20" width="250" height="190" rx="10" fill="#f4f7fc" stroke="#0b8a7b" stroke-width="2"/>
+  <text x="135" y="42" font-size="13" font-weight="700" text-anchor="middle" fill="#0f1830">Appen (Android / Windows)</text>
+  <rect x="25" y="52" width="220" height="30" rx="6" fill="#2de2c8"/><text x="135" y="72" font-size="11" text-anchor="middle" fill="#03161a">Blazor-sider i BlazorWebView</text>
+  <rect x="25" y="90" width="220" height="30" rx="6" fill="#ffc857"/><text x="135" y="110" font-size="11" text-anchor="middle" fill="#1a2238">Services: Auth, Api, RunQueue, Scores, Wallet</text>
+  <rect x="25" y="128" width="220" height="30" rx="6" fill="#ff8a3d"/><text x="135" y="148" font-size="11" text-anchor="middle" fill="#1a2238">TiltMaze.Core: labyrint, fysik, spøgelse</text>
+  <rect x="25" y="166" width="220" height="34" rx="6" fill="#d9e3f5"/><text x="135" y="181" font-size="10" text-anchor="middle" fill="#1a2238">SQLite: tider, spøgelser, kø, mønter</text><text x="135" y="194" font-size="10" text-anchor="middle" fill="#1a2238">SecureStorage: login-token</text>
+  <rect x="370" y="20" width="260" height="140" rx="10" fill="#f4f7fc" stroke="#ff8a3d" stroke-width="2"/>
+  <text x="500" y="42" font-size="13" font-weight="700" text-anchor="middle" fill="#0f1830">Supabase (API + database)</text>
+  <rect x="385" y="52" width="230" height="26" rx="6" fill="#d9e3f5"/><text x="500" y="69" font-size="11" text-anchor="middle">Auth: konti, login, tokens</text>
+  <rect x="385" y="84" width="230" height="26" rx="6" fill="#d9e3f5"/><text x="500" y="101" font-size="11" text-anchor="middle">Postgres + RLS + RPC’er</text>
+  <rect x="385" y="116" width="230" height="30" rx="6" fill="#ffd9c0"/><text x="500" y="135" font-size="11" text-anchor="middle">Edge Function submit-run (anti-snyd)</text>
+  <rect x="370" y="175" width="260" height="35" rx="8" fill="#e3f0ff" stroke="#38bdf8" stroke-width="2"/><text x="500" y="197" font-size="12" text-anchor="middle">Google (valgfrit login, OAuth + PKCE)</text>
+  <line x1="260" y1="100" x2="368" y2="100" stroke="#0b8a7b" stroke-width="3"/><polygon points="368,94 380,100 368,106" fill="#0b8a7b"/>
+  <text x="314" y="92" font-size="11" text-anchor="middle" fill="#0b8a7b">HTTPS</text>
+</svg>
+<ul>
+<li><b>Appen (client):</b> .NET MAUI Blazor Hybrid. MAUI giver en rigtig Android/Windows-app med én skærm, der indeholder en <code>BlazorWebView</code>. Siderne (<code>.razor</code>) tegner UI; koden bag kører som almindelig .NET og kan bruge accelerometer, vibration, SecureStorage og fingeraftryk direkte.</li>
+<li><b>Core:</b> ren C# uden MAUI med al matematik (labyrint, fysik, kamera, spøgelse, belønninger). Testet med xUnit. Samme regler er porteret til TypeScript, så serveren kan afspille en tur.</li>
+<li><b>Backend:</b> Supabase – ingen egen server. Auth (konti), Postgres med Row Level Security, RPC-funktioner og én Edge Function (TypeScript/Deno).</li>
+<li><b>Tredjepart:</b> Supabase (hosting) og Google (valgfrit login, kun via Supabase).</li>
+<li><b>Data og sync:</b> Spillet er <i>offline-først</i>. Ny rekord gemmes i SQLite og lægges i en kø (<code>PendingRun</code>). <code>RunQueue</code> sender den ved start, efter login, ved ny rekord og når nettet kommer tilbage. Serveren svarer med pladsen på listen.</li>
+</ul>
+
+<h2 class="pb">4. Trusselsmodel (STRIDE + OWASP Top 10:2021)</h2>
+<p><b>Største trussel: snyd med falske tider</b> (Tampering). En top-liste er værdiløs, hvis nogen kan sende hvilken som helst tid fra en telefon, de selv kontrollerer.</p>
+<table>
+<tr><th style="width:4%">#</th><th style="width:15%">STRIDE</th><th style="width:21%">Trussel</th><th>Modforanstaltning</th><th style="width:12%">OWASP</th></tr>
+<tr><td>1</td><td>Tampering</td><td><b>Falsk tid/spøgelse</b> sendes til serveren</td><td>Edge Function bygger samme labyrint ud fra seed, <b>afspiller spøgelset</b> og tjekker vægge, fart, huller, mål og tid. Ellers 400 “Run could not be verified”. Kun bedste tid gemmes</td><td>A04 Insecure design</td></tr>
+<tr><td>2</td><td>Elevation of privilege</td><td>Bruger kalder <code>submit_run</code> direkte (omgår tjekket)</td><td><code>execute</code> er kun givet til <code>service_role</code>; <code>runs</code> har ingen rettigheder. <b>Testet i e2e</b> (“kan ikke kalde submit_run”)</td><td>A01 Broken access control</td></tr>
+<tr><td>3</td><td>Information disclosure</td><td>Bruger A læser eller ændrer bruger B’s data (ændrer et id i et kald)</td><td>RLS: <code>profiles</code> kun egen række (<code>id = auth.uid()</code>). RPC’er bruger <code>auth.uid()</code> – ikke et id fra klienten. <b>Testet i e2e</b></td><td>A01 Broken access control</td></tr>
+<tr><td>4</td><td>Spoofing</td><td>Overtage et andet brugernavn/login (skifte login-e-mail)</td><td>Trigger på <code>auth.users</code> (<code>0004_email_guard</code>): e-mail må kun skifte til eget profilnavn. Google-brugere kan ikke få en <code>@tiltmaze.invalid</code>-adresse</td><td>A07 Auth failures</td></tr>
+<tr><td>5</td><td>Spoofing</td><td>Gætte brugernavne/kodeord</td><td>Login-fejl er altid “Wrong username or password”. Kodeord mindst 8 tegn og hashet af Supabase. Supabase har egne grænser for forsøg. <span class="todo">Ingen egen kontolås</span></td><td>A07 Auth failures</td></tr>
+<tr><td>6</td><td>Information disclosure</td><td>Hemmeligheder i appen eller git (service-nøgle)</td><td>Appen har kun den <b>offentlige</b> publishable key (sendes kun som <code>apikey</code>). Service-nøglen findes kun i Edge Function. <span class="todo">Skal roteres, fordi den har stået i en log. gitleaks ikke kørt endnu</span></td><td>A02 / A05 Misconfiguration</td></tr>
+<tr><td>7</td><td>Information disclosure</td><td>Token stjæles fra enheden eller aflyttes</td><td>Refresh-token kun i <b>SecureStorage</b> (Android Keystore); <code>allowBackup=false</code>; kun HTTPS; log ud ugyldiggør tokenet på serveren; Google-login i Custom Tab med PKCE (aldrig appens egen WebView)</td><td>A02 Crypto failures</td></tr>
+<tr><td>8</td><td>Denial of service</td><td>Spam af login eller tider</td><td><code>submit-run</code> kræver login (<code>verify_jwt</code>); kun bedste tid pr. labyrint gemmes; Supabase begrænser Auth. <span class="todo">Ingen egen rate limit</span></td><td>A04 Insecure design</td></tr>
+<tr><td>9</td><td>Repudiation</td><td>“Det var ikke mig, der satte tiden”</td><td>Hver tid ligger i <code>runs</code> med <code>user_id</code>, og kontoen kræver login. Supabase logger kaldene</td><td>A09 Logging</td></tr>
+</table>
+
+<h2>5. Sikkerhedsvalg</h2>
+<h3>Login</h3>
+<ul>
+<li><b>Brugernavn + kodeord:</b> brugernavnet bliver til e-mailen <code>navn@tiltmaze.invalid</code> (ingen bekræftelse, ingen persondata). Kodeordet sendes over HTTPS til Supabase Auth, der gemmer det som <b>bcrypt-hash</b>. Appen ser aldrig hashen.</li>
+<li><b>Google:</b> <b>OAuth 2.0 + PKCE</b>. Appen laver en tilfældig <i>code verifier</i> (32 bytes) og sender kun <i>challenge</i> = base64url(SHA-256). Login sker i en Custom Tab (Android) eller browseren (Windows). Appen får en engangskode tilbage og bytter den med verifieren til tokens. En stjålet kode kan ikke bruges uden verifieren.</li>
+<li><b>Fingeraftryk/Windows Hello</b> (valgfrit) låser kun det gemte login op på enheden. Passkeys er fravalgt (virker ikke i Android WebView uden meget native kode).</li>
+</ul>
+<h3>Tokens og lagring</h3>
+<ul>
+<li><b>Adgangstoken (JWT):</b> kortlivet (Supabase-standard 1 time), holdes i hukommelsen og fornyes automatisk.</li>
+<li><b>Refresh-token:</b> gemmes i <b>SecureStorage</b> (Android Keystore / Windows) sammen med en udløbsdato; appen glemmer det efter <b>14 dage</b>. Fornyelse sker med <code>grant_type=refresh_token</code> (Supabase roterer refresh-tokens). Log ud kalder serveren (<code>scope=local</code>) og rydder SecureStorage.</li>
+<li><b>Øvrig data</b> (tider, mønter, indstillinger) ligger i SQLite/Preferences og er ikke hemmelig.</li>
+</ul>
+<h3>Autorisation (ejerskab tjekkes på serveren)</h3>
+<pre>create policy profiles_select_own on public.profiles
+    for select to authenticated
+    using (id = (select auth.uid()));   -- kun din egen række</pre>
+<ul>
+<li>Tabellerne <code>profiles</code> og <code>runs</code> har RLS. <code>runs</code> har <b>ingen</b> politik og ingen rettigheder: de kan kun nås via RPC’er, som selv slår brugeren op med <code>auth.uid()</code>. Ændrer man et id i et kald, ignorerer eller nægter serveren det.</li>
+<li><code>submit_run</code> kan kun kaldes af serveren. <code>set_username</code> og <code>delete_me</code> virker kun på den indloggedes egen konto.</li>
+</ul>
+<h3>Hemmeligheder og trafik</h3>
+<ul>
+<li>Kun den offentlige <i>publishable key</i> ligger i appen (sikker, fordi RLS og rettigheder bestemmer adgangen). Service-nøglen bruges kun i Edge Function. Ingen <code>.env</code>, kodeord eller nøgler i git.</li>
+<li>Al trafik er HTTPS (<code>https://…supabase.co</code>). Android: <code>allowBackup=false</code>; kun <code>MainActivity</code> og Google-callback er <code>exported</code>; tilladelser kun INTERNET, ACCESS_NETWORK_STATE, VIBRATE og USE_BIOMETRIC.</li>
+</ul>
+
+<h2>6. Test</h2>
+<table>
+<tr><th style="width:26%">Hvad</th><th>Hvordan</th><th style="width:24%">Resultat</th></tr>
+<tr><td>Labyrint, fysik, kamera, spøgelse, belønninger, mønter, brugernavn</td><td>xUnit (<code>dotnet test</code>): alle sværhedsgrader × mange seeds – målet nås, start/mål er aldrig huller, samme seed = samme labyrint, kuglen går ikke gennem vægge</td><td class="ok">103 tests bestået</td></tr>
+<tr><td>Anti-snyd i TypeScript</td><td><code>node --test</code>: facit fra C# (<code>course.json</code>) og rigtige ture lavet af en robot (<code>runs.json</code>). Sikrer at C# og TypeScript bygger samme labyrint og tjekker ens</td><td class="ok">9 tests bestået</td></tr>
+<tr><td><b>Adgang til andres data</b> og rettigheder</td><td>E2E-test mod rigtig Supabase (<code>supabase/tests/e2e.mjs</code>): opret to brugere. <b>Egen profil kan læses, andres kan ikke.</b> <code>submit-run</code> uden login og med falsk token afvises (401). En bruger kan ikke kalde <code>submit_run</code> direkte. Navneskift, top-liste, spøgelser og sletning testes også; testen rydder selv op</td><td>Køres før release (langsom)</td></tr>
+<tr><td>Layout og styring</td><td>Manuelt ved 390/900/1400 px; vip, joystick, fingeraftryk og Google-login på telefon og Windows</td><td>Delvist; telefon-test mangler (se TODO)</td></tr>
+<tr><td>Brugertest</td><td>Min far prøvede appen som testperson</td><td>1 person (kravet er 2)</td></tr>
+</table>
+<p class="small">Ikke lavet endnu: brugertest med en person mere, skærmlæser-test, kontrastmåling, gitleaks/CI.</p>
+
+<h2>7. Refleksion og arbejdsfordeling</h2>
+<ul>
+<li><b>Arbejdsfordeling:</b> enkeltvis projekt. Jeg har valgt idé, krav, design og sikkerhedsprincipper, styret retningen og testet appen.</li>
+<li><b>Forklaring af koden:</b> for at kunne forklare al afleveret kode har jeg en studieguide (<code>docs/TiltMaze-teknik-forklaret.pdf</code>), <code>DESIGN.md</code> og slides med talenoter. Koden er kommenteret og holdt simpel med vilje.</li>
+<li><b>Vigtigste valg:</b> planen var et eget ASP.NET Core API i Docker. Jeg skiftede til <b>Supabase</b>, så jeg ikke selv skal drive og sikre en server, mens anti-snyd stadig kører som egen kode (Edge Function). Sikkerhed ligger i databasen (RLS + RPC’er), ikke i appen.</li>
+<li><b>Udfordringer:</b> samme labyrint i C# og TypeScript (løst med et eget seedet tilfældighedstal og tests mod facit); Google-login i Windows-app uden pakke (WebAuthenticator virker ikke, så appen lytter selv på en lokal adresse); Windows Defender blokerede WebView2-data på Skrivebordet.</li>
+<li><b>Lærte:</b> regler ét sted og testet; serveren stoler aldrig på klienten; sikkerhed designes ind fra start.</li>
+<li><b>Næste skridt:</b> lyst tema, kontrast- og skærmlæser-test, CI med secret-scanning, brugertest med flere personer, rotere service-nøglen.</li>
+</ul>
+
+<h2 class="pb">Bilag A: Kravspec lite</h2>
+<h3>Idé og målgruppe</h3>
+<p>Labyrintspil (2,5D) styret ved at vippe telefonen eller med et flydende joystick (PC: mus). Procedurelle labyrinter fra seed, huller i to størrelser (med fart kan man hoppe over), mønter, butik, top-lister og spøgelser. Målgruppe: unge og voksne, der kan lide korte konkurrerende spil.</p>
+<h3>Teknologivalg</h3>
+<table>
+<tr><th style="width:24%">Område</th><th>Valg</th></tr>
+<tr><td>Framework / sprog</td><td>.NET 10, .NET MAUI Blazor Hybrid; C# og Razor/HTML/CSS (banen er SVG). Jeg kan i forvejen C# og Blazor, så tiden går til spillet</td></tr>
+<tr><td>Platforme</td><td>Android (min. API 26) og Windows. iOS fravalgt (kræver Mac)</td></tr>
+<tr><td>Native funktioner</td><td>Accelerometer, vibration, SecureStorage, fingeraftryk/Windows Hello, netværksstatus</td></tr>
+<tr><td>Lokal lagring</td><td>SQLite (tider, spøgelser, kø, mønter) + Preferences + SecureStorage</td></tr>
+<tr><td>Backend / cloud</td><td>Supabase: Auth, Postgres (RLS, RPC’er), Edge Function (TypeScript/Deno)</td></tr>
+</table>
+<h3>Funktionelle krav (MoSCoW)</h3>
+<table>
+<tr><th style="width:12%">Prioritet</th><th>Krav</th><th style="width:14%">Status</th></tr>
+<tr><td>Must</td><td>Styring med vip eller joystick; fysik med vægge og huller; labyrinter fra sværhedsgrad + seed (dagens = dato)</td><td class="ok">Færdig</td></tr>
+<tr><td>Must</td><td>Tider og spøgelser gemmes lokalt (SQLite); alt kan spilles offline</td><td class="ok">Færdig</td></tr>
+<tr><td>Must</td><td>Konto og login (brugernavn eller Google); top-liste; resultater sendes via kø, når der er net</td><td class="ok">Færdig</td></tr>
+<tr><td>Must</td><td>Pause (knap, <code>P</code>/<code>Esc</code>, når appen skjules)</td><td class="ok">Færdig</td></tr>
+<tr><td>Should</td><td>Spøgelser (eget + top 3 andres); anti-snyd; kamera der følger kuglen; vibration</td><td class="ok">Færdig</td></tr>
+<tr><td>Should</td><td>Kalibrering af vip</td><td class="todo">Mangler</td></tr>
+<tr><td>Could</td><td>Seed-deling; fingeraftryk; mønter, butik, stjerner, streak, præstationer, fog</td><td class="ok">Færdig</td></tr>
+<tr><td>Won’t</td><td>Realtids-multiplayer, 3D, køb i appen, iOS, admin-roller, passkeys</td><td>Fravalgt</td></tr>
+</table>
+<h3>Ikke-funktionelle krav</h3>
+<ul>
+<li><b>Responsivt:</b> compact (telefon, bundmenu) og expanded (sidemenu fra 768 px, to kolonner fra 900 px). Trykmål ≥ 48 px.</li>
+<li><b>Sikkerhed:</b> se afsnit 4 og 5 (RLS, anti-snyd, PKCE, SecureStorage, HTTPS, ingen hemmeligheder i appen).</li>
+<li><b>Offline:</b> spillet virker uden net; rekorder sendes senere.</li>
+<li><b>Ydelse:</b> fast fysik-skridt 1/120 s, banen tegnes som ét SVG (plan B: <code>&lt;canvas&gt;</code>).</li>
+</ul>
+<h3>Risici</h3>
+<table>
+<tr><th style="width:36%">Risiko</th><th>Håndtering</th></tr>
+<tr><td>Spillet hakker (Blazor tegner langsomt)</td><td>Få elementer (vægge som én SVG-sti), fast tidsskridt. Plan B: canvas. Billedhastighed på telefon skal måles</td></tr>
+<tr><td>Kuglen går gennem vægge ved høj fart</td><td>Fast, lille tidsskridt og maks-fart; unit-tests af kollision</td></tr>
+<tr><td>Accelerometer virker forskelligt</td><td>Joystick som alternativ; test på min telefon (OnePlus 6)</td></tr>
+<tr><td>Snyd med tider</td><td>Serveren afspiller turen (afsnit 4)</td></tr>
+</table>
+<h3>Tidsplan</h3>
+<table>
+<tr><th style="width:8%">Uge</th><th>Fokus</th></tr>
+<tr><td>1</td><td>Plan, wireframes, MAUI-app i Git, labyrint-generator, fysik og styring, startside og spilskærm</td></tr>
+<tr><td>2</td><td>Konti, top-liste og spøgelser (Supabase), SQLite og offline-kø, joystick, kamera, responsivt layout, midtvejsdemo</td></tr>
+<tr><td>3</td><td>Test, sikkerhed, butik og belønninger, dokumentation, slides og præsentation</td></tr>
+</table>
+
+<h2>Bilag B: Status mod opgavens krav</h2>
+<table>
+<tr><th style="width:42%">Krav</th><th style="width:12%">Status</th><th>Kommentar</th></tr>
+<tr><td>Login, 2-3 sammenhængende skærme, CRUD via API</td><td class="ok">Opfyldt</td><td>Brugernavn og Google; 7 sider; CRUD i afsnit 1</td></tr>
+<tr><td>Compact og expanded, adaptiv navigation, trykmål</td><td class="ok">Opfyldt</td><td>Bundmenu → sidemenu; 48 px</td></tr>
+<tr><td>Light og dark theme via farvetokens</td><td class="todo">Delvist</td><td>Tokens findes, men kun mørkt (plus 4 bane-temaer)</td></tr>
+<tr><td>Kontrast ≥ 4,5:1; tekst ved 200 %</td><td class="todo">Ikke målt</td><td>Skal måles og evt. rettes</td></tr>
+<tr><td>Hashede kodeord / OAuth + PKCE; tokens med udløb i secure storage</td><td class="ok">Opfyldt</td><td>Supabase bcrypt; PKCE; SecureStorage; 14 dage</td></tr>
+<tr><td>Ejerskab tjekkes på serveren (testet)</td><td class="ok">Opfyldt</td><td>RLS + RPC’er; e2e-test</td></tr>
+<tr><td>Admin/privilegerede funktioner afvises for almindelige brugere</td><td class="ok">Opfyldt</td><td><code>submit_run</code> kun <code>service_role</code>; testet</td></tr>
+<tr><td>Ingen nøgler/passwords i app eller git (gitleaks)</td><td class="todo">Delvist</td><td>Kun offentlig nøgle i appen. gitleaks ikke kørt; service-nøgle skal roteres</td></tr>
+<tr><td>HTTPS</td><td class="ok">Opfyldt</td><td></td></tr>
+<tr><td>Udvidelser: offline, deling (seed), input-validering, automatiserede tests, fingeraftryk</td><td class="ok">Lavet</td><td>Kø og SQLite; seed; brugernavneregel; 103 + 9 + e2e</td></tr>
+<tr><td>Udvidelser: brugertest med mindst 2 personer</td><td class="todo">Delvist</td><td>1 person har testet</td></tr>
+<tr><td>Udvidelser: skærmlæser, CI med secret scanning, MFA/passkeys</td><td class="todo">Ikke lavet</td><td>Passkeys bevidst fravalgt</td></tr>
+</table>
+
+</body>
+</html>
